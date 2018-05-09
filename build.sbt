@@ -15,3 +15,7 @@ libraryDependencies ++= Seq(
   "org.postgresql" % "postgresql" % "9.4-1200-jdbc41",
   specs2 % Test
 )
+
+evictionWarningOptions in update := EvictionWarningOptions.default
+  .withWarnTransitiveEvictions(false)
+  .withWarnDirectEvictions(false)
