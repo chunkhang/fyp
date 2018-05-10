@@ -1,11 +1,15 @@
-# Home page
-GET     /                           controllers.PageController.index
-GET     /persons/new                controllers.PersonController.index
-POST    /person                     controllers.PersonController.addPerson
-GET     /persons                    controllers.PersonController.getPersons
-# User Routes
-GET  /users     controllers.UserController.index
-GET  /users/new controllers.UserController.newUser
-POST /users     controllers.UserController.createUser
+# Page
+GET   /                   controllers.PageController.index
+
+# Authorize
+GET   /login              controllers.AuthorizeController.login
+GET   /access             controllers.AuthorizeController.access
+GET   /logout             controllers.AuthorizeController.logout
+
+# User
+GET   /users              controllers.UserController.index
+GET   /users/new          controllers.UserController.newUser
+POST  /users              controllers.UserController.createUser
+
 # Assets
-GET     /assets/*file               controllers.Assets.versioned(path="/public", file: Asset)
+GET   /assets/*file       controllers.Assets.versioned(path="/public", file: Asset)

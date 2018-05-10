@@ -3,15 +3,19 @@ package controllers
 import javax.inject._
 import play.api.mvc._
 
-class PageController @Inject()(cc: ControllerComponents)
- extends AbstractController(cc) {
+class PageController @Inject()
+  (cc: ControllerComponents)
+  extends AbstractController(cc) {
 
-
-  /**
-   * The index action.
-   */
+  // Home page
   def index = Action { implicit request =>
-    Ok(views.html.index())
+    // Check session cookie
+    val cookie = false
+    if (cookie) {
+      Ok(views.html.index())
+    } else {
+      Redirect(routes.AuthorizeController.login())
+    }
   }
 
- }
+}
