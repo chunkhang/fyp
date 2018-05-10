@@ -19,7 +19,7 @@ class PageController @Inject()
       case None => ""
     }
     // GET request to validate token
-    ws.url(config.get[String]("api.userUrl"))
+    ws.url(config.get[String]("my.api.userUrl"))
       .addHttpHeaders(AUTHORIZATION -> s"Bearer $token")
       .get()
       .map { response =>
@@ -28,6 +28,8 @@ class PageController @Inject()
             Ok(views.html.index())
           case UNAUTHORIZED =>
             Redirect(routes.AuthorizeController.login())
+              .discardingCookies(DiscardingCookie(
+                config.get[String]("my.cookie.accessToken")))
         }
       }
   }
