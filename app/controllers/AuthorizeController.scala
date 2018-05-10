@@ -13,8 +13,6 @@ class AuthorizeController @Inject()
 
   // Redirect to external logon page
   def login = Action { implicit request =>
-    val baseUrl =
-      "https://login.microsoftonline.com/common/oauth2/v2.0/authorize"
     val params = Map(
       "client_id" -> config.get[String]("authorize.clientId"),
       "redirect_uri" -> config.get[String]("authorize.redirectUri"),
@@ -24,19 +22,32 @@ class AuthorizeController @Inject()
     val query = params.foldLeft("?")( (acc, kv) =>
       acc + "&" + kv._1 + "=" + kv._2
     )
-    val logonUrl = baseUrl + query
-    Redirect(logonUrl, 302)
+    val url = config.get[String]("authorize.logonUrl") + query
+    Redirect(url, 302)
   }
 
   // Get access token
-  def access = Action { implicit request =>
-    val baseUrl = "https://login.microsoftonline.com/common/oauth2/v2.0/token"
-    Redirect(baseUrl, 302)
+  def access = Action.async { implicit request =>
+    val code = request.queryString("code").mkString("")
+    val futureResponse = ws.url(config.get[String]("authorize.accessTokenUrl"))
+      .addHttpHeaders("Content-Type" -> "application/x-www-form-urlencoded")
+      .post(Map(
+        "client_id" -> config.get[String]("authorize.clientId"),
+        "client_secret" -> config.get[String]("authorize.clientSecret"),
+        "code" -> code,
+        "redirect_uri" -> config.get[String]("authorize.redirectUri"),
+        "grant_type" -> config.get[String]("authorize.grantType")
+      ))
+      futureResponse.map { response =>
+        val token = (response.json \ "access_token").as[String]
+        println(token)
+        Ok(token)
+      }
   }
 
   // Logout
   def logout = Action { implicit request =>
-    Redirect(routes.PageController.index())
+    Ok("Logout")
   }
 
 }
