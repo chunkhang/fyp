@@ -27,7 +27,7 @@ class PageController @Inject()
           case OK =>
             Ok(views.html.index())
           case UNAUTHORIZED =>
-            Redirect(routes.AuthorizeController.login())
+            Ok(views.html.login())
               .discardingCookies(DiscardingCookie(
                 config.get[String]("my.cookie.accessToken")))
         }

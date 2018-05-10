@@ -52,7 +52,7 @@ class AuthorizeController @Inject()
 
   def logout = Action { implicit request =>
     // Remove token cookie
-    Ok("Logout")
+    Ok(views.html.logout())
       .discardingCookies(DiscardingCookie(
         config.get[String]("my.cookie.accessToken")))
   }
