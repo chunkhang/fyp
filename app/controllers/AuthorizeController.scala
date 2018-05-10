@@ -1,7 +1,7 @@
 package controllers
 
-import scala.concurrent.{ExecutionContext, Future}
 import javax.inject._
+import scala.concurrent.ExecutionContext
 import play.api.mvc._
 import play.api.libs.ws._
 import play.api.Configuration
@@ -11,8 +11,8 @@ class AuthorizeController @Inject()
   (implicit ec: ExecutionContext)
   extends AbstractController(cc) {
 
-  // Redirect to external logon page
   def login = Action { implicit request =>
+    // GET request to logon page
     val params = Map(
       "client_id" -> config.get[String]("authorize.clientId"),
       "redirect_uri" -> config.get[String]("authorize.redirectUri"),
@@ -26,10 +26,11 @@ class AuthorizeController @Inject()
     Redirect(url, 302)
   }
 
-  // Get access token
   def access = Action.async { implicit request =>
+    // Get code from query params
     val code = request.queryString("code").mkString("")
-    val futureResponse = ws.url(config.get[String]("authorize.accessTokenUrl"))
+    // POST request to get token
+    ws.url(config.get[String]("authorize.accessTokenUrl"))
       .addHttpHeaders("Content-Type" -> "application/x-www-form-urlencoded")
       .post(Map(
         "client_id" -> config.get[String]("authorize.clientId"),
@@ -38,16 +39,19 @@ class AuthorizeController @Inject()
         "redirect_uri" -> config.get[String]("authorize.redirectUri"),
         "grant_type" -> config.get[String]("authorize.grantType")
       ))
-      futureResponse.map { response =>
+      .map { response =>
+        // Save token as cookie
         val token = (response.json \ "access_token").as[String]
-        println(token)
-        Ok(token)
+        Redirect(routes.PageController.index())
+          .withCookies(Cookie("token", token))
+          .bakeCookies()
       }
   }
 
-  // Logout
   def logout = Action { implicit request =>
+    // Remove token cookie
     Ok("Logout")
+      .discardingCookies(DiscardingCookie("token"))
   }
 
 }
