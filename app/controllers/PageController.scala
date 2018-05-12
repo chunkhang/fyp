@@ -18,9 +18,9 @@ class PageController @Inject()
   def login = Action { implicit request =>
     // Login page
     try {
-      request.session.get("token").get
-      request.session.get("email").get
-      request.session.get("role").get
+      request.session("token")
+      request.session("email")
+      request.session("role")
       Redirect(routes.PageController.index())
     } catch {
       case e: NoSuchElementException =>

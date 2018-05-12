@@ -20,9 +20,9 @@ class AuthenticatedAction @Inject()
   ): Future[Result] = {
     // Check token, email and role
     try {
-      request.session.get("token").get
-      val email = request.session.get("email").get
-      val role = request.session.get("role").get
+      request.session("token")
+      val email = request.session("email")
+      val role = request.session("role")
       block(new AuthenticatedRequest(email, role, request))
     } catch {
       case e: NoSuchElementException =>
