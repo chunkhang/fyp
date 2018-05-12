@@ -12,13 +12,14 @@ class PageController @Inject()
 
   def index = authenticatedAction { implicit request =>
     // Home page
-    Ok(views.html.index())
+    Ok(views.html.index(request.name, request.email, request.role))
   }
 
   def login = Action { implicit request =>
     // Login page
     try {
       request.session("token")
+      request.session("name")
       request.session("email")
       request.session("role")
       Redirect(routes.PageController.index())

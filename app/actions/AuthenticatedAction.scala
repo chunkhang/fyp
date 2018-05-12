@@ -6,7 +6,7 @@ import play.api.mvc._
 import controllers._
 
 class AuthenticatedRequest[A]
-  (val email: String, val role: String, request: Request[A])
+  (val name: String, val email: String, val role: String, request: Request[A])
   extends WrappedRequest[A](request)
 
 class AuthenticatedAction @Inject()
@@ -21,9 +21,10 @@ class AuthenticatedAction @Inject()
     // Check token, email and role
     try {
       request.session("token")
+      val name = request.session("name")
       val email = request.session("email")
       val role = request.session("role")
-      block(new AuthenticatedRequest(email, role, request))
+      block(new AuthenticatedRequest(name, email, role, request))
     } catch {
       case e: NoSuchElementException =>
         Future.successful(

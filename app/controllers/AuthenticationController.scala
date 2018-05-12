@@ -49,22 +49,26 @@ class AuthenticationController @Inject()
           .get()
           .map { getResponse =>
             // Check domain
-            val email = (getResponse.json \ "userPrincipalName").as[String]
+            val name = (getResponse.json \ "displayName").asOpt[String]
+            val email = (getResponse.json \ "mail").asOpt[String]
             val lecturerDomain = "@" + config.get[String]("my.domain.lecturer")
             val studentDomain = "@" + config.get[String]("my.domain.student")
-            var role = ""
-            if (email.endsWith(lecturerDomain)) {
-              role = "lecturer"
-            } else if (email.endsWith(studentDomain)) {
-              role = "student"
+            var role: Option[String] = None
+            if (!email.isEmpty) {
+              if (email.get.endsWith(lecturerDomain)) {
+                role = Option("lecturer")
+              } else if (email.get.endsWith(studentDomain)) {
+                role = Option("student")
+              }
             }
-            if (role != "") {
+            if (!role.isEmpty) {
               // Save token, email and role
               Redirect(routes.PageController.index())
                 .withSession(
                   "token" -> token,
-                  "email" -> email,
-                  "role" -> role
+                  "name" -> name.get,
+                  "email" -> email.get,
+                  "role" -> role.get
                 )
             } else {
               Redirect(routes.PageController.login())
