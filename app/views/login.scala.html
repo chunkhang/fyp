@@ -1,6 +1,16 @@
+@()(implicit flash: Flash)
+
 @main("Login - FYP") {
 
   <div class="container">
+    @if(flash.get("error").getOrElse("") != "") {
+      <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @flash.get("error")
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+    }
     <h1>Login to continue</h1>
     <a href='@routes.AuthorizeController.login()' class="btn btn-primary btn-lg active" role="button" aria-pressed="true">Login</a>
   </div>

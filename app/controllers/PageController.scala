@@ -25,7 +25,31 @@ class PageController @Inject()
       .map { response =>
         response.status match {
           case OK =>
-            Ok(views.html.index())
+            // Get email and role
+            // Check domain
+            val email = (response.json \ "userPrincipalName").as[String]
+            val lecturerDomain = "@" + config.get[String]("my.domain.lecturer")
+            val studentDomain = "@" + config.get[String]("my.domain.student")
+            var role = ""
+            var domainIsGood = true
+            if (email.endsWith(lecturerDomain)) {
+              role = "lecturer"
+            } else if (email.endsWith(studentDomain)) {
+              role = "student"
+            } else {
+              domainIsGood = false
+            }
+            if (domainIsGood) {
+              Ok(views.html.index())
+                .withSession(
+                  "email" -> email,
+                  "role" -> role
+                )
+            } else {
+              Ok(views.html.login()(Flash(Map("error" -> "Bad domain"))))
+                .discardingCookies(DiscardingCookie(
+                  config.get[String]("my.cookie.accessToken")))
+            }
           case UNAUTHORIZED =>
             Ok(views.html.login())
               .discardingCookies(DiscardingCookie(
