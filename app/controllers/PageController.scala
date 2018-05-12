@@ -3,59 +3,29 @@ package controllers
 import javax.inject._
 import scala.concurrent.ExecutionContext
 import play.api.mvc._
-import play.api.libs.ws._
-import play.api.Configuration
-import play.api.http.HeaderNames.AUTHORIZATION
+import actions.AuthenticatedAction
 
 class PageController @Inject()
-  (cc: ControllerComponents, ws: WSClient, config: Configuration)
+  (cc: ControllerComponents, authenticatedAction: AuthenticatedAction)
   (implicit ec: ExecutionContext)
   extends AbstractController(cc) {
 
-  def index = Action.async { implicit request =>
-    // Get access token
-    val token = request.cookies.get("token") match {
-      case Some(cookie) => cookie.value
-      case None => ""
+  def index = authenticatedAction { implicit request =>
+    // Home page
+    Ok(views.html.index())
+  }
+
+  def login = Action { implicit request =>
+    // Login page
+    try {
+      request.session.get("token").get
+      request.session.get("email").get
+      request.session.get("role").get
+      Redirect(routes.PageController.index())
+    } catch {
+      case e: NoSuchElementException =>
+        Ok(views.html.login())
     }
-    // GET request to validate token
-    ws.url(config.get[String]("my.api.userUrl"))
-      .addHttpHeaders(AUTHORIZATION -> s"Bearer $token")
-      .get()
-      .map { response =>
-        response.status match {
-          case OK =>
-            // Get email and role
-            // Check domain
-            val email = (response.json \ "userPrincipalName").as[String]
-            val lecturerDomain = "@" + config.get[String]("my.domain.lecturer")
-            val studentDomain = "@" + config.get[String]("my.domain.student")
-            var role = ""
-            var domainIsGood = true
-            if (email.endsWith(lecturerDomain)) {
-              role = "lecturer"
-            } else if (email.endsWith(studentDomain)) {
-              role = "student"
-            } else {
-              domainIsGood = false
-            }
-            if (domainIsGood) {
-              Ok(views.html.index())
-                .withSession(
-                  "email" -> email,
-                  "role" -> role
-                )
-            } else {
-              Ok(views.html.login()(Flash(Map("error" -> "Bad domain"))))
-                .discardingCookies(DiscardingCookie(
-                  config.get[String]("my.cookie.accessToken")))
-            }
-          case UNAUTHORIZED =>
-            Ok(views.html.login())
-              .discardingCookies(DiscardingCookie(
-                config.get[String]("my.cookie.accessToken")))
-        }
-      }
   }
 
 }

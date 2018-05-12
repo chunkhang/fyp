@@ -1,10 +1,11 @@
 # Page
 GET   /                   controllers.PageController.index
+GET   /login              controllers.PageController.login
 
-# Authorize
-GET   /login              controllers.AuthorizeController.login
-GET   /access             controllers.AuthorizeController.access
-GET   /logout             controllers.AuthorizeController.logout
+# Authentication
+GET   /logon              controllers.AuthenticationController.logon
+GET   /auth               controllers.AuthenticationController.authenticate
+GET   /logout             controllers.AuthenticationController.logout
 
 # User
 GET   /users              controllers.UserController.index
