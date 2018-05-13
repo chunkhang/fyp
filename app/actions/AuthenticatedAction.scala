@@ -20,7 +20,7 @@ class AuthenticatedAction @Inject()
   ): Future[Result] = {
     // Check token, email and role
     try {
-      request.session("token")
+      request.session("accessToken")
       val name = request.session("name")
       val email = request.session("email")
       val role = request.session("role")

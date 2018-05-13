@@ -2,6 +2,7 @@ package controllers
 
 import javax.inject._
 import scala.concurrent.ExecutionContext
+import scala.async.Async.{async, await}
 import play.api.mvc._
 import play.api.libs.ws._
 import play.api.Configuration
@@ -25,58 +26,79 @@ class AuthenticationController @Inject()
     )
     val url = config.get[String]("my.authorize.logonUrl") + query
     Redirect(url, 302)
-      .withNewSession
   }
 
   def authenticate = Action.async { implicit request =>
     // Get code from query params
-    val code = request.queryString("code").mkString("")
-    // POST request to get access token
-    ws.url(config.get[String]("my.authorize.accessTokenUrl"))
-      .addHttpHeaders("Content-Type" -> "application/x-www-form-urlencoded")
-      .post(Map(
-        "client_id" -> config.get[String]("my.authorize.clientId"),
-        "client_secret" -> config.get[String]("my.authorize.clientSecret"),
-        "code" -> code,
-        "redirect_uri" -> config.get[String]("my.authorize.redirectUri"),
-        "grant_type" -> config.get[String]("my.authorize.grantType")
-      ))
-      .flatMap { postResponse =>
-        val token = (postResponse.json \ "access_token").as[String]
-        // GET request to get user information
-        ws.url(config.get[String]("my.api.userUrl"))
-          .addHttpHeaders(AUTHORIZATION -> s"Bearer $token")
-          .get()
-          .map { getResponse =>
-            // Check domain
-            val name = (getResponse.json \ "displayName").asOpt[String]
-            val email = (getResponse.json \ "mail").asOpt[String]
-            val lecturerDomain = "@" + config.get[String]("my.domain.lecturer")
-            val studentDomain = "@" + config.get[String]("my.domain.student")
-            var role: Option[String] = None
-            if (!email.isEmpty) {
-              if (email.get.endsWith(lecturerDomain)) {
-                role = Option("lecturer")
-              } else if (email.get.endsWith(studentDomain)) {
-                role = Option("student")
-              }
-            }
-            if (!role.isEmpty) {
-              // Save token, email and role
-              Redirect(routes.PageController.index())
-                .withSession(
-                  "token" -> token,
-                  "name" -> name.get,
-                  "email" -> email.get,
-                  "role" -> role.get
-                )
-            } else {
-              Redirect(routes.PageController.login())
-                .flashing("error" -> "You must login using an accepted domain")
-                .withNewSession
-            }
-          }
+    def getCode(): Option[String] = {
+      request.queryString.get("code") match {
+        case Some(value) => Option(value.mkString(""))
+        case None => None
       }
+    }
+    // POST request to get response with tokens
+    def getTokensResponse(code: String) = {
+      ws.url(config.get[String]("my.authorize.tokenUrl"))
+        .addHttpHeaders("Content-Type" -> "application/x-www-form-urlencoded")
+        .post(Map(
+          "client_id" -> config.get[String]("my.authorize.clientId"),
+          "client_secret" -> config.get[String]("my.authorize.clientSecret"),
+          "code" -> code,
+          "redirect_uri" -> config.get[String]("my.authorize.redirectUri"),
+          "grant_type" -> config.get[String]("my.authorize.grantType")
+        ))
+    }
+    // GET request to get user information
+    def getUserResponse(accessToken: String) = {
+      ws.url(config.get[String]("my.api.userUrl"))
+        .addHttpHeaders(AUTHORIZATION -> s"Bearer $accessToken")
+        .get()
+    }
+    // Check domain of email to determine role
+    def getRole(email: String): Option[String] = {
+      val lecturerDomain = "@" + config.get[String]("my.domain.lecturer")
+      val studentDomain = "@" + config.get[String]("my.domain.student")
+      email match {
+        case a if a.endsWith(lecturerDomain) => Option("lecturer")
+        case b if b.endsWith(studentDomain) => Option("student")
+        case _ => None
+      }
+    }
+    // Bad authentication
+    def redirectToLogin() = {
+      Redirect(routes.PageController.login())
+    }
+    async {
+      val code = getCode()
+      if (!code.isEmpty) {
+        var response = await(getTokensResponse(code.get))
+        if (response.status == OK) {
+          val accessToken = (response.json \ "access_token").asOpt[String]
+          val refreshToken = (response.json \ "refresh_token").asOpt[String]
+          if (!accessToken.isEmpty && !refreshToken.isEmpty) {
+            response = await(getUserResponse(accessToken.get))
+            if (response.status == OK) {
+              val email = (response.json \ "mail").asOpt[String]
+              val name = (response.json \ "displayName").asOpt[String]
+              if (!email.isEmpty) {
+                val role = getRole(email.get)
+                if (!role.isEmpty) {
+                  // TODO: Save refresh token to database
+                  // Save access token, email and role to session
+                  Redirect(routes.PageController.index())
+                    .withSession(
+                      "accessToken" -> accessToken.get,
+                      "name" -> name.get,
+                      "email" -> email.get,
+                      "role" -> role.get
+                    )
+                } else redirectToLogin()
+              } else redirectToLogin()
+            } else redirectToLogin()
+          } else redirectToLogin()
+        } else redirectToLogin()
+      } else redirectToLogin()
+    }
   }
 
   def logout = Action { implicit request =>

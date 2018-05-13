@@ -18,7 +18,7 @@ class PageController @Inject()
   def login = Action { implicit request =>
     // Login page
     try {
-      request.session("token")
+      request.session("accessToken")
       request.session("name")
       request.session("email")
       request.session("role")
