@@ -15,17 +15,14 @@ class AuthenticationController @Inject()
 
   def logon = Action { implicit request =>
     // GET request to logon page
-    val params = Map(
-      "client_id" -> config.get[String]("my.authorize.clientId"),
-      "redirect_uri" -> config.get[String]("my.authorize.redirectUri"),
-      "response_type" -> config.get[String]("my.authorize.responseType"),
-      "scope" -> config.get[String]("my.authorize.scope")
-    )
-    val query = params.foldLeft("?")( (acc, kv) =>
-      acc + "&" + kv._1 + "=" + kv._2
-    )
-    val url = config.get[String]("my.authorize.logonUrl") + query
-    Redirect(url, 302)
+    val logonUrl = urlWithParams(config.get[String]("my.authorize.logonUrl"),
+      Map(
+        "client_id" -> config.get[String]("my.authorize.clientId"),
+        "redirect_uri" -> config.get[String]("my.authorize.authUri"),
+        "response_type" -> config.get[String]("my.authorize.responseType"),
+        "scope" -> config.get[String]("my.authorize.scope")
+      ))
+    Redirect(logonUrl)
   }
 
   def authenticate = Action.async { implicit request =>
@@ -44,7 +41,7 @@ class AuthenticationController @Inject()
           "client_id" -> config.get[String]("my.authorize.clientId"),
           "client_secret" -> config.get[String]("my.authorize.clientSecret"),
           "code" -> code,
-          "redirect_uri" -> config.get[String]("my.authorize.redirectUri"),
+          "redirect_uri" -> config.get[String]("my.authorize.authUri"),
           "grant_type" -> config.get[String]("my.authorize.grantType")
         ))
     }
@@ -103,8 +100,19 @@ class AuthenticationController @Inject()
 
   def logout = Action { implicit request =>
     // Clear session
-    Redirect(routes.PageController.index())
+    val logoutUrl = urlWithParams(config.get[String]("my.authorize.logoutUrl"),
+      Map(
+        "post_logout_redirect_uri" ->
+          config.get[String]("my.authorize.loginUri")
+      ))
+    Redirect(logoutUrl)
       .withNewSession
+  }
+
+  def urlWithParams(url: String, params: Map[String, String]) = {
+     url + params.foldLeft("?")( (acc, kv) =>
+      acc + "&" + kv._1 + "=" + kv._2
+    )
   }
 
 }
