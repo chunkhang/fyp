@@ -16,7 +16,7 @@ libraryDependencies ++= Seq(
   "org.scala-lang.modules" %% "scala-async" % "0.9.6",
   ws,
   specs2 % Test
-)
+).map(_.exclude("org.slf4j", "*"))
 
 evictionWarningOptions in update := EvictionWarningOptions.default
   .withWarnTransitiveEvictions(false)
