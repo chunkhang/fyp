@@ -34,7 +34,7 @@ class AuthenticationController @Inject()
       }
     }
     // POST request to get response with tokens
-    def getTokensResponse(code: String) = {
+    def getTokenResponse(code: String) = {
       ws.url(config.get[String]("my.authorize.tokenUrl"))
         .addHttpHeaders("Content-Type" -> "application/x-www-form-urlencoded")
         .post(Map(
@@ -61,40 +61,50 @@ class AuthenticationController @Inject()
         case _ => None
       }
     }
-    // Bad authentication
-    def redirectToLogin() = {
-      Redirect(routes.PageController.login())
-    }
     async {
-      val code = getCode()
+      var successful = false
+      var code: Option[String] = None
+      var tokenResponse: Option[WSResponse] = None
+      var accessToken: Option[String] = None
+      var refreshToken: Option[String] = None
+      var userResponse: Option[WSResponse] = None
+      var email: Option[String] = None
+      var name: Option[String] = None
+      var role: Option[String] = None
+      code = getCode()
       if (!code.isEmpty) {
-        var response = await(getTokensResponse(code.get))
-        if (response.status == OK) {
-          val accessToken = (response.json \ "access_token").asOpt[String]
-          val refreshToken = (response.json \ "refresh_token").asOpt[String]
-          if (!accessToken.isEmpty && !refreshToken.isEmpty) {
-            response = await(getUserResponse(accessToken.get))
-            if (response.status == OK) {
-              val email = (response.json \ "mail").asOpt[String]
-              val name = (response.json \ "displayName").asOpt[String]
-              if (!email.isEmpty) {
-                val role = getRole(email.get)
-                if (!role.isEmpty) {
-                  // TODO: Save refresh token to database
-                  // Save access token, email and role to session
-                  Redirect(routes.PageController.index())
-                    .withSession(
-                      "accessToken" -> accessToken.get,
-                      "name" -> name.get,
-                      "email" -> email.get,
-                      "role" -> role.get
-                    )
-                } else redirectToLogin()
-              } else redirectToLogin()
-            } else redirectToLogin()
-          } else redirectToLogin()
-        } else redirectToLogin()
-      } else redirectToLogin()
+        tokenResponse = Option(await(getTokenResponse(code.get)))
+      }
+      if (!tokenResponse.isEmpty && tokenResponse.get.status == OK) {
+        accessToken = (tokenResponse.get.json \ "access_token").asOpt[String]
+        refreshToken = (tokenResponse.get.json \ "refresh_token").asOpt[String]
+      }
+      if (!accessToken.isEmpty && !refreshToken.isEmpty) {
+        userResponse = Option(await(getUserResponse(accessToken.get)))
+      }
+      if (!userResponse.isEmpty && userResponse.get.status == OK) {
+        email = (userResponse.get.json \ "mail").asOpt[String]
+        name = (userResponse.get.json \ "displayName").asOpt[String]
+      }
+      if (!email.isEmpty) {
+        role = getRole(email.get)
+      }
+      if (!role.isEmpty) {
+        successful = true
+      }
+      if (successful) {
+        // TODO: Save refresh token to database
+        // Save access token, email and role to session
+        Redirect(routes.PageController.index())
+          .withSession(
+            "accessToken" -> accessToken.get,
+            "name" -> name.get,
+            "email" -> email.get,
+            "role" -> role.get
+          )
+      } else {
+        Redirect(routes.PageController.login())
+      }
     }
   }
 
