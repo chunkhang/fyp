@@ -8,11 +8,11 @@ GET   /auth/authenticate      controllers.AuthenticationController.authenticate
 GET   /auth/logout            controllers.AuthenticationController.logout
 
 # Todo
-GET       /todos                      controllers.TodoController.getAllTodos
-GET       /todos/:id                  controllers.TodoController.getTodo(id: reactivemongo.bson.BSONObjectID)
-POST      /todos                      controllers.TodoController.createTodo
-PATCH     /todos/:id                  controllers.TodoController.updateTodo(id: reactivemongo.bson.BSONObjectID)
-DELETE    /todos/:id                  controllers.TodoController.deleteTodo(id: reactivemongo.bson.BSONObjectID)
+GET       /todos              controllers.TodoController.getAllTodos
+GET       /todos/:id          controllers.TodoController.getTodo(id: reactivemongo.bson.BSONObjectID)
+POST      /todos              controllers.TodoController.createTodo
+PATCH     /todos/:id          controllers.TodoController.updateTodo(id: reactivemongo.bson.BSONObjectID)
+DELETE    /todos/:id          controllers.TodoController.deleteTodo(id: reactivemongo.bson.BSONObjectID)
 
 
 # Assets

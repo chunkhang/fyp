@@ -14,7 +14,10 @@ import scala.concurrent.Future
 /**
   * Created by Riccardo Sirigu on 10/08/2017.
   */
-class TodoController @Inject()(cc: ControllerComponents, todoRepo: TodoRepository) extends AbstractController(cc) {
+class TodoController @Inject()(
+  cc: ControllerComponents,
+  todoRepo: TodoRepository
+) extends AbstractController(cc) {
 
   def getAllTodos = Action.async {
     todoRepo.getAll.map{ todos =>

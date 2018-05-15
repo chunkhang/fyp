@@ -1,14 +1,16 @@
 package controllers
 
-import javax.inject._
+import javax.inject.Inject
 import scala.concurrent.ExecutionContext
 import play.api.mvc._
 import actions.AuthenticatedAction
 
-class PageController @Inject()
-  (cc: ControllerComponents, authenticatedAction: AuthenticatedAction)
-  (implicit ec: ExecutionContext)
-  extends AbstractController(cc) {
+class PageController @Inject()(
+  cc: ControllerComponents,
+  authenticatedAction: AuthenticatedAction
+)(
+  implicit ec: ExecutionContext
+) extends AbstractController(cc) {
 
   def index = authenticatedAction { implicit request =>
     // Home page

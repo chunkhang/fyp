@@ -16,7 +16,11 @@ import scala.concurrent.{ExecutionContext, Future}
   * Created by Riccardo Sirigu on 10/08/2017.
   */
 
-case class Todo(_id: Option[BSONObjectID], title: String, completed: Option[Boolean])
+case class Todo(
+  _id: Option[BSONObjectID],
+  title: String,
+  completed: Option[Boolean]
+)
 
 object JsonFormats{
   import play.api.libs.json._
@@ -24,7 +28,10 @@ object JsonFormats{
   implicit val todoFormat: OFormat[Todo] = Json.format[Todo]
 }
 
-class TodoRepository @Inject()(implicit ec: ExecutionContext, reactiveMongoApi: ReactiveMongoApi){
+class TodoRepository @Inject()(
+  implicit ec: ExecutionContext,
+  reactiveMongoApi: ReactiveMongoApi
+) {
 
   import JsonFormats._
 

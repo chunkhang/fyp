@@ -1,6 +1,6 @@
 package controllers
 
-import javax.inject._
+import javax.inject.Inject
 import scala.concurrent.ExecutionContext
 import scala.async.Async.{async, await}
 import play.api.mvc._
@@ -8,10 +8,13 @@ import play.api.libs.ws._
 import play.api.Configuration
 import play.api.http.HeaderNames.AUTHORIZATION
 
-class AuthenticationController @Inject()
-  (cc: ControllerComponents, ws: WSClient, config: Configuration)
-  (implicit ec: ExecutionContext)
-  extends AbstractController(cc) {
+class AuthenticationController @Inject()(
+  cc: ControllerComponents,
+  ws: WSClient,
+  config: Configuration
+)(
+  implicit ec: ExecutionContext
+) extends AbstractController(cc) {
 
   def logon = Action { implicit request =>
     // GET request to logon page

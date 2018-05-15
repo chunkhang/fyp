@@ -1,18 +1,21 @@
 package actions
 
-import javax.inject._
+import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 import play.api.mvc._
 import controllers._
 
-class AuthenticatedRequest[A]
-  (val name: String, val email: String, request: Request[A])
-  extends WrappedRequest[A](request)
+class AuthenticatedRequest[A](
+  val name: String,
+  val email: String,
+  request: Request[A]
+) extends WrappedRequest[A](request)
 
-class AuthenticatedAction @Inject()
-  (val parser: BodyParsers.Default)
-  (implicit val executionContext: ExecutionContext)
-  extends ActionBuilder[AuthenticatedRequest, AnyContent] {
+class AuthenticatedAction @Inject()(
+  val parser: BodyParsers.Default
+)(
+  implicit val executionContext: ExecutionContext
+) extends ActionBuilder[AuthenticatedRequest, AnyContent] {
 
   def invokeBlock[A](
     request: Request[A],
