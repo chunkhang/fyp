@@ -1,4 +1,4 @@
-@(name: String, email: String, role: String)
+@(name: String, email: String)
 
 @main("Home - FYP") {
 
@@ -8,7 +8,7 @@
       <span class="mdi mdi-calendar"></span>
     </h1>
     <h5>@name</h5>
-    <p>@email (@role)</p>
+    <p>@email</p>
     <a href='@routes.AuthenticationController.logout()' class="btn btn-danger btn-lg active" role="button" aria-pressed="true">Logout</a>
   </div>
 

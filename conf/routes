@@ -1,11 +1,11 @@
 # Pages
-GET   /                   controllers.PageController.index
-GET   /login              controllers.PageController.login
+GET   /                       controllers.PageController.index
+GET   /login                  controllers.PageController.login
 
 # Authentication
-GET   /logon              controllers.AuthenticationController.logon
-GET   /auth               controllers.AuthenticationController.authenticate
-GET   /logout             controllers.AuthenticationController.logout
+GET   /auth/logon             controllers.AuthenticationController.logon
+GET   /auth/authenticate      controllers.AuthenticationController.authenticate
+GET   /auth/logout            controllers.AuthenticationController.logout
 
 # Assets
-GET   /assets/*file       controllers.Assets.versioned(path="/public", file: Asset)
+GET   /assets/*file           controllers.Assets.versioned(path="/public", file: Asset)

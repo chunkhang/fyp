@@ -12,7 +12,7 @@ class PageController @Inject()
 
   def index = authenticatedAction { implicit request =>
     // Home page
-    Ok(views.html.index(request.name, request.email, request.role))
+    Ok(views.html.index(request.name, request.email))
   }
 
   def login = Action { implicit request =>
@@ -21,7 +21,6 @@ class PageController @Inject()
       request.session("accessToken")
       request.session("name")
       request.session("email")
-      request.session("role")
       Redirect(routes.PageController.index())
     } catch {
       case e: NoSuchElementException =>
