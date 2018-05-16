@@ -24,7 +24,7 @@ class AuthenticationController @Inject()(
         "redirect_uri" -> config.get[String]("my.auth.authUri"),
         "response_type" -> config.get[String]("my.auth.responseType"),
         "scope" -> config.get[String]("my.auth.scope"),
-        "prompt" -> "login"
+        "prompt" -> config.get[String]("my.auth.prompt")
       ))
     Redirect(logonUrl)
   }
@@ -81,8 +81,8 @@ class AuthenticationController @Inject()(
         userResponse = Option(await(getUserResponse(accessToken.get)))
       }
       if (!userResponse.isEmpty && userResponse.get.status == OK) {
-        email = (userResponse.get.json \ "mail").asOpt[String]
         name = (userResponse.get.json \ "displayName").asOpt[String]
+        email = (userResponse.get.json \ "mail").asOpt[String]
       }
       if (!email.isEmpty && !name.isEmpty) {
         if (validDomain(email.get)) {
@@ -92,8 +92,7 @@ class AuthenticationController @Inject()(
         }
       }
       if (authenticated) {
-        // Save refresh token to database
-
+        // TODO: Create or update user in database
         // Save session
         Redirect(routes.PageController.index())
           .withSession(

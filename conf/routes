@@ -7,12 +7,5 @@ GET     /auth/logon             controllers.AuthenticationController.logon
 GET     /auth/authenticate      controllers.AuthenticationController.authenticate
 GET     /auth/logout            controllers.AuthenticationController.logout
 
-# User
-GET     /users                  controllers.UserController.getAllUsers
-GET     /users/:id              controllers.UserController.getUser(id: reactivemongo.bson.BSONObjectID)
-POST    /users                  controllers.UserController.createUser
-PATCH   /users/:id              controllers.UserController.updateUser(id: reactivemongo.bson.BSONObjectID)
-DELETE  /users/:id              controllers.UserController.deleteUser(id: reactivemongo.bson.BSONObjectID)
-
 # Assets
 GET     /assets/*file           controllers.Assets.versioned(path="/public", file: Asset)

@@ -13,12 +13,10 @@ class PageController @Inject()(
 ) extends AbstractController(cc) {
 
   def index = authenticatedAction { implicit request =>
-    // Home page
     Ok(views.html.index(request.name, request.email))
   }
 
   def login = Action { implicit request =>
-    // Login page
     try {
       request.session("accessToken")
       request.session("name")
