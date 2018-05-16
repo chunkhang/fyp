@@ -8,48 +8,54 @@ import models.{User, UserRepository}
 import play.api.libs.json.Json
 import play.api.mvc.{AbstractController, ControllerComponents}
 import reactivemongo.bson.BSONObjectID
+import actions.AuthenticatedAction
 
 class UserController @Inject()(
   cc: ControllerComponents,
-  userRepo: UserRepository
+  userRepo: UserRepository,
+  authenticatedAction: AuthenticatedAction
 ) extends AbstractController(cc) {
 
-  def getAllUsers = Action.async {
-    userRepo.getAll.map{ users =>
+  def getAllUsers = authenticatedAction.async { implicit request =>
+    userRepo.getAll.map { users =>
       Ok(Json.toJson(users))
     }
   }
 
-  def getUser(userId: BSONObjectID) = Action.async { req =>
-    userRepo.getUser(userId).map { maybeUser =>
-      maybeUser.map { user =>
-        Ok(Json.toJson(user))
-      }.getOrElse(NotFound)
-    }
-  }
-
-  def createUser() = Action.async(parse.json) { req =>
-    req.body.validate[User].map { user =>
-      userRepo.addUser(user).map { _ =>
-        Created
+  def getUser(id: BSONObjectID) = authenticatedAction.async {
+    implicit request =>
+      userRepo.getUser(id).map { maybeUser =>
+        maybeUser.map { user =>
+          Ok(Json.toJson(user))
+        }.getOrElse(NotFound)
       }
-    }.getOrElse(Future.successful(BadRequest("Invalid User format")))
   }
 
-  def updateUser(userId: BSONObjectID) = Action.async(parse.json) { req =>
-    req.body.validate[User].map { user =>
-      userRepo.updateUser(userId, user).map {
+  def createUser() = authenticatedAction.async(parse.json) {
+    implicit request =>
+      request.body.validate[User].map { user =>
+        userRepo.addUser(user).map { _ =>
+          Created
+        }
+      }.getOrElse(Future.successful(BadRequest("Invalid User format")))
+  }
+
+  def updateUser(id: BSONObjectID) = authenticatedAction.async(parse.json) {
+    implicit request =>
+      request.body.validate[User].map { user =>
+        userRepo.updateUser(id, user).map {
+          case Some(user) => Ok(Json.toJson(user))
+          case None => NotFound
+        }
+      }.getOrElse(Future.successful(BadRequest("Invalid Json")))
+  }
+
+  def deleteUser(id: BSONObjectID) = authenticatedAction.async {
+    implicit request =>
+      userRepo.deleteUser(id).map {
         case Some(user) => Ok(Json.toJson(user))
         case None => NotFound
       }
-    }.getOrElse(Future.successful(BadRequest("Invalid Json")))
-  }
-
-  def deleteUser(userId: BSONObjectID) = Action.async { req =>
-    userRepo.deleteUser(userId).map {
-      case Some(user) => Ok(Json.toJson(user))
-      case None => NotFound
-    }
   }
 
 }

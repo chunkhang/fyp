@@ -92,6 +92,8 @@ class AuthenticationController @Inject()(
         }
       }
       if (authenticated) {
+        // Save refresh token to database
+
         // Save session
         Redirect(routes.PageController.index())
           .withSession(
