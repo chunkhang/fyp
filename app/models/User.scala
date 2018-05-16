@@ -45,7 +45,7 @@ class UserRepository @Inject()(
     collection.flatMap(_
       .find(query)
       .cursor[User]()
-      .collect[List](config.get[Int]("my.queryLimit"),
+      .collect[List](config.get[Int]("my.db.maxDocuments"),
         Cursor.FailOnError[List[User]]())
     )
   }
@@ -92,7 +92,7 @@ class UserRepository @Inject()(
     collection.flatMap(_
       .find(query)
       .cursor[User]()
-      .collect[List](config.get[Int]("my.queryLimit"),
+      .collect[List](config.get[Int]("my.db.maxDocuments"),
         Cursor.FailOnError[List[User]]())
     )
   }
