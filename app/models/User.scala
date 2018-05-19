@@ -14,7 +14,7 @@ import reactivemongo.play.json.collection.JSONCollection
 /* Document */
 
 case class User(
-  _id: Option[BSONObjectID],
+  _id: Option[BSONObjectID] = None,
   name: String,
   email: String,
   refreshToken: String

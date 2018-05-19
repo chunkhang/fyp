@@ -96,7 +96,6 @@ class AuthenticationController @Inject()(
       if (authenticated) {
         // Create or update user in database
         val latestUser = User(
-          _id = None,
           name = name.get,
           email = email.get,
           refreshToken = refreshToken.get
