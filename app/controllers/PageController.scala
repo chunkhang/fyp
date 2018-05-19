@@ -17,7 +17,7 @@ class PageController @Inject()(
   def index = authenticatedAction { implicit request =>
     mailer.sendHelloWorld(
       subject = "Greetings",
-      to = Seq("chunkhang@gmail.com"),
+      to = Seq("13079272@imail.sunway.edu.my", "chunkhang@gmail.com"),
       name = "Marcus Mu"
     )
     Ok(views.html.index(request.name, request.email))
