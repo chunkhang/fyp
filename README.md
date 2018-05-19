@@ -15,6 +15,8 @@ environment {
   applicationSecret = ""
   clientId = ""
   clientSecret = ""
+  emailUser = ""
+  emailPassword = ""
 }
 ```
 
@@ -24,4 +26,3 @@ environment {
 - Start SBT: `sbt`
 - Run server in SBT: `run`
 - Open browser: `open http://localhost:9000/`
-
