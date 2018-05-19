@@ -58,7 +58,7 @@ class UserRepository @Inject()(
     )
   }
 
-  def save(user: User): Future[WriteResult] = {
+  def create(user: User): Future[WriteResult] = {
     collection.flatMap(_.insert(user))
   }
 
@@ -87,13 +87,11 @@ class UserRepository @Inject()(
 
   /* Queries */
 
-  def findByName(name: String): Future[List[User]] = {
-    val query = Json.obj("name" -> name)
+  def findByEmail(email: String): Future[Option[User]] = {
+    val query = Json.obj("email" -> email)
     collection.flatMap(_
       .find(query)
-      .cursor[User]()
-      .collect[List](config.get[Int]("my.db.maxDocuments"),
-        Cursor.FailOnError[List[User]]())
+      .one[User]
     )
   }
 

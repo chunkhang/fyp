@@ -7,11 +7,13 @@ import play.api.mvc._
 import play.api.libs.ws._
 import play.api.Configuration
 import play.api.http.HeaderNames.AUTHORIZATION
+import models._
 
 class AuthenticationController @Inject()(
   cc: ControllerComponents,
   ws: WSClient,
-  config: Configuration
+  config: Configuration,
+  userRepo: UserRepository
 )(
   implicit ec: ExecutionContext
 ) extends AbstractController(cc) {
@@ -92,7 +94,19 @@ class AuthenticationController @Inject()(
         }
       }
       if (authenticated) {
-        // TODO: Create or update user in database
+        // Create or update user in database
+        val latestUser = User(
+          _id = None,
+          name = name.get,
+          email = email.get,
+          refreshToken = refreshToken.get
+        )
+        await(userRepo.findByEmail(email.get)) match {
+          case Some(user) =>
+            userRepo.updateById(user._id.get, latestUser)
+          case None =>
+            userRepo.create(latestUser)
+        }
         // Save session
         Redirect(routes.PageController.index())
           .withSession(
