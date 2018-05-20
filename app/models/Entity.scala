@@ -50,9 +50,9 @@ abstract class Repository[T](
 
   def update(id: BSONObjectID, entity: T): Future[Option[T]] = {
     val selector = BSONDocument("_id" -> id)
-    val doc = Json.toJson(entity).as[BSONDocument]
+    val document = Json.toJson(entity).as[BSONDocument]
     val updateModifier = BSONDocument(
-      "$set" -> doc
+      "$set" -> document
     )
     collection.flatMap(_
       .findAndUpdate(selector, updateModifier, fetchNewObject = true)
