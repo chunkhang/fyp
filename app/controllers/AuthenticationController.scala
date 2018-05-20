@@ -3,11 +3,12 @@ package controllers
 import javax.inject.Inject
 import scala.concurrent.ExecutionContext
 import scala.async.Async.{async, await}
+import play.api.Logger
 import play.api.mvc._
 import play.api.libs.ws._
 import play.api.Configuration
 import play.api.http.HeaderNames.AUTHORIZATION
-import models._
+import models.{User, UserRepository}
 
 class AuthenticationController @Inject()(
   cc: ControllerComponents,
@@ -102,9 +103,11 @@ class AuthenticationController @Inject()(
         )
         await(userRepo.findByEmail(email.get)) match {
           case Some(user) =>
-            userRepo.updateById(user._id.get, latestUser)
+            userRepo.update(user._id.get, latestUser)
+            Logger.info(s"Updated User(${email.get})")
           case None =>
             userRepo.create(latestUser)
+            Logger.info(s"Created User(${email.get})")
         }
         // Save session
         Redirect(routes.PageController.index())

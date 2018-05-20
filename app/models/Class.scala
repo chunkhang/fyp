@@ -8,28 +8,23 @@ import play.modules.reactivemongo.ReactiveMongoApi
 import reactivemongo.bson.BSONObjectID
 import reactivemongo.play.json._
 
-case class User(
+case class Class(
   _id: Option[BSONObjectID] = None,
-  name: String,
-  email: String,
-  refreshToken: String
+  category: String,
+  day: Int,
+  time: String,
+  duration: Int,
+  venue: String,
+  students: List[String]
 ) extends Entity
 
-class UserRepository @Inject()(
+class ClassRepository @Inject()(
   implicit ec: ExecutionContext,
   reactiveMongoApi: ReactiveMongoApi,
   config: Configuration
-) extends Repository[User] {
+) extends Repository[Class] {
 
-  val collectionName = "users"
-  implicit val documentFormat = Json.format[User]
-
-  def findByEmail(email: String): Future[Option[User]] = {
-    val query = Json.obj("email" -> email)
-    collection.flatMap(_
-      .find(query)
-      .one[User]
-    )
-  }
+  val collectionName = "classes"
+  implicit val documentFormat = Json.format[Class]
 
 }

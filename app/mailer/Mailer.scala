@@ -17,10 +17,9 @@ class Mailer @Inject()(
     val address = s"<${config.get[String]("play.mailer.user")}>"
     val from = s"${name} ${address}"
     val text = Some(body.stripMargin.trim)
-    val toAddresses = to.map(address => s"<${address}>").mkString(", ")
-    Logger.info(s"Sending email(s) to ${toAddresses}...")
     mailerClient.send(Email(subject, from, to, bodyText = text))
-    Logger.info(s"Done sending email(s) to ${toAddresses}")
+    val toAddresses = to.map(address => s"<${address}>").mkString(", ")
+    Logger.info(s"Sent email(s) to ${toAddresses}")
   }
 
   def sendHelloWorld(subject: String, to: Seq[String], name: String) = {
