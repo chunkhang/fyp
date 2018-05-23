@@ -9,11 +9,10 @@ import reactivemongo.bson.BSONObjectID
 import reactivemongo.play.json._
 
 case class Subject(
-  _id: Option[BSONObjectID] = None,
-  userId: BSONObjectID,
+  _id: BSONObjectID,
   code: String,
-  name: String,
-  classes: List[Class]
+  semester: String,
+  userId: BSONObjectID
 ) extends Entity
 
 class SubjectRepository @Inject()(
@@ -23,7 +22,6 @@ class SubjectRepository @Inject()(
 ) extends Repository[Subject] {
 
   val collectionName = "subjects"
-  implicit val subdocumentFormat = Json.format[Class]
   implicit val documentFormat = Json.format[Subject]
 
 }

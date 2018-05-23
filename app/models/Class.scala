@@ -9,13 +9,15 @@ import reactivemongo.bson.BSONObjectID
 import reactivemongo.play.json._
 
 case class Class(
-  _id: Option[BSONObjectID] = None,
+  _id: BSONObjectID,
   category: String,
-  day: Int,
-  time: String,
-  duration: Int,
-  venue: String,
-  students: List[String]
+  group: Int,
+  students: List[String],
+  day: Option[Int] = None,
+  time: Option[String] = None,
+  duration: Option[Int] = None,
+  venue: Option[String] = None,
+  subjectId: BSONObjectID
 ) extends Entity
 
 class ClassRepository @Inject()(

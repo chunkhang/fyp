@@ -8,7 +8,8 @@ import play.api.mvc._
 import play.api.libs.ws._
 import play.api.Configuration
 import play.api.http.HeaderNames.AUTHORIZATION
-import models.{User, UserRepository}
+import reactivemongo.bson.BSONObjectID
+import models._
 
 class AuthenticationController @Inject()(
   cc: ControllerComponents,
@@ -54,7 +55,7 @@ class AuthenticationController @Inject()(
     }
     // GET request to get user information
     def getUserResponse(accessToken: String) = {
-      ws.url(config.get[String]("my.api.userUrl"))
+      ws.url(config.get[String]("my.api.microsoft.userUrl"))
         .addHttpHeaders(AUTHORIZATION -> s"Bearer $accessToken")
         .get()
     }
@@ -97,17 +98,20 @@ class AuthenticationController @Inject()(
       if (authenticated) {
         // Create or update user in database
         val latestUser = User(
+          _id = BSONObjectID.generate,
           name = name.get,
           email = email.get,
           refreshToken = refreshToken.get
         )
         await(userRepo.findByEmail(email.get)) match {
           case Some(user) =>
-            userRepo.update(user._id.get, latestUser)
-            Logger.info(s"Updated User(${email.get})")
+            userRepo.update(user._id, latestUser).map { _ =>
+              Logger.info(s"Updated User(${email.get})")
+            }
           case None =>
-            userRepo.create(latestUser)
-            Logger.info(s"Created User(${email.get})")
+            userRepo.create(latestUser).map { _ =>
+              Logger.info(s"Created User(${email.get})")
+            }
         }
         // Save session
         Redirect(routes.PageController.index())
