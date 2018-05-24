@@ -9,7 +9,7 @@ import reactivemongo.bson.BSONObjectID
 import reactivemongo.play.json._
 
 case class Subject(
-  _id: BSONObjectID,
+  _id: Option[BSONObjectID] = None,
   code: String,
   semester: String,
   userId: BSONObjectID

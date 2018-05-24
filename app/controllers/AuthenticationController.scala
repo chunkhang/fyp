@@ -1,8 +1,8 @@
 package controllers
 
 import javax.inject.Inject
-import scala.concurrent.ExecutionContext
-import scala.async.Async.{async, await}
+import scala.concurrent.{ExecutionContext, Future}
+import scala.util.control.Exception
 import play.api.Logger
 import play.api.mvc._
 import play.api.libs.ws._
@@ -20,6 +20,12 @@ class AuthenticationController @Inject()(
   implicit ec: ExecutionContext
 ) extends AbstractController(cc) {
 
+  case class ResultCode(code: String)
+  case class ResultTokens(accessToken: String, refreshToken: String)
+  case class ResultUserInfo(name: String, email: String)
+  case class ResultDomain(valid: Boolean)
+  case class ResultUser(maybeUser: Option[User])
+
   def logon = Action { implicit request =>
     // GET request to logon page
     val logonUrl = urlWithParams(config.get[String]("my.auth.logonUrl"),
@@ -34,100 +40,100 @@ class AuthenticationController @Inject()(
   }
 
   def authenticate = Action.async { implicit request =>
-    // Get code from query params
-    def getCode(): Option[String] = {
-      request.queryString.get("code") match {
-        case Some(value) => Option(value.mkString(""))
-        case None => None
-      }
-    }
-    // POST request to get response with tokens
-    def getTokenResponse(code: String) = {
-      ws.url(config.get[String]("my.auth.tokenUrl"))
-        .addHttpHeaders("Content-Type" -> "application/x-www-form-urlencoded")
-        .post(Map(
-          "client_id" -> config.get[String]("my.auth.clientId"),
-          "client_secret" -> config.get[String]("my.auth.clientSecret"),
-          "code" -> code,
-          "redirect_uri" -> config.get[String]("my.auth.authUri"),
-          "grant_type" -> config.get[String]("my.auth.grantType")
-        ))
-    }
-    // GET request to get user information
-    def getUserResponse(accessToken: String) = {
-      ws.url(config.get[String]("my.api.microsoft.userUrl"))
-        .addHttpHeaders(AUTHORIZATION -> s"Bearer $accessToken")
-        .get()
-    }
-    // Check email domain
-    def validDomain(email: String) = {
-      email.endsWith("@" + config.get[String]("my.auth.domain"))
-    }
-    async {
-      var authenticated = false
-      var wrongDomain = false
-      var code: Option[String] = None
-      var tokenResponse: Option[WSResponse] = None
-      var accessToken: Option[String] = None
-      var refreshToken: Option[String] = None
-      var userResponse: Option[WSResponse] = None
-      var email: Option[String] = None
-      var name: Option[String] = None
-      code = getCode()
-      if (!code.isEmpty) {
-        tokenResponse = Option(await(getTokenResponse(code.get)))
-      }
-      if (!tokenResponse.isEmpty && tokenResponse.get.status == OK) {
-        accessToken = (tokenResponse.get.json \ "access_token").asOpt[String]
-        refreshToken = (tokenResponse.get.json \ "refresh_token").asOpt[String]
-      }
-      if (!accessToken.isEmpty && !refreshToken.isEmpty) {
-        userResponse = Option(await(getUserResponse(accessToken.get)))
-      }
-      if (!userResponse.isEmpty && userResponse.get.status == OK) {
-        name = (userResponse.get.json \ "displayName").asOpt[String]
-        email = (userResponse.get.json \ "mail").asOpt[String]
-      }
-      if (!email.isEmpty && !name.isEmpty) {
-        if (validDomain(email.get)) {
-          authenticated = true
-        } else {
-          wrongDomain = true
-        }
-      }
-      if (authenticated) {
-        // Create or update user in database
-        val latestUser = User(
-          _id = BSONObjectID.generate,
-          name = name.get,
-          email = email.get,
-          refreshToken = refreshToken.get
+    var invalidDomain = false
+    val result = (for {
+      // Get code from query params
+      r1 <- Future(
+        ResultCode(
+          code = request.queryString("code").mkString("")
         )
-        await(userRepo.findByEmail(email.get)) match {
+      )
+      // POST request to get response with tokens
+      r2 <- ws.url(config.get[String]("my.auth.tokenUrl"))
+              .addHttpHeaders(
+                "Content-Type" -> "application/x-www-form-urlencoded"
+              )
+              .post(Map(
+                "client_id" -> config.get[String]("my.auth.clientId"),
+                "client_secret" -> config.get[String]("my.auth.clientSecret"),
+                "code" -> r1.code,
+                "redirect_uri" -> config.get[String]("my.auth.authUri"),
+                "grant_type" -> config.get[String]("my.auth.grantType")
+              )).map { response =>
+        ResultTokens(
+          accessToken = (response.json \ "access_token").as[String],
+          refreshToken = (response.json \ "refresh_token").as[String]
+        )
+      }
+      // GET request to get user information
+      r3 <- ws.url(config.get[String]("my.api.microsoft.userUrl"))
+              .addHttpHeaders(AUTHORIZATION -> s"Bearer ${r2.accessToken}")
+              .get().map { response =>
+        ResultUserInfo(
+          name = (response.json \ "displayName").as[String],
+          email = (response.json \ "mail").as[String]
+        )
+      }
+      // Check email domain
+      r4 <- Future {
+        val valid_ =
+          r3.email.endsWith("@" + config.get[String]("my.auth.domain"))
+        if (!valid_) invalidDomain = true
+        ResultDomain(
+          valid = valid_
+        )
+      }
+      // Find user in database
+      r5 <-
+        if (r4.valid)
+          userRepo.findByEmail(r3.email).map { maybeUser_ =>
+            ResultUser(
+              maybeUser = maybeUser_
+            )
+          }
+        else Future.failed(new Exception("invalid domain"))
+      // Create or update user in database
+      r6 <- Future {
+        val latestUser = User(
+          name = r3.name,
+          email = r3.email,
+          refreshToken = r2.refreshToken
+        )
+        r5.maybeUser match {
           case Some(user) =>
-            userRepo.update(user._id, latestUser).map { _ =>
-              Logger.info(s"Updated User(${email.get})")
+            userRepo.update(user._id.get, latestUser).map { _ =>
+              Logger.info(s"Updated User(${r3.email})")
             }
           case None =>
             userRepo.create(latestUser).map { _ =>
-              Logger.info(s"Created User(${email.get})")
+              Logger.info(s"Created User(${r3.email})")
             }
         }
-        // Save session
-        Redirect(routes.PageController.index())
-          .withSession(
-            "accessToken" -> accessToken.get,
-            "name" -> name.get,
-            "email" -> email.get
-          )
-      } else {
-        if (wrongDomain) {
-          Redirect(routes.PageController.login())
-            .flashing("error" ->
-              s"Required domain: ${config.get[String]("my.auth.domain")}")
-        } else {
-          Redirect(routes.PageController.login())
-        }
+      }
+    } yield Option(r2, r3, r4))
+      .fallbackTo(Future(None))
+    result.map { maybeTuple =>
+      maybeTuple match {
+        case Some(tuple) =>
+          val tokens = tuple._1
+          val userInfo = tuple._2
+          val domain = tuple._3
+          // Save session
+          Redirect(routes.PageController.index())
+            .withSession(
+              "accessToken" -> tokens.accessToken,
+              "name" -> userInfo.name,
+              "email" -> userInfo.email
+            )
+        case None =>
+          if (invalidDomain) {
+            Redirect(routes.PageController.login())
+              .flashing("error" ->
+                s"Required domain: ${config.get[String]("my.auth.domain")}"
+              )
+          } else {
+            Redirect(routes.PageController.login())
+          }
       }
     }
   }

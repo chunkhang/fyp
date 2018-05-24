@@ -11,7 +11,7 @@ import reactivemongo.play.json._
 import reactivemongo.play.json.collection.JSONCollection
 
 trait Entity {
-  def _id: BSONObjectID
+  def _id: Option[BSONObjectID]
 }
 
 abstract class Repository[T](

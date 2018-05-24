@@ -47,10 +47,10 @@ class PageController @Inject()(
           for (subject <- r1.subjects) yield {
             val subjectId = BSONObjectID.generate
             subjectRepo.create(Subject(
-              _id = subjectId,
+              _id = Option(subjectId),
               code = subject.code,
               semester = r1.semester,
-              userId = user.get._id
+              userId = user.get._id.get
             )).map { _ =>
               Logger.info(
                 s"Created Subject(${subject.code}, ${r1.semester}, " +
@@ -66,11 +66,10 @@ class PageController @Inject()(
         }
       }
       // Create classes under subject
-      r3 <- Future(
+      r3 <- Future {
         r2.classMap.foreach { case (subjectId_, classes) =>
           classes.foreach { class_ =>
             classRepo.create(Class(
-              _id = BSONObjectID.generate,
               category = class_.category,
               group = class_.group,
               students = class_.students,
@@ -83,7 +82,7 @@ class PageController @Inject()(
             }
           }
         }
-      )
+      }
     } yield Unit
     result.map { _ =>
       Ok(views.html.index(request.name, request.email))

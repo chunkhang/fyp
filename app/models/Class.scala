@@ -9,7 +9,7 @@ import reactivemongo.bson.BSONObjectID
 import reactivemongo.play.json._
 
 case class Class(
-  _id: BSONObjectID,
+  _id: Option[BSONObjectID] = None,
   category: String,
   group: Int,
   students: List[String],

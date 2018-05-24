@@ -9,7 +9,7 @@ import reactivemongo.bson.BSONObjectID
 import reactivemongo.play.json._
 
 case class User(
-  _id: BSONObjectID,
+  _id: Option[BSONObjectID] = None,
   name: String,
   email: String,
   refreshToken: String
