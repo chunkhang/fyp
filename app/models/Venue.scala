@@ -8,25 +8,19 @@ import play.modules.reactivemongo.ReactiveMongoApi
 import reactivemongo.bson.BSONObjectID
 import reactivemongo.play.json._
 
-case class Class(
+case class Venue(
   _id: Option[BSONObjectID] = None,
-  category: String,
-  group: Int,
-  students: List[String],
-  day: Option[Int] = None,
-  time: Option[String] = None,
-  duration: Option[Int] = None,
-  venueId: Option[BSONObjectID] = None,
-  subjectId: BSONObjectID
+  name: String,
+  institution: String
 ) extends Entity
 
-class ClassRepository @Inject()(
+class VenueRepository @Inject()(
   implicit ec: ExecutionContext,
   reactiveMongoApi: ReactiveMongoApi,
   config: Configuration
-) extends Repository[Class] {
+) extends Repository[Venue] {
 
-  val collectionName = "classes"
-  implicit val documentFormat = Json.format[Class]
+  val collectionName = "venues"
+  implicit val documentFormat = Json.format[Venue]
 
 }
