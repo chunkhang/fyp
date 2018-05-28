@@ -1,6 +1,6 @@
 @import scala.collection.mutable.Map
 
-@(name: String, email: String, classes: Map[Subject, List[Class]])
+@(name: String, email: String, subjectMap: Map[Subject, List[Class]])
 
 @main("Home - FYP") {
 
@@ -10,8 +10,17 @@
       <span class="mdi mdi-calendar"></span>
     </h1>
     <h5>@name</h5>
-    <p>@classes</p>
     <p>@email</p>
+    <ul>
+      @for((subject, classes) <- subjectMap) {
+        <li>@subject.code (@subject.semester)</li>
+        <ul>
+          @for(class_ <- classes) {
+            <li>@class_.category (@class_.group)</li>
+          }
+        </ul>
+      }
+    </ul>
     <a href='@routes.AuthenticationController.logout()' class="btn btn-danger btn-lg active" role="button" aria-pressed="true">Logout</a>
   </div>
 

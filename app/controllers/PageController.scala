@@ -32,6 +32,9 @@ class PageController @Inject()(
   def index = authenticatedAction.async { implicit request =>
     fetchClasses(request.email).map { classes =>
       Ok(views.html.index(request.name, request.email, classes))
+    } recover {
+      case _ =>
+        Ok(views.html.index(request.name, request.email, Map()))
     }
   }
 
