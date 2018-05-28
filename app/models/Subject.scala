@@ -5,6 +5,7 @@ import scala.concurrent.{ExecutionContext, Future}
 import play.api.Configuration
 import play.api.libs.json.Json
 import play.modules.reactivemongo.ReactiveMongoApi
+import reactivemongo.api.Cursor
 import reactivemongo.bson.BSONObjectID
 import reactivemongo.play.json._
 
@@ -23,5 +24,15 @@ class SubjectRepository @Inject()(
 
   val collectionName = "subjects"
   implicit val documentFormat = Json.format[Subject]
+
+  def findSubjectsByUserId(userId: BSONObjectID): Future[List[Subject]] = {
+    val query = Json.obj("userId" -> userId)
+    collection.flatMap(_
+      .find(query)
+      .cursor[Subject]()
+      .collect[List](config.get[Int]("my.db.maxDocuments"),
+        Cursor.FailOnError[List[Subject]]())
+    )
+  }
 
 }

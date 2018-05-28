@@ -86,7 +86,7 @@ class AuthenticationController @Inject()(
       // Find user in database
       r5 <-
         if (r4.valid)
-          userRepo.findByEmail(r3.email).map { maybeUser_ =>
+          userRepo.findUserByEmail(r3.email).map { maybeUser_ =>
             ResultUser(
               maybeUser = maybeUser_
             )

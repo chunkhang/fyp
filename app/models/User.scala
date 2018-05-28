@@ -24,7 +24,7 @@ class UserRepository @Inject()(
   val collectionName = "users"
   implicit val documentFormat = Json.format[User]
 
-  def findByEmail(email: String): Future[Option[User]] = {
+  def findUserByEmail(email: String): Future[Option[User]] = {
     val query = Json.obj("email" -> email)
     collection.flatMap(_
       .find(query)

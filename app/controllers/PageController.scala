@@ -2,6 +2,7 @@ package controllers
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
+import scala.collection.mutable.Map
 import play.api.mvc._
 import play.api.libs.ws._
 import play.api.libs.json.Json
@@ -27,68 +28,12 @@ class PageController @Inject()(
   case class JsonClass(category: String, group: Int, students: List[String])
   implicit val classReader = Json.reads[JsonClass]
   implicit val subjectReader = Json.reads[JsonSubject]
-  case class ResultSubjects(semester: String, subjects: List[JsonSubject])
-  case class ResultClasses(classMap: Map[BSONObjectID, List[JsonClass]])
 
   def index = authenticatedAction.async { implicit request =>
-    // Fetch the current active classes and update database
-    def fetchClasses() {
-      for {
-        // GET request to fetch active subjects
-        r1 <- ws.url(config.get[String]("my.api.icheckin.classUrl"))
-                .addQueryStringParameters("email" -> "nnurl@sunway.edu.my")
-                .get().map { response =>
-          ResultSubjects(
-            semester = (response.json \ "semester").as[String],
-            subjects = (response.json \ "subjects").as[List[JsonSubject]]
-          )
-        }
-        // Create subjects under user
-        r2 <- userRepo.findByEmail(request.email).flatMap { user =>
-          val createSubjects: List[Future[Map[BSONObjectID, List[JsonClass]]]] =
-            for (subject <- r1.subjects) yield {
-              val subjectId = BSONObjectID.generate
-              subjectRepo.create(Subject(
-                _id = Option(subjectId),
-                code = subject.code,
-                semester = r1.semester,
-                userId = user.get._id.get
-              )).map { _ =>
-                Logger.info(
-                  s"Created Subject(${subject.code}, ${r1.semester}, " +
-                  s"${subjectId})"
-                )
-                Map(subjectId -> subject.classes)
-              }
-            }
-          Future.sequence(createSubjects).map { mapList =>
-            ResultClasses(
-              classMap = mapList.flatten.toMap
-            )
-          }
-        }
-        // Create classes under subject
-        r3 <- Future {
-          r2.classMap.foreach { case (subjectId_, classes) =>
-            classes.foreach { class_ =>
-              classRepo.create(Class(
-                category = class_.category,
-                group = class_.group,
-                students = class_.students,
-                subjectId = subjectId_
-              )).map { _ =>
-                Logger.info(
-                  s"Created Class(${subjectId_}, ${class_.category}, " +
-                  s"${class_.group})"
-                )
-              }
-            }
-          }
-        }
-      } yield Unit
+    fetchClasses(request.email).map { classes =>
+      println(classes)
+      Ok(views.html.index(request.name, request.email, classes))
     }
-
-    Future(Ok(views.html.index(request.name, request.email)))
 
   }
 
@@ -102,6 +47,85 @@ class PageController @Inject()(
       case e: NoSuchElementException =>
         Ok(views.html.login())
     }
+  }
+
+  // Fetch saved classes from database
+  def fetchClasses(email: String): Future[Map[Subject, List[Class]]] = {
+    for {
+      // Get user id
+      userId <- userRepo.findUserByEmail(email).map { user =>
+        user.get._id.get
+      }
+      // List subjects under user
+      subjects <- subjectRepo.findSubjectsByUserId(userId).map { subjects =>
+        subjects
+      }
+      // Map subject to classes
+      subjectMap <- {
+        var subjectMap = Map[Subject, List[Class]]()
+        Future.traverse(subjects) { subject =>
+          classRepo.findClassesBySubjectId(subject._id.get).map { classes =>
+            subjectMap += (subject -> classes)
+          }
+        }.map { _ =>
+          subjectMap
+        }
+      }
+    } yield subjectMap
+  }
+
+  // Update database with current active classes
+  def refreshClasses(email: String): Unit = {
+    for {
+      // GET request to fetch active subjects
+      active <- ws.url(config.get[String]("my.api.icheckin.classUrl"))
+                  .addQueryStringParameters("email" -> "nnurl@sunway.edu.my")
+                  .get().map { response =>
+        val semester = (response.json \ "semester").as[String]
+        val subjects = (response.json \ "subjects").as[List[JsonSubject]]
+        (semester, subjects)
+      }
+      // Create subjects under user
+      subjectIdMap <- userRepo.findUserByEmail(email).map { user =>
+        var subjectIdMap = Map[BSONObjectID, List[JsonClass]]()
+        val semester_ = active._1
+        val subjects = active._2
+        subjects.foreach { subject =>
+          val subjectId = BSONObjectID.generate
+          subjectRepo.create(Subject(
+            _id = Option(subjectId),
+            code = subject.code,
+            semester = semester_,
+            userId = user.get._id.get
+          )).map { _ =>
+            Logger.info(
+              s"Created Subject(${subject.code}, ${semester_}, " +
+              s"${subjectId})"
+            )
+            subjectIdMap += (subjectId -> subject.classes)
+          }
+        }
+        subjectIdMap
+      }
+      // Create classes under subject
+      _ <- Future {
+        subjectIdMap.foreach { case(subjectId_, classes) =>
+          classes.foreach { class_ =>
+            classRepo.create(Class(
+              category = class_.category,
+              group = class_.group,
+              students = class_.students,
+              subjectId = subjectId_
+            )).map { _ =>
+              Logger.info(
+                s"Created Class(${subjectId_}, ${class_.category}, " +
+                s"${class_.group})"
+              )
+            }
+          }
+        }
+      }
+    } yield Unit
   }
 
 }
