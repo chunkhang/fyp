@@ -31,10 +31,8 @@ class PageController @Inject()(
 
   def index = authenticatedAction.async { implicit request =>
     fetchClasses(request.email).map { classes =>
-      println(classes)
       Ok(views.html.index(request.name, request.email, classes))
     }
-
   }
 
   def login = Action { implicit request =>
@@ -75,7 +73,7 @@ class PageController @Inject()(
   }
 
   // Update database with current active classes
-  def refreshClasses(email: String): Unit = {
+  def refreshClasses(email: String): Future[Unit] = {
     for {
       // GET request to fetch active subjects
       active <- ws.url(config.get[String]("my.api.icheckin.classUrl"))
