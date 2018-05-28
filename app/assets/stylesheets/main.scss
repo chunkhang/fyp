@@ -1,3 +1,14 @@
-body {
-  margin-top: 50px;
+nav {
+  .navbar-brand {
+    font-size: 1.15rem;
+  }
+  .form-inline {
+    .navbar-text {
+      margin-right: 10px;
+      font-size: 0.9rem;
+    }
+    a {
+      margin-left: 10px;
+    }
+  }
 }

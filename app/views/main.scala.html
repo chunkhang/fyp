@@ -1,7 +1,11 @@
-@(title: String)(content: Html)
+@(
+  title: String,
+  logout: Boolean
+)(
+  content: Html
+)(implicit session: AuthenticatedRequest[AnyContent])
 
 <!DOCTYPE html>
-
 <html>
 
   <head>
@@ -9,7 +13,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <!-- Title -->
-    <title>@title</title>
+    <title>@title - Class Activity Management System</title>
     <!-- Favicon -->
     <link rel="shortcut icon" type="image/png" href='@routes.Assets.versioned("images/favicon.png")'/>
     <!-- Bootstrap core CSS -->
@@ -23,7 +27,13 @@
   </head>
 
   <body>
-    @content
+
+    @components.navbar(session.name, session.email, logout)
+
+    <div class="container-fluid mt-4 mb-4">
+      @content
+    </div>
+
     <!-- JQuery -->
     <script type="text/javascript" src='@routes.Assets.versioned("javascripts/jquery-3.2.1.min.js")'></script>
     <!-- Bootstrap tooltips -->

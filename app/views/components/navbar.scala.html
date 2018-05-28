@@ -1,0 +1,14 @@
+@(name: String, email: String, logout: Boolean)
+
+<nav class="navbar navbar-expand-lg navbar-light bg-light justify-content-between">
+  <a class="navbar-brand" href="@routes.PageController.index()">
+    <strong>Class Activity Management System</strong>
+  </a>
+  <form class="form-inline">
+    <span class="navbar-text"><strong>@name</strong></span>
+    <span class="navbar-text">@email</span>
+    @if(logout) {
+      <a href='@routes.AuthenticationController.logout()' class="btn btn-danger btn-sm active">Logout</a>
+    }
+  </form>
+</nav>

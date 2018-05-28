@@ -9,7 +9,7 @@ import play.api.libs.json.Json
 import play.api.Logger
 import play.api.Configuration
 import reactivemongo.bson.BSONObjectID
-import actions.AuthenticatedAction
+import actions.{AuthenticatedAction, AuthenticatedRequest}
 import models._
 
 class PageController @Inject()(
@@ -31,21 +31,27 @@ class PageController @Inject()(
 
   def index = authenticatedAction.async { implicit request =>
     fetchClasses(request.email).map { classes =>
-      Ok(views.html.index(request.name, request.email, classes))
+      Ok(views.html.index(classes))
     } recover {
       case _ =>
-        Ok(views.html.index(request.name, request.email, Map()))
+        Ok(views.html.index(Map()))
     }
   }
 
-  def login = Action { implicit request =>
+  def login = Action { implicit request_ =>
     try {
-      request.session("accessToken")
-      request.session("name")
-      request.session("email")
+      request_.session("accessToken")
+      request_.session("name")
+      request_.session("email")
       Redirect(routes.PageController.index())
     } catch {
       case e: NoSuchElementException =>
+        // Implicit session for login template
+        implicit val session = new AuthenticatedRequest[AnyContent](
+          name = "",
+          email = "",
+          request = request_
+        )
         Ok(views.html.login())
     }
   }
