@@ -51,7 +51,7 @@ $(document).ready(function() {
             toastr.success("Fetched new classes");
             setTimeout(function() {
               location.reload();
-            }, 1500);
+            }, 2000);
           } else {
             toastr.error(response.reason);
           }
