@@ -4,6 +4,7 @@ import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 import play.api.mvc._
 import controllers._
+import models._
 
 class AuthenticatedRequest[A](
   val name: String,
@@ -12,7 +13,8 @@ class AuthenticatedRequest[A](
 ) extends WrappedRequest[A](request)
 
 class AuthenticatedAction @Inject()(
-  val parser: BodyParsers.Default
+  val parser: BodyParsers.Default,
+  userRepo: UserRepository
 )(
   implicit val executionContext: ExecutionContext
 ) extends ActionBuilder[AuthenticatedRequest, AnyContent] {
@@ -22,17 +24,30 @@ class AuthenticatedAction @Inject()(
     block: AuthenticatedRequest[A] => Future[Result]
   ): Future[Result] = {
     // Check session
+    var name: String = ""
+    var email: String = ""
     try {
       request.session("accessToken")
-      val name = request.session("name")
-      val email = request.session("email")
-      block(new AuthenticatedRequest(name, email, request))
+      name = request.session("name")
+      email = request.session("email")
     } catch {
       case e: NoSuchElementException =>
-        Future.successful(
+        Future {
           Results.Redirect(routes.PageController.login())
             .withNewSession
-        )
+        }
+    }
+    // Check email
+    userRepo.findUserByEmail(email).flatMap { maybeUser =>
+      maybeUser match {
+        case Some(user) =>
+          block(new AuthenticatedRequest(name, email, request))
+        case None =>
+          Future {
+            Results.Redirect(routes.PageController.login())
+              .withNewSession
+          }
+      }
     }
   }
 
