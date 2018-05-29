@@ -30,7 +30,7 @@ class PageController @Inject()(
           email = "",
           request = request_
         )
-        Ok(views.html.page.login())
+        Ok(views.html.pages.login())
     }
   }
 

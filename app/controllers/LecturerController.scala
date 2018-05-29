@@ -17,7 +17,7 @@ class LecturerController @Inject()(
 
   def index = authenticatedAction.async { implicit request =>
     getLecturers().map { lecturers =>
-      Ok(views.html.lecturer.index(lecturers))
+      Ok(views.html.lecturers.index(lecturers))
     }
   }
 

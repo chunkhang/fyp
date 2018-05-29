@@ -33,9 +33,9 @@ class ClassController @Inject()(
     getClasses(request.email).map { maybeClasses =>
       maybeClasses match {
         case Some(classes) =>
-          Ok(views.html.class_.index(classes))
+          Ok(views.html.classes.index(classes))
         case None =>
-          Ok(views.html.class_.index(ListMap()))
+          Ok(views.html.classes.index(ListMap()))
       }
     }
   }
