@@ -9,15 +9,18 @@
   <div class="row mb-3">
     <div class="col-6" id="classes-header">
         <h1>My Classes</h1>
-        <button class="btn btn-primary btn-sm">Refresh</button>
+        <button class="btn btn-primary btn-sm" id="refresh-button">Refresh</button>
     </div>
   </div>
   <div class="row">
     <div class="col">
       @if(!subjectMap.isEmpty) {
-        <ul class="list-group">
-          @for((subject, classes) <- subjectMap) {
-            <li class="list-group-item">@subject.code (@subject.semester)</li>
+        <ul class="list-group" id="subject-list">
+          @for(subject <- subjectMap.keys) {
+            <li class="list-group-item list-group-item-action waves-effect">
+              <strong>@subject.code</strong>
+              <small class="text-muted">@subject.semester</small>
+            </li>
           }
         </ul>
       } else {
@@ -25,10 +28,16 @@
       }
     </div>
     <div class="col">
-      <ul class="list-group">
-        <li class="list-group-item">apple</li>
-        <li class="list-group-item">banana</li>
-      </ul>
+        @for(classes <- subjectMap.values) {
+          <ul class="list-group gone class-lists">
+          @for(class_ <- classes) {
+            <li class="list-group-item list-group-item-action waves-effect">
+              <strong class="class-names">@class_.category</strong>
+              <small class="text-muted">Group @class_.group</small>
+            </li>
+          }
+          </ul>
+        }
     </div>
   </div>
 

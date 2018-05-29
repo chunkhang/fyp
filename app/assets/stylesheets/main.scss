@@ -1,3 +1,7 @@
 @import 'navbar';
 @import 'login';
 @import 'classes';
+
+.gone {
+  display: none !important;
+}
