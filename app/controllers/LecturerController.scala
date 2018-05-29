@@ -1,7 +1,7 @@
 package controllers
 
 import javax.inject.Inject
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 import play.api.mvc._
 import actions._
 import models._
@@ -16,8 +16,19 @@ class LecturerController @Inject()(
 ) extends AbstractController(cc) {
 
   def index = authenticatedAction.async { implicit request =>
+    getLecturers().map { lecturers =>
+      Ok(views.html.lecturer.index(lecturers))
+    }
+  }
+
+  // Get saved lecturers from database
+  def getLecturers(): Future[List[User]] = {
+    // Get users
     userRepo.readAll().map { users =>
-      Ok(views.html.lecturer.index(users))
+      // Sort users
+      users.sortBy { user =>
+        user.name
+      }
     }
   }
 
