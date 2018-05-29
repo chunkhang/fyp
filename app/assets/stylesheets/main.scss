@@ -2,6 +2,11 @@
 @import 'login';
 @import 'classes';
 
+h1 {
+  font-weight: bolder;
+  margin-bottom: 0;
+}
+
 .gone {
   display: none !important;
 }

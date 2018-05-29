@@ -8,7 +8,7 @@
 
   <div class="row mb-3">
     <div class="col-6" id="classes-header">
-        <h1>My Classes</h1>
+        <h1>Classes</h1>
         <button class="btn btn-primary btn-sm" id="refresh-button">Refresh</button>
     </div>
   </div>
@@ -32,7 +32,7 @@
           <ul class="list-group gone class-lists">
           @for(class_ <- classes) {
             <li class="list-group-item list-group-item-action waves-effect">
-              <strong class="class-names">@class_.category</strong>
+              <strong class="text-uppercase">@class_.category</strong>
               <small class="text-muted">Group @class_.group</small>
             </li>
           }

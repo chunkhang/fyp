@@ -4,10 +4,22 @@
 
 @main("Lecturers", true, Some(2)) {
 
-  <ul>
-    @for(lecturer <- lecturers) {
-      <li>@lecturer.name (@lecturer.email)</li>
-    }
-  </ul>
+  <div class="row mb-3">
+    <div class="col">
+        <h1>Lecturers</h1>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-6">
+      <ul class="list-group">
+        @for(lecturer <- lecturers) {
+          <li class="list-group-item list-group-item-action waves-effect">
+            <strong>@lecturer.name</strong>
+            <small class="text-muted">@lecturer.email</small>
+          </li>
+        }
+      </ul>
+    </div>
+  </div>
 
 }
