@@ -1,4 +1,4 @@
-/* globals $ */
+/* globals $, toastr */
 
 $(document).ready(function() {
 
@@ -36,13 +36,33 @@ $(document).ready(function() {
   // Fetch classes
   var fetchButton = $("#fetch-button");
   fetchButton.click(function() {
-    $.ajax({
-      method: "GET",
-      url: "/classes/fetch",
-      dataType: "json"
-    }).done(function(response) {
-      console.log(response);
-    });
+    var fetchSpinner = $("#fetch-spinner");
+    fetchButton.addClass("gone");
+    fetchSpinner.removeClass("gone");
+    setTimeout(function() {
+      $.ajax({
+        method: "GET",
+        url: "/classes/fetch",
+        dataType: "json",
+        timeout: 3000,
+        success: function(response) {
+          fetchSpinner.addClass("gone");
+          if (response.status == "success") {
+            toastr.success("Fetched new classes");
+            setTimeout(function() {
+              location.reload();
+            }, 1500);
+          } else {
+            toastr.error(response.reason);
+          }
+        },
+        error: function() {
+          fetchSpinner.addClass("gone");
+          fetchButton.removeClass("gone");
+          toastr.error("Something went wrong");
+        }
+      });
+    }, 1000);
   });
 
 });

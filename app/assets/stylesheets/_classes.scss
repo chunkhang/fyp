@@ -1,9 +1,15 @@
 #classes-header {
   display: flex;
   justify-content: space-between;
-  button {
+  #fetch-button {
     height:35px;
     margin-right: 0;
     align-self: flex-end;
+  }
+  #fetch-spinner {
+    margin-bottom: 7px;
+    align-self: flex-end;
+    width: 30px;
+    height: 30px;
   }
 }

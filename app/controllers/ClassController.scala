@@ -55,7 +55,7 @@ class ClassController @Inject()(
         case None =>
           Ok(Json.obj(
             "status" -> "fail",
-            "reason" -> "email not found"
+            "reason" -> "Email not found"
           ))
       }
     }
