@@ -33,4 +33,16 @@ $(document).ready(function() {
     }
   });
 
+  // Fetch classes
+  var fetchButton = $("#fetch-button");
+  fetchButton.click(function() {
+    $.ajax({
+      method: "GET",
+      url: "/classes/fetch",
+      dataType: "json"
+    }).done(function(response) {
+      console.log(response);
+    });
+  });
+
 });

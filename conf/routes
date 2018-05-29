@@ -7,6 +7,7 @@ GET     /calendar               controllers.CalendarController.index
 
 # Class
 GET     /classes                controllers.ClassController.index
+GET     /classes/fetch          controllers.ClassController.fetch
 
 # Lecturer
 GET     /lecturers              controllers.LecturerController.index

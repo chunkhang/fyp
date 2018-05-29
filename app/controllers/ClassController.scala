@@ -30,20 +30,33 @@ class ClassController @Inject()(
   implicit val subjectReader = Json.reads[JsonSubject]
 
   def index = authenticatedAction.async { implicit request =>
-    getClasses(request.email).flatMap { maybeClasses =>
+    getClasses(request.email).map { maybeClasses =>
       maybeClasses match {
         case Some(classes) =>
-          Future(Ok(views.html.class_.index(classes)))
+          Ok(views.html.class_.index(classes))
         case None =>
-          fetchClasses(request.email).map { maybeResult =>
-            maybeResult match {
-              case Some((semester, subjects)) =>
-                saveClasses(request.email, semester, subjects)
-                Ok(views.html.class_.index(ListMap()))
-              case None =>
-                Ok(views.html.class_.index(ListMap()))
-            }
-          }
+          Ok(views.html.class_.index(ListMap()))
+      }
+    }
+  }
+
+  def fetch = authenticatedAction.async { implicit request =>
+    fetchClasses(request.email).map { maybeResult =>
+      maybeResult match {
+        case Some((semester, subjects)) =>
+          // TODO: Only save classes if they are new
+          Ok(Json.obj(
+            "status" -> "success",
+            "semester" -> semester,
+            "subjects" -> subjects.length
+          ))
+          // saveClasses(request.email, semester, subjects).map { _ =>
+          // }
+        case None =>
+          Ok(Json.obj(
+            "status" -> "fail",
+            "reason" -> "email not found"
+          ))
       }
     }
   }
