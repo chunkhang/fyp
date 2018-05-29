@@ -1,7 +1,7 @@
-@import scala.collection.mutable.Map
+@import scala.collection.immutable.ListMap
 
 @(
-  subjectMap: Map[Subject, List[Class]]
+  subjectMap: ListMap[Subject, List[Class]]
 )(implicit session: AuthenticatedRequest[AnyContent])
 
 @main("Classes", true, Some(1)) {

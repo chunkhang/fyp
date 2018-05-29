@@ -3,6 +3,7 @@ package controllers
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 import scala.collection.mutable.Map
+import scala.collection.immutable.ListMap
 import play.api.mvc._
 import play.api.libs.ws._
 import play.api.libs.json.Json
@@ -38,9 +39,9 @@ class ClassController @Inject()(
             maybeResult match {
               case Some((semester, subjects)) =>
                 saveClasses(request.email, semester, subjects)
-                Ok(views.html.class_.index(Map()))
+                Ok(views.html.class_.index(ListMap()))
               case None =>
-                Ok(views.html.class_.index(Map()))
+                Ok(views.html.class_.index(ListMap()))
             }
           }
       }
@@ -48,7 +49,8 @@ class ClassController @Inject()(
   }
 
   // Get saved classes from database
-  def getClasses(email: String): Future[Option[Map[Subject, List[Class]]]] = {
+  def getClasses(email: String):
+    Future[Option[ListMap[Subject, List[Class]]]] = {
     (for {
       // Get user id
       userId <- userRepo.findUserByEmail(email).map { user =>
@@ -72,7 +74,24 @@ class ClassController @Inject()(
           subjectMap
         }
       }
-    } yield Some(subjectMap)) fallbackTo Future(None)
+      // Sort map
+      sortedMap <- Future {
+        // Sort subjects
+        val sequenceWithSortedSubjects = subjectMap.toSeq.sortBy { item =>
+          val subject = item._1
+          subject.code
+        }
+        // Then sort classes
+        val sortedSequence = sequenceWithSortedSubjects.map { item =>
+          val (subject, classes) = item
+          val sortedClasses = classes.sortBy { class_ =>
+            (class_.category, class_.group)
+          }
+          (subject, sortedClasses)
+        }
+        ListMap(sortedSequence :_*)
+      }
+    } yield Some(sortedMap)) fallbackTo Future(None)
   }
 
   // Fetch latest active classes from API
