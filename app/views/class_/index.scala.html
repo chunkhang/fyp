@@ -1,14 +1,14 @@
 @import scala.collection.mutable.Map
 
 @(
-  subjectMap: Option[Map[Subject, List[Class]]]
+  subjectMap: Map[Subject, List[Class]]
 )(implicit session: AuthenticatedRequest[AnyContent])
 
 @main("Classes", true, Some(1)) {
 
   @if(!subjectMap.isEmpty) {
     <ul>
-      @for((subject, classes) <- subjectMap.get) {
+      @for((subject, classes) <- subjectMap) {
         <li>@subject.code (@subject.semester)</li>
         <ul>
           @for(class_ <- classes) {

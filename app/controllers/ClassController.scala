@@ -32,15 +32,15 @@ class ClassController @Inject()(
     getClasses(request.email).flatMap { maybeClasses =>
       maybeClasses match {
         case Some(classes) =>
-          Future(Ok(views.html.class_.index(Some(classes))))
+          Future(Ok(views.html.class_.index(classes)))
         case None =>
           fetchClasses(request.email).map { maybeResult =>
             maybeResult match {
               case Some((semester, subjects)) =>
                 saveClasses(request.email, semester, subjects)
-                Ok(views.html.class_.index(None))
+                Ok(views.html.class_.index(Map()))
               case None =>
-                Ok(views.html.class_.index(None))
+                Ok(views.html.class_.index(Map()))
             }
           }
       }
