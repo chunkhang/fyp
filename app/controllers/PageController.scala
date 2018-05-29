@@ -30,11 +30,21 @@ class PageController @Inject()(
   implicit val subjectReader = Json.reads[JsonSubject]
 
   def index = authenticatedAction.async { implicit request =>
-    fetchClasses(request.email).map { classes =>
-      Ok(views.html.index(classes))
-    } recover {
-      case _ =>
-        Ok(views.html.index(Map()))
+    getClasses(request.email).flatMap { maybeClasses =>
+      maybeClasses match {
+        case Some(classes) =>
+          Future(Ok(views.html.index(classes)))
+        case None =>
+          fetchClasses(request.email).map { maybeResult =>
+            maybeResult match {
+              case Some((semester, subjects)) =>
+                saveClasses(request.email, semester, subjects)
+                Ok(views.html.index(Map()))
+              case None =>
+                Ok(views.html.index(Map()))
+            }
+          }
+      }
     }
   }
 
@@ -56,15 +66,18 @@ class PageController @Inject()(
     }
   }
 
-  // Fetch saved classes from database
-  def fetchClasses(email: String): Future[Map[Subject, List[Class]]] = {
-    for {
+  // Get saved classes from database
+  def getClasses(email: String): Future[Option[Map[Subject, List[Class]]]] = {
+    (for {
       // Get user id
       userId <- userRepo.findUserByEmail(email).map { user =>
         user.get._id.get
       }
       // List subjects under user
       subjects <- subjectRepo.findSubjectsByUserId(userId).map { subjects =>
+        if (subjects.isEmpty) {
+          throw new Exception("no subjects found")
+        }
         subjects
       }
       // Map subject to classes
@@ -78,41 +91,56 @@ class PageController @Inject()(
           subjectMap
         }
       }
-    } yield subjectMap
+    } yield Some(subjectMap)) fallbackTo Future(None)
   }
 
-  // Update database with current active classes
-  def refreshClasses(email: String): Future[Unit] = {
-    for {
-      // GET request to fetch active subjects
-      active <- ws.url(config.get[String]("my.api.icheckin.classUrl"))
-                  .addQueryStringParameters("email" -> "nnurl@sunway.edu.my")
-                  .get().map { response =>
+  // Fetch latest active classes from API
+  def fetchClasses(email: String):
+    Future[Option[(String, List[JsonSubject])]] = {
+    // GET request to fetch active subjects
+    ws.url(config.get[String]("my.api.icheckin.classUrl"))
+      .addQueryStringParameters("email" -> email)
+      .get().map { response =>
         val semester = (response.json \ "semester").as[String]
         val subjects = (response.json \ "subjects").as[List[JsonSubject]]
-        (semester, subjects)
+        semester match {
+          case "" =>
+            // Email not found
+            None
+          case _ =>
+            Some((semester, subjects))
+        }
       }
+  }
+
+  // Save classes to database
+  def saveClasses(
+    email: String,
+    activeSemester: String,
+    activeSubjects: List[JsonSubject]
+  ): Future[Unit] = {
+    for {
       // Create subjects under user
-      subjectIdMap <- userRepo.findUserByEmail(email).map { user =>
+      subjectIdMap <- userRepo.findUserByEmail(email).flatMap { user =>
         var subjectIdMap = Map[BSONObjectID, List[JsonClass]]()
-        val semester_ = active._1
-        val subjects = active._2
-        subjects.foreach { subject =>
+        Future.traverse(activeSubjects) { subject =>
           val subjectId = BSONObjectID.generate
           subjectRepo.create(Subject(
             _id = Option(subjectId),
             code = subject.code,
-            semester = semester_,
+            semester = activeSemester,
             userId = user.get._id.get
           )).map { _ =>
             Logger.info(
-              s"Created Subject(${subject.code}, ${semester_}, " +
+              s"Created Subject(${subject.code}, ${activeSemester}, " +
               s"${subjectId})"
             )
             subjectIdMap += (subjectId -> subject.classes)
           }
+        }.map { _ =>
+          println(subjectIdMap)
+          subjectIdMap
         }
-        subjectIdMap
       }
       // Create classes under subject
       _ <- Future {
