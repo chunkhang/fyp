@@ -7,7 +7,7 @@ import actions._
 
 class CalendarController @Inject()(
   cc: ControllerComponents,
-  authenticatedAction: AuthenticatedAction,
+  authenticatedAction: AuthenticatedAction
 )(
   implicit ec: ExecutionContext
 ) extends AbstractController(cc) {

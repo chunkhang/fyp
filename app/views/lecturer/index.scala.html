@@ -1,7 +1,13 @@
-@()(implicit session: AuthenticatedRequest[AnyContent])
+@(
+  lecturers: List[User]
+)(implicit session: AuthenticatedRequest[AnyContent])
 
 @main("Lecturers", true, Some(2)) {
 
-  <p>Lecturer</p>
+  <ul>
+    @for(lecturer <- lecturers) {
+      <li>@lecturer.name (@lecturer.email)</li>
+    }
+  </ul>
 
 }

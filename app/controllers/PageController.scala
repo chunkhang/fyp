@@ -7,7 +7,7 @@ import actions._
 
 class PageController @Inject()(
   cc: ControllerComponents,
-  authenticatedAction: AuthenticatedAction,
+  authenticatedAction: AuthenticatedAction
 )(
   implicit ec: ExecutionContext
 ) extends AbstractController(cc) {

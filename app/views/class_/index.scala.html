@@ -1,20 +1,24 @@
 @import scala.collection.mutable.Map
 
 @(
-  subjectMap: Map[Subject, List[Class]]
+  subjectMap: Option[Map[Subject, List[Class]]]
 )(implicit session: AuthenticatedRequest[AnyContent])
 
 @main("Classes", true, Some(1)) {
 
-  <ul>
-    @for((subject, classes) <- subjectMap) {
-      <li>@subject.code (@subject.semester)</li>
-      <ul>
-        @for(class_ <- classes) {
-          <li>@class_.category (@class_.group)</li>
-        }
-      </ul>
-    }
-  </ul>
+  @if(!subjectMap.isEmpty) {
+    <ul>
+      @for((subject, classes) <- subjectMap.get) {
+        <li>@subject.code (@subject.semester)</li>
+        <ul>
+          @for(class_ <- classes) {
+            <li>@class_.category (@class_.group)</li>
+          }
+        </ul>
+      }
+    </ul>
+  } else {
+    <p>No class found</p>
+  }
 
 }
