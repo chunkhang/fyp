@@ -22,6 +22,7 @@ environment {
 
 ## Running
 
+- Make sure [FYP API](https://github.com/chunkhang/fyp-api) is running: `open http://localhost:5000/`
 - Make sure MongoDB is running: `brew services start mongodb`
 - Start SBT: `sbt`
 - Run server in SBT: `run`
