@@ -1,6 +1,7 @@
 @(
   title: String,
-  logout: Boolean
+  loggedIn: Boolean,
+  activeIndex: Option[Int]
 )(
   content: Html
 )(implicit session: AuthenticatedRequest[AnyContent])
@@ -28,7 +29,7 @@
 
   <body>
 
-    @components.navbar(session.name, session.email, logout)
+    @components.navbar(session.name, session.email, loggedIn, activeIndex)
 
     <div class="container-fluid mt-4 mb-4">
       @content

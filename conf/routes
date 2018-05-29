@@ -2,6 +2,15 @@
 GET     /                       controllers.PageController.index
 GET     /login                  controllers.PageController.login
 
+# Calendar
+GET     /calendar               controllers.CalendarController.index
+
+# Class
+GET     /classes                controllers.ClassController.index
+
+# Lecturer
+GET     /lecturers              controllers.LecturerController.index
+
 # Authentication
 GET     /auth/logon             controllers.AuthenticationController.logon
 GET     /auth/authenticate      controllers.AuthenticationController.authenticate

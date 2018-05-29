@@ -1,14 +1,28 @@
-@(name: String, email: String, logout: Boolean)
+@(name: String, email: String, loggedIn: Boolean, activeIndex: Option[Int])
 
 <nav class="navbar navbar-expand-lg navbar-light bg-light justify-content-between">
+  <!-- Title -->
   <a class="navbar-brand" href="@routes.PageController.index()">
     <strong>Class Activity Management System</strong>
   </a>
-  <form class="form-inline">
-    <span class="navbar-text"><strong>@name</strong></span>
-    <span class="navbar-text">@email</span>
-    @if(logout) {
+  @if(loggedIn) {
+    <!-- Navigation -->
+    <ul class="navbar-nav mr-auto">
+      <li class="nav-item @if(activeIndex.get == 0) { active }">
+        <a class="nav-link" href="@routes.CalendarController.index()">Calendar</a>
+      </li>
+      <li class="nav-item @if(activeIndex.get == 1) { active }">
+        <a class="nav-link" href="@routes.ClassController.index()">Classes</a>
+      </li>
+      <li class="nav-item @if(activeIndex.get == 2) { active }">
+        <a class="nav-link" href="@routes.LecturerController.index()">Lecturers</a>
+      </li>
+    </ul>
+    <!-- User -->
+    <form class="form-inline">
+      <span class="navbar-text"><strong>@name</strong></span>
+      <span class="navbar-text">@email</span>
       <a href='@routes.AuthenticationController.logout()' class="btn btn-danger btn-sm active">Logout</a>
-    }
-  </form>
+    </form>
+  }
 </nav>

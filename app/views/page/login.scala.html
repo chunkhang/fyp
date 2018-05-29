@@ -1,6 +1,6 @@
 @()(implicit flash: Flash, session: AuthenticatedRequest[AnyContent])
 
-@main("Login", false) {
+@main("Login", false, None) {
 
   @if(flash.get("error").getOrElse("") != "") {
     <div class="alert alert-danger alert-dismissible fade show">

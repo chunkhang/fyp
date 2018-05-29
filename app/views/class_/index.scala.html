@@ -4,7 +4,7 @@
   subjectMap: Map[Subject, List[Class]]
 )(implicit session: AuthenticatedRequest[AnyContent])
 
-@main("Home", true) {
+@main("Classes", true, Some(1)) {
 
   <ul>
     @for((subject, classes) <- subjectMap) {
