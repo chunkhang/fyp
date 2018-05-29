@@ -1,14 +1,15 @@
 nav {
   .navbar-brand {
-    font-size: 1.15rem;
+    font-weight: bolder;
   }
   .form-inline {
     .navbar-text {
-      margin-right: 5px;
-      font-size: 0.85rem;
-    }
-    a {
-      margin-left: 10px;
+      font-size: smaller;
+      margin-right: 10px;
+      #name {
+        font-weight: bolder;
+        margin-right: 7px;
+      }
     }
   }
 }
@@ -16,6 +17,6 @@ nav {
 #login {
   margin-top: 100px;
   h3 {
-    margin-bottom: 15px;
+    margin-bottom: 10px;
   }
 }

@@ -1,9 +1,9 @@
 @(name: String, email: String, loggedIn: Boolean, activeIndex: Option[Int])
 
-<nav class="navbar navbar-expand-lg navbar-light bg-light justify-content-between">
+<nav class="navbar navbar-expand-lg navbar-dark unique-color">
   <!-- Title -->
   <a class="navbar-brand" href="@routes.PageController.index()">
-    <strong>Class Activity Management System</strong>
+    Class Activity Management System
   </a>
   @if(loggedIn) {
     <!-- Navigation -->
@@ -20,9 +20,10 @@
     </ul>
     <!-- User -->
     <form class="form-inline">
-      <span class="navbar-text"><strong>@name</strong></span>
-      <span class="navbar-text">@email</span>
-      <a href='@routes.AuthenticationController.logout()' class="btn btn-danger btn-sm active">Logout</a>
+      <span class="navbar-text">
+        <span id="name">@name</span>@email
+      </span>
+      <a href='@routes.AuthenticationController.logout()' class="btn btn-danger btn-sm">Logout</a>
     </form>
   }
 </nav>
