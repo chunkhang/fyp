@@ -1,0 +1,18 @@
+nav {
+  .navbar-brand {
+    font-weight: bolder;
+  }
+  .form-inline {
+    .navbar-text {
+      font-size: smaller;
+      margin-right: 15px;
+      #name {
+        font-weight: bolder;
+        margin-right: 7px;
+      }
+    }
+    .btn {
+      margin: 0;
+    }
+  }
+}

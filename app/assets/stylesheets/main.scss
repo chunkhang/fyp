@@ -1,22 +1,3 @@
-nav {
-  .navbar-brand {
-    font-weight: bolder;
-  }
-  .form-inline {
-    .navbar-text {
-      font-size: smaller;
-      margin-right: 10px;
-      #name {
-        font-weight: bolder;
-        margin-right: 7px;
-      }
-    }
-  }
-}
-
-#login {
-  margin-top: 100px;
-  h3 {
-    margin-bottom: 10px;
-  }
-}
+@import 'navbar';
+@import 'login';
+@import 'classes';

@@ -1,0 +1,13 @@
+#classes-header {
+  display: flex;
+  justify-content: space-between;
+  h1 {
+    font-weight: bolder;
+    margin-bottom: 0;
+  }
+  button {
+    height:35px;
+    margin-right: 0;
+    align-self: flex-end;
+  }
+}
