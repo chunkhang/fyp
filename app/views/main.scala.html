@@ -26,7 +26,7 @@
     <link rel="stylesheet" href='@routes.Assets.versioned("stylesheets/main.css")'>
   </head>
   <body>
-    @components.navbar(request.name, request.email, loggedIn, activeIndex)
+    @components.navbar(request, loggedIn, activeIndex)
     <div class="container mt-4 mb-4">
       @components.alert(flash)
       @content

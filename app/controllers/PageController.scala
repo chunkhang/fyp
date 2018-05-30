@@ -3,6 +3,7 @@ package controllers
 import javax.inject.Inject
 import scala.concurrent.ExecutionContext
 import play.api.mvc._
+import models._
 
 class PageController @Inject()(
   cc: ControllerComponents,
@@ -15,19 +16,18 @@ class PageController @Inject()(
     Redirect(routes.CalendarController.index())
   }
 
-  def login = Action { implicit request_ =>
-    try {
-      request_.session("accessToken")
-      request_.session("name")
-      request_.session("email")
-      Redirect(routes.PageController.index())
-    } catch {
-      case e: NoSuchElementException =>
-        // Implicit request for login template
-        implicit val request = new UserRequest[AnyContent](
-          name = "",
-          email = "",
-          request = request_
+  def login = Action { implicit request =>
+    request.session.get("email") match {
+      case Some(_) =>
+        Redirect(routes.PageController.index())
+      case None =>
+        implicit val mockRequest = new UserRequest[AnyContent](
+          User(
+            name = "",
+            email = "",
+            refreshToken = ""
+          ),
+          request
         )
         Ok(views.html.pages.login())
     }

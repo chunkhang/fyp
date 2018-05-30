@@ -1,7 +1,7 @@
 package controllers
 
 import javax.inject.Inject
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 import scala.async.Async.{async, await}
 import play.api.mvc._
 import reactivemongo.bson.BSONObjectID
@@ -16,48 +16,47 @@ class SubjectController @Inject()(
   implicit ec: ExecutionContext
 ) extends AbstractController(cc) {
 
-  class ItemRequest[A](
-    val item: Subject,
+  class SubjectRequest[A](
+    val subject: Subject,
     request: UserRequest[A]
   ) extends WrappedRequest[A](request) {
-    def email = request.email
+    def user = request.user
   }
 
-  def ItemAction(itemId: BSONObjectID)(implicit ec: ExecutionContext) =
-    new ActionRefiner[UserRequest, ItemRequest] {
+  def SubjectAction(id: BSONObjectID)(implicit ec: ExecutionContext) =
+    new ActionRefiner[UserRequest, SubjectRequest] {
     def executionContext = ec
-    def refine[A](input: UserRequest[A]) = async {
-      val maybeSubject = await(subjectRepo.read(itemId))
-      maybeSubject
-        .map(new ItemRequest(_, input))
-        .toRight(
-          Redirect(routes.ClassController.index())
-            .flashing("message" -> "Subject not found")
-        )
-    }
-  }
-
-  def PermissionCheckAction(implicit ec: ExecutionContext) =
-    new ActionFilter[ItemRequest] {
-    def executionContext = ec
-    def filter[A](input: ItemRequest[A]) = {
-      userRepo.findUserByEmail(input.email).map { maybeUser =>
-        maybeUser.flatMap { user =>
-          if (input.item.userId == user._id.get) {
-            None
-          } else {
-            Some(
-              Redirect(routes.ClassController.index())
-                .flashing("message" -> "Not allowed to view that subject")
-            )
-          }
-        }
+    def refine[A](input: UserRequest[A]) =  {
+      subjectRepo.read(id).map { maybeSubject =>
+        maybeSubject
+          .map(subject => new SubjectRequest(subject, input))
+          .toRight(
+            Redirect(routes.ClassController.index())
+              .flashing("message" -> "Subject not found")
+          )
       }
     }
   }
 
-  def edit(id: BSONObjectID) = (userAction andThen ItemAction(id) andThen PermissionCheckAction ) { implicit request =>
-    Ok("Good!")
+  def PermissionCheckAction(implicit ec: ExecutionContext) =
+    new ActionFilter[SubjectRequest] {
+    def executionContext = ec
+    def filter[A](input: SubjectRequest[A]) = Future {
+      if (input.subject.userId != input.user._id.get) {
+        Some(
+          Redirect(routes.ClassController.index())
+            .flashing("message" -> "Not allowed to view that subject")
+        )
+      } else {
+        None
+      }
+    }
+  }
+
+  def edit(id: BSONObjectID) =
+    (userAction andThen SubjectAction(id) andThen PermissionCheckAction ) { 
+      implicit request =>
+        Ok("Good!")
   }
 
   def update(id: BSONObjectID) = userAction { implicit request =>

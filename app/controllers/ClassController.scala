@@ -29,7 +29,8 @@ class ClassController @Inject()(
   implicit val subjectReader = Json.reads[JsonSubject]
 
   def index = userAction.async { implicit request =>
-    getClasses(request.email).map { maybeClasses =>
+    val email = request.user.email
+    getClasses(email).map { maybeClasses =>
       maybeClasses match {
         case Some(classes) =>
           Ok(views.html.classes.index(classes))
@@ -40,11 +41,12 @@ class ClassController @Inject()(
   }
 
   def fetch = userAction.async { implicit request =>
-    fetchClasses(request.email).flatMap { maybeResult =>
+    val email = request.user.email
+    fetchClasses(email).flatMap { maybeResult =>
       maybeResult match {
         case Some((semester, subjects)) =>
           // Check if database already has classes under user
-          getClasses(request.email).flatMap { maybeClasses =>
+          getClasses(email).flatMap { maybeClasses =>
             maybeClasses match {
               case Some(classes) =>
                 Future {
@@ -54,7 +56,7 @@ class ClassController @Inject()(
                   ))
                 }
               case None =>
-                saveClasses(request.email, semester, subjects).map { _ =>
+                saveClasses(email, semester, subjects).map { _ =>
                   Ok(Json.obj(
                     "status" -> "success",
                     "message" -> "New classes fetched"

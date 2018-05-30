@@ -148,8 +148,7 @@ class AuthenticationController @Inject()(
 }
 
 class UserRequest[A](
-  val name: String,
-  val email: String,
+  val user: User,
   request: Request[A]
 ) extends WrappedRequest[A](request)
 
@@ -165,30 +164,25 @@ class UserAction @Inject()(
     block: UserRequest[A] => Future[Result]
   ): Future[Result] = {
     // Check session
-    var name: String = ""
-    var email: String = ""
-    try {
-      request.session("accessToken")
-      name = request.session("name")
-      email = request.session("email")
-    } catch {
-      case e: NoSuchElementException =>
+    request.session.get("email") match {
+      case Some(email) =>
+        // Check email
+        userRepo.findUserByEmail(email).flatMap { maybeUser =>
+          maybeUser match {
+            case Some(user) =>
+              block(new UserRequest(user, request))
+            case None =>
+              Future {
+                Results.Redirect(routes.PageController.login())
+                  .withNewSession
+              }
+          }
+        }
+      case None =>
         Future {
           Results.Redirect(routes.PageController.login())
             .withNewSession
         }
-    }
-    // Check email
-    userRepo.findUserByEmail(email).flatMap { maybeUser =>
-      maybeUser match {
-        case Some(user) =>
-          block(new UserRequest(name, email, request))
-        case None =>
-          Future {
-            Results.Redirect(routes.PageController.login())
-              .withNewSession
-          }
-      }
     }
   }
 
