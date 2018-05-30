@@ -3,38 +3,14 @@
 $(document).ready(function() {
 
   /* Classes */
-
-  // Toggle class list
-  var subjectListItems = $("#subject-list li");
-  var subjectListSmallTexts = $("#subject-list small");
-  var classLists = $(".class-lists");
-  var lastClicked = -1;
-  subjectListItems.click(function() {
-    subjectListItems.each(function() {
-      $(this).removeClass("active");
-    });
-    subjectListSmallTexts.each(function() {
-      $(this).addClass("text-muted");
-    });
-    classLists.each(function() {
-      $(this).addClass("gone");
-    });
-    var index = $(this).index();
-    if (index != lastClicked) {
-      var clickedListItem = $(subjectListItems[index]);
-      var clickedSmallText = $(subjectListSmallTexts[index]);
-      var classList = $(classLists[index]);
-      clickedListItem.addClass("active");
-      clickedSmallText.removeClass("text-muted");
-      classList.removeClass("gone");
-      lastClicked = index;
-    } else {
-      lastClicked = -1;
-    }
-  });
-
-  // Fetch classes
   var fetchButton = $("#fetch-button");
+  var subjectItems = $("#subject-list li");
+  var subjectSmallTexts = $("#subject-list small");
+  var subjectEditButtons = $(".subject-edits");
+  var classLists = $(".class-lists");
+  var classEditButtons = $(".class-edits");
+
+  // Fetch button
   fetchButton.click(function() {
     var fetchSpinner = $("#fetch-spinner");
     fetchButton.addClass("gone");
@@ -63,6 +39,45 @@ $(document).ready(function() {
         }
       });
     }, 1000);
+  });
+
+  // Toggle subject list
+  var lastSubjectClicked = -1;
+  subjectItems.click(function() {
+    subjectItems.each(function() {
+      $(this).removeClass("active");
+    });
+    subjectSmallTexts.each(function() {
+      $(this).addClass("text-muted");
+    });
+    subjectEditButtons.each(function() {
+      $(this).addClass("gone");
+    });
+    classLists.each(function() {
+      $(this).addClass("gone");
+    });
+    var index = $(this).index();
+    if (index != lastSubjectClicked) {
+      var clickedItem = $(subjectItems[index]);
+      var clickedSmallText = $(subjectSmallTexts[index]);
+      var editButton = $(subjectEditButtons[index]);
+      var classList = $(classLists[index]);
+      clickedItem.addClass("active");
+      clickedSmallText.removeClass("text-muted");
+      editButton.removeClass("gone");
+      classList.removeClass("gone");
+      lastSubjectClicked = index;
+    } else {
+      lastSubjectClicked = -1;
+    }
+  });
+
+  // Edit buttons
+  subjectEditButtons.click(function(event) {
+    event.stopPropagation();
+  });
+  classEditButtons.click(function(event) {
+    event.stopPropagation();
   });
 
 });

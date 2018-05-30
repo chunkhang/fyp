@@ -34,8 +34,13 @@
         <ul class="list-group" id="subject-list">
           @for(subject <- subjectMap.keys) {
             <li class="list-group-item list-group-item-action waves-effect">
-              <strong>@subject.code</strong>
-              <small class="text-muted">@subject.semester</small>
+              <!-- Subject information -->
+              <div>
+                <strong>@subject.code</strong>
+                <small class="text-muted">@subject.semester</small>
+              </div>
+              <!-- Edit button -->
+              <a href="#" class="btn btn-secondary btn-sm gone subject-edits">Edit</a>
             </li>
           }
         </ul>
@@ -49,8 +54,13 @@
         <ul class="list-group gone class-lists">
         @for(class_ <- classes) {
           <li class="list-group-item list-group-item-action waves-effect">
-            <strong class="text-uppercase">@class_.category</strong>
-            <small class="text-muted">Group @class_.group</small>
+            <!-- Class information -->
+            <div>
+              <strong class="text-uppercase">@class_.category</strong>
+              <small class="text-muted">Group @class_.group</small>
+            </div>
+              <!-- Edit button -->
+              <a href="#" class="btn btn-secondary btn-sm gone subject-edits">Edit</a>
           </li>
         }
         </ul>
