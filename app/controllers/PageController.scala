@@ -24,8 +24,8 @@ class PageController @Inject()(
       Redirect(routes.PageController.index())
     } catch {
       case e: NoSuchElementException =>
-        // Implicit session for login template
-        implicit val session = new UserRequest[AnyContent](
+        // Implicit request for login template
+        implicit val request = new UserRequest[AnyContent](
           name = "",
           email = "",
           request = request_

@@ -1,6 +1,6 @@
 @(
   lecturers: List[User]
-)(implicit session: UserRequest[AnyContent])
+)(implicit flash: Flash, request: UserRequest[AnyContent])
 
 @main("Lecturers", true, Some(2)) {
 

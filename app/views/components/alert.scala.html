@@ -1,0 +1,15 @@
+@(flash: Flash)
+
+@if(!flash.get("message").isEmpty) {
+  <div class="alert alert-danger alert-dismissible fade show">
+    @flash("message")
+    <button type="button" class="close" data-dismiss="alert">
+      <span>&times;</span>
+    </button>
+  </div>
+  <script>
+    setTimeout(function() {
+      $(".alert").alert("close");
+    }, 3000);
+  </script>
+}

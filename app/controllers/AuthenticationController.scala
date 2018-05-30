@@ -57,7 +57,7 @@ class AuthenticationController @Inject()(
         } else {
           Future {
             Redirect(routes.PageController.login())
-              .flashing("error" ->
+              .flashing("message" ->
                 s"Required domain: ${config.get[String]("my.auth.domain")}"
               )
           }

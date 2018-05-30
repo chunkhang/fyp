@@ -4,11 +4,10 @@
   activeIndex: Option[Int]
 )(
   content: Html
-)(implicit session: UserRequest[AnyContent])
+)(implicit flash: Flash, request: UserRequest[AnyContent])
 
 <!DOCTYPE html>
 <html>
-
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
@@ -26,15 +25,12 @@
     <!-- Main stylesheet -->
     <link rel="stylesheet" href='@routes.Assets.versioned("stylesheets/main.css")'>
   </head>
-
   <body>
-
-    @components.navbar(session.name, session.email, loggedIn, activeIndex)
-
+    @components.navbar(request.name, request.email, loggedIn, activeIndex)
     <div class="container mt-4 mb-4">
+      @components.alert(flash)
       @content
     </div>
-
     <!-- JQuery -->
     <script type="text/javascript" src='@routes.Assets.versioned("javascripts/jquery-3.2.1.min.js")'></script>
     <!-- Bootstrap tooltips -->
@@ -46,5 +42,4 @@
     <!-- Main JavaScript -->
     <script type="text/javascript" src='@routes.Assets.versioned("javascripts/main.js")'></script>
   </body>
-
 </html>

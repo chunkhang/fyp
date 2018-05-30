@@ -2,7 +2,7 @@
 
 @(
   subjectMap: ListMap[Subject, List[Class]]
-)(implicit session: UserRequest[AnyContent])
+)(implicit flash: Flash, request: UserRequest[AnyContent])
 
 @main("Classes", true, Some(1)) {
 
