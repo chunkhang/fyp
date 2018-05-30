@@ -2,10 +2,18 @@
   subject: Subject
 )(implicit flash: Flash, request: RequestHeader)
 
-@main(s"${subject.code}", None) {
+@main(subject.code, None) {
 
   <div class="row mb-3">
-    <h1>Edit Subject</h1>
+    <div class="col">
+      <h1>Edit Subject</h1>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col">
+      <p>@subject.code</p>
+      <p>@subject.semester</p>
+    </div>
   </div>
 
 }
