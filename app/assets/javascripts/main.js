@@ -2,7 +2,17 @@
 
 $(document).ready(function() {
 
+  /* General */
+
+  // Disable enter to submit
+  $(window).keydown(function(event){
+    if (event.keyCode == 13) {
+      event.preventDefault();
+    }
+  });
+
   /* Classes */
+
   var fetchButton = $("#fetch-button");
   var subjectItems = $("#subject-list li");
   var subjectSubtitles = $(".subject-subtitles");
