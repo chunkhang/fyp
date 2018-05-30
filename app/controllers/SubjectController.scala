@@ -5,7 +5,6 @@ import scala.concurrent.ExecutionContext
 import scala.async.Async.{async, await}
 import play.api.mvc._
 import reactivemongo.bson.BSONObjectID
-import actions._
 import models._
 
 class SubjectController @Inject()(

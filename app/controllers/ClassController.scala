@@ -9,7 +9,6 @@ import play.api.libs.ws._
 import play.api.libs.json.Json
 import play.api.{Logger, Configuration}
 import reactivemongo.bson.BSONObjectID
-import actions._
 import models._
 
 class ClassController @Inject()(

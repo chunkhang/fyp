@@ -3,7 +3,6 @@ package controllers
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 import play.api.mvc._
-import actions._
 import models._
 
 class LecturerController @Inject()(

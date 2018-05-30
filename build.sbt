@@ -25,5 +25,5 @@ evictionWarningOptions in update := EvictionWarningOptions.default
 import play.sbt.routes.RoutesKeys
 
 RoutesKeys.routesImport += "play.modules.reactivemongo.PathBindables._"
-TwirlKeys.templateImports += "actions.UserRequest"
+TwirlKeys.templateImports += "controllers.UserRequest"
 TwirlKeys.templateImports += "play.api.mvc.AnyContent"

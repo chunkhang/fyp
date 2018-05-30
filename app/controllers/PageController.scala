@@ -3,7 +3,6 @@ package controllers
 import javax.inject.Inject
 import scala.concurrent.ExecutionContext
 import play.api.mvc._
-import actions._
 
 class PageController @Inject()(
   cc: ControllerComponents,
