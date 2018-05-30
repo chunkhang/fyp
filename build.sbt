@@ -24,3 +24,4 @@ evictionWarningOptions in update := EvictionWarningOptions.default
 import play.sbt.routes.RoutesKeys
 
 RoutesKeys.routesImport += "play.modules.reactivemongo.PathBindables._"
+TwirlKeys.templateImports += "constructor.MaterialHelper._"

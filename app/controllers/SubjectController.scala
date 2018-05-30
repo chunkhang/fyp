@@ -60,7 +60,7 @@ class SubjectController @Inject()(
 
   val subjectForm = Form(
     mapping(
-      "title" -> nonEmptyText
+      "Title" -> nonEmptyText
     )(SubjectData.apply)(SubjectData.unapply)
   )
 

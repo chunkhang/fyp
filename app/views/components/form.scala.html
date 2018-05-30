@@ -1,0 +1,17 @@
+@(
+  postRoute: Call,
+  cancelRoute: Call
+)(
+  formInputs: Html
+)(
+  implicit request: RequestHeader
+)
+
+@helper.form(postRoute) {
+  @helper.CSRF.formField
+  @formInputs
+  <div class="button-rows">
+    <a href="@cancelRoute" class="btn btn-danger btn-sm">Cancel</a>
+    <button class="btn btn-primary btn-sm" type="submit">Confirm</button>
+  </div>
+}

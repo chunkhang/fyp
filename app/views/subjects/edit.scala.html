@@ -1,5 +1,3 @@
-@import helper._
-
 @(
   subject: Subject,
   subjectForm: Form[SubjectData]
@@ -22,20 +20,16 @@
   </div>
   <div class="row">
     <div class="col-5">
-      <form class="forms">
-        <div class="md-form form-group mt-5">
-          <input type="text" class="form-control"placeholder="Example input">
-          <label>Example label</label>
-        </div>
-        <div class="md-form form-group mt-5">
-          <input value="John Doe" type="text" class="form-control">
-          <label>Another label</label>
-        </div>
-        <div class="button-rows">
-          <a href="@routes.ClassController.index()" class="btn btn-danger btn-sm">Cancel</a>
-          <button class="btn btn-primary btn-sm" type="submit">Confirm</button>
-        </div>
-      </form>
+      @components.form(
+        routes.SubjectController.update(subject._id.get),
+        routes.ClassController.index()) {
+        @helper.inputText(
+          subjectForm("Title"),
+          'id -> "title",
+          'class -> "form-control",
+          'placeholder -> "Subject name"
+        )
+      }
     </div>
   </div>
 
