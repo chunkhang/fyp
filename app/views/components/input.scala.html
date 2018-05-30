@@ -1,8 +1,11 @@
 @(elements: helper.FieldElements)
 
 <div class="md-form form-group mt-5">
+  @if(elements.hasErrors) {
+    <invalid></invalid>
+  }
   @elements.input
   <label for="@elements.id">@elements.label</label>
-  @elements.errors.mkString(", ")
   <small class="form-text text-muted">@elements.infos.mkString(", ")</small>
+  <small class="form-text float-right red-text">@elements.errors.mkString(", ")</small>
 </div>

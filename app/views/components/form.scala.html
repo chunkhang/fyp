@@ -15,3 +15,12 @@
     <button class="btn btn-primary btn-sm" type="submit">Confirm</button>
   </div>
 }
+<script>
+  var inputs = $("input");
+  inputs.each(function() {
+    $(this).addClass("form-control");
+    if ($(this).siblings("invalid").length == 1) {
+      $(this).addClass("invalid");
+    }
+  });
+</script>
