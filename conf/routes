@@ -9,6 +9,10 @@ GET     /calendar               controllers.CalendarController.index
 GET     /classes                controllers.ClassController.index
 GET     /classes/fetch          controllers.ClassController.fetch
 
+# Subject
+GET     /subjects/:id/edit      controllers.SubjectController.edit(id: reactivemongo.bson.BSONObjectID)
+POST    /subjects/:id           controllers.SubjectController.update(id: reactivemongo.bson.BSONObjectID)
+
 # Lecturer
 GET     /lecturers              controllers.LecturerController.index
 
