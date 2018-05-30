@@ -37,7 +37,9 @@
               <!-- Subject information -->
               <div>
                 <strong>@subject.code</strong>
-                <small class="text-muted">@subject.semester</small>
+                <small class="text-muted subject-subtitles">@subject.semester</small>
+                <br>
+                <small>Introduction to Computer Programming</small>
               </div>
               <!-- Edit button -->
               <a href="#" class="btn btn-secondary btn-sm gone subject-edits">Edit</a>
@@ -51,16 +53,16 @@
     <div class="col">
       <!-- Class lists -->
       @for(classes <- subjectMap.values) {
-        <ul class="list-group gone class-lists">
+        <ul class="list-group class-lists gone">
         @for(class_ <- classes) {
           <li class="list-group-item list-group-item-action waves-effect">
             <!-- Class information -->
             <div>
               <strong class="text-uppercase">@class_.category</strong>
               <small class="text-muted">Group @class_.group</small>
+              <br>
+              <small>Day | Time | Venue</small>
             </div>
-              <!-- Edit button -->
-              <a href="#" class="btn btn-secondary btn-sm gone subject-edits">Edit</a>
           </li>
         }
         </ul>

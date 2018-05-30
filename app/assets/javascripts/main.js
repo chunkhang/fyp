@@ -5,10 +5,9 @@ $(document).ready(function() {
   /* Classes */
   var fetchButton = $("#fetch-button");
   var subjectItems = $("#subject-list li");
-  var subjectSmallTexts = $("#subject-list small");
+  var subjectSubtitles = $(".subject-subtitles");
   var subjectEditButtons = $(".subject-edits");
   var classLists = $(".class-lists");
-  var classEditButtons = $(".class-edits");
 
   // Fetch button
   fetchButton.click(function() {
@@ -47,7 +46,7 @@ $(document).ready(function() {
     subjectItems.each(function() {
       $(this).removeClass("active");
     });
-    subjectSmallTexts.each(function() {
+    subjectSubtitles.each(function() {
       $(this).addClass("text-muted");
     });
     subjectEditButtons.each(function() {
@@ -59,7 +58,7 @@ $(document).ready(function() {
     var index = $(this).index();
     if (index != lastSubjectClicked) {
       var clickedItem = $(subjectItems[index]);
-      var clickedSmallText = $(subjectSmallTexts[index]);
+      var clickedSmallText = $(subjectSubtitles[index]);
       var editButton = $(subjectEditButtons[index]);
       var classList = $(classLists[index]);
       clickedItem.addClass("active");
@@ -74,9 +73,6 @@ $(document).ready(function() {
 
   // Edit buttons
   subjectEditButtons.click(function(event) {
-    event.stopPropagation();
-  });
-  classEditButtons.click(function(event) {
     event.stopPropagation();
   });
 
