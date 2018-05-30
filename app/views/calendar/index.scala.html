@@ -1,6 +1,6 @@
-@()(implicit flash: Flash, request: UserRequest[AnyContent])
+@()(implicit flash: Flash, request: RequestHeader)
 
-@main("Calendar", true, Some(0)) {
+@main("Calendar", Some(0)) {
 
   <div class="row mb-3">
     <div class="col">

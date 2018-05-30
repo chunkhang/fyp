@@ -46,7 +46,6 @@ class AuthenticationController @Inject()(
             // Save session
             Redirect(routes.PageController.index())
               .withSession(
-                "accessToken" -> accessToken,
                 "name" -> name,
                 "email" -> email
               )

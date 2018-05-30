@@ -1,10 +1,9 @@
 @(
   title: String,
-  loggedIn: Boolean,
   activeIndex: Option[Int]
 )(
   content: Html
-)(implicit flash: Flash, request: UserRequest[AnyContent])
+)(implicit flash: Flash, request: RequestHeader)
 
 <!DOCTYPE html>
 <html>
@@ -24,15 +23,15 @@
     <link rel="stylesheet" href='@routes.Assets.versioned("stylesheets/materialdesignicons.min.css")'>
     <!-- Main stylesheet -->
     <link rel="stylesheet" href='@routes.Assets.versioned("stylesheets/main.css")'>
+    <!-- JQuery -->
+    <script type="text/javascript" src='@routes.Assets.versioned("javascripts/jquery-3.2.1.min.js")'></script>
   </head>
   <body>
-    @components.navbar(request, loggedIn, activeIndex)
+    @components.navbar(request, activeIndex)
     <div class="container mt-4 mb-4">
       @components.alert(flash)
       @content
     </div>
-    <!-- JQuery -->
-    <script type="text/javascript" src='@routes.Assets.versioned("javascripts/jquery-3.2.1.min.js")'></script>
     <!-- Bootstrap tooltips -->
     <script type="text/javascript" src='@routes.Assets.versioned("javascripts/popper.min.js")'></script>
     <!-- Bootstrap core JavaScript -->

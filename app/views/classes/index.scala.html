@@ -2,9 +2,9 @@
 
 @(
   subjectMap: ListMap[Subject, List[Class]]
-)(implicit flash: Flash, request: UserRequest[AnyContent])
+)(implicit flash: Flash, request: RequestHeader)
 
-@main("Classes", true, Some(1)) {
+@main("Classes", Some(1)) {
 
   <div class="row mb-3">
     <div class="col-6" id="classes-header">

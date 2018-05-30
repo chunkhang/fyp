@@ -1,6 +1,6 @@
 @(flash: Flash)
 
-@if(!flash.get("message").isEmpty) {
+@if(flash.get("message").isDefined) {
   <div class="alert alert-danger alert-dismissible fade show">
     @flash("message")
     <button type="button" class="close" data-dismiss="alert">

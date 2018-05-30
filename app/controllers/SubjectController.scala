@@ -54,13 +54,15 @@ class SubjectController @Inject()(
   }
 
   def edit(id: BSONObjectID) =
-    (userAction andThen SubjectAction(id) andThen PermissionCheckAction ) { 
+    (userAction andThen SubjectAction(id) andThen PermissionCheckAction) {
       implicit request =>
-        Ok("Good!")
+        Ok(views.html.subjects.edit(request.subject))
   }
 
-  def update(id: BSONObjectID) = userAction { implicit request =>
-    Ok("!")
+  def update(id: BSONObjectID) =
+    (userAction andThen SubjectAction(id) andThen PermissionCheckAction) {
+      implicit request =>
+        Ok("!")
   }
 
 }

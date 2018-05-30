@@ -1,8 +1,8 @@
 @(
   lecturers: List[User]
-)(implicit flash: Flash, request: UserRequest[AnyContent])
+)(implicit flash: Flash, request: RequestHeader)
 
-@main("Lecturers", true, Some(2)) {
+@main("Lecturers", Some(2)) {
 
   <div class="row mb-3">
     <div class="col">

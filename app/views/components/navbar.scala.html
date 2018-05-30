@@ -1,6 +1,5 @@
 @(
-  request: UserRequest[AnyContent],
-  loggedIn: Boolean,
+  request: RequestHeader,
   activeIndex: Option[Int]
 )
 
@@ -9,26 +8,33 @@
   <a class="navbar-brand" href="@routes.PageController.index()">
     Class Activity Management System
   </a>
-  @if(loggedIn) {
+  @if(request.session.get("name").isDefined && request.session.get("email").isDefined) {
     <!-- Navigation -->
-    <ul class="navbar-nav mr-auto">
-      <li class="nav-item @if(activeIndex.get == 0) { active }">
+    <ul class="navbar-nav mr-auto" id="navigation-tabs">
+      <li class="nav-item">
         <a class="nav-link" href="@routes.CalendarController.index()">Calendar</a>
       </li>
-      <li class="nav-item @if(activeIndex.get == 1) { active }">
+      <li class="nav-item">
         <a class="nav-link" href="@routes.ClassController.index()">Classes</a>
       </li>
-      <li class="nav-item @if(activeIndex.get == 2) { active }">
+      <li class="nav-item">
         <a class="nav-link" href="@routes.LecturerController.index()">Lecturers</a>
       </li>
     </ul>
     <!-- User -->
     <form class="form-inline">
       <span class="navbar-text white-text">
-        <span id="name">@request.user.name</span>@request.user.email
+        <span id="name">@request.session("name")</span>@request.session("email")
       </span>
       <!-- Logout button -->
       <a href='@routes.AuthenticationController.logout()' class="btn btn-danger btn-sm">Logout</a>
     </form>
   }
 </nav>
+@if(activeIndex.isDefined) {
+  <script>
+    var navigationTabs = $("#navigation-tabs");
+    var activeTab = $(navigationTabs.children()[@activeIndex.get]);
+    activeTab.addClass("active");
+  </script>
+}

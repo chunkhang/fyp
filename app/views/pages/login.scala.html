@@ -1,6 +1,6 @@
-@()(implicit flash: Flash, request: UserRequest[AnyContent])
+@()(implicit flash: Flash, request: RequestHeader)
 
-@main("Login", false, None) {
+@main("Login", None) {
 
   <div class="row justify-content-center">
     <div class="col-4 text-center" id="login">
