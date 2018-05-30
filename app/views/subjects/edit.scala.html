@@ -1,6 +1,13 @@
+@import helper._
+
 @(
-  subject: Subject
-)(implicit flash: Flash, request: RequestHeader)
+  subject: Subject,
+  subjectForm: Form[SubjectData]
+)(
+  implicit flash: Flash,
+  request: RequestHeader,
+  messagesProvider: MessagesProvider
+)
 
 @main(subject.code, None) {
 
@@ -13,6 +20,10 @@
     <div class="col">
       <p>@subject.code</p>
       <p>@subject.semester</p>
+      @form(routes.SubjectController.update(subject._id.get)) {
+        @CSRF.formField
+        @inputText(subjectForm("title"))
+      }
     </div>
   </div>
 

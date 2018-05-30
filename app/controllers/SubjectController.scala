@@ -2,10 +2,15 @@ package controllers
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
-import scala.async.Async.{async, await}
 import play.api.mvc._
+import play.api.data._
+import play.api.data.Forms._
+import play.api.data.validation.Constraints._
+import play.api.Logger
 import reactivemongo.bson.BSONObjectID
 import models._
+
+case class SubjectData(title: String)
 
 class SubjectController @Inject()(
   cc: ControllerComponents,
@@ -14,7 +19,7 @@ class SubjectController @Inject()(
   subjectRepo: SubjectRepository
 )(
   implicit ec: ExecutionContext
-) extends AbstractController(cc) {
+) extends AbstractController(cc) with play.api.i18n.I18nSupport {
 
   class SubjectRequest[A](
     val subject: Subject,
@@ -38,7 +43,7 @@ class SubjectController @Inject()(
     }
   }
 
-  def PermissionCheckAction(implicit ec: ExecutionContext) =
+  def PermittedAction(implicit ec: ExecutionContext) =
     new ActionFilter[SubjectRequest] {
     def executionContext = ec
     def filter[A](input: SubjectRequest[A]) = Future {
@@ -53,16 +58,60 @@ class SubjectController @Inject()(
     }
   }
 
+  val subjectForm = Form(
+    mapping(
+      "title" -> nonEmptyText
+    )(SubjectData.apply)(SubjectData.unapply)
+  )
+
   def edit(id: BSONObjectID) =
-    (userAction andThen SubjectAction(id) andThen PermissionCheckAction) {
+    (userAction andThen SubjectAction(id) andThen PermittedAction) {
       implicit request =>
-        Ok(views.html.subjects.edit(request.subject))
+        request.subject.title match {
+          case Some(title) =>
+            // Subject title exists
+            val filledForm = subjectForm.fill(
+              SubjectData(request.subject.title.get)
+            )
+            Ok(views.html.subjects.edit(request.subject, filledForm))
+          case None =>
+            // Subject title does not exist
+            Ok(views.html.subjects.edit(request.subject, subjectForm))
+        }
   }
 
   def update(id: BSONObjectID) =
-    (userAction andThen SubjectAction(id) andThen PermissionCheckAction) {
+    (userAction andThen SubjectAction(id) andThen PermittedAction).async {
       implicit request =>
-        Ok("!")
+        subjectForm.bindFromRequest.fold(
+          formWithErrors => {
+            Future {
+              BadRequest(
+                views.html.subjects.edit(request.subject, formWithErrors)
+              )
+            }
+          },
+          subjectData => {
+            updateSubjectTitle(id, subjectData.title).map { _ =>
+              Redirect(routes.ClassController.index())
+            }
+          }
+        )
+  }
+
+  def updateSubjectTitle(id: BSONObjectID, newTitle: String): Future[Unit] = {
+    subjectRepo.read(id).map { maybeSubject =>
+      maybeSubject.map { subject =>
+        subjectRepo.update(id, Subject(
+          code = subject.code,
+          semester = subject.semester,
+          title = Some(newTitle),
+          userId = subject.userId
+        )).map { _ =>
+          Logger.info(s"Updated Subject(${id}, ${newTitle})")
+        }
+      }
+    }
   }
 
 }

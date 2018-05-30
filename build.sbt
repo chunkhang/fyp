@@ -12,7 +12,6 @@ libraryDependencies ++= Seq(
   guice,
   ws,
   specs2 % Test,
-  "org.scala-lang.modules" %% "scala-async" % "0.9.6",
   "org.reactivemongo" %% "play2-reactivemongo" % "0.13.0-play26",
   "com.typesafe.play" %% "play-mailer" % "6.0.1",
   "com.typesafe.play" %% "play-mailer-guice" % "6.0.1"
