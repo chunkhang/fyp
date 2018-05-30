@@ -7,6 +7,18 @@ h1 {
   margin-bottom: 0;
 }
 
+.forms {
+  margin-top: -1rem;
+  .button-rows {
+    display: flex;
+    justify-content: flex-end;
+      margin-top: 2rem;
+    .btn:last-child {
+      margin-right: 0;
+    }
+  }
+}
+
 .gone {
   display: none !important;
 }

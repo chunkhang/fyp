@@ -9,21 +9,33 @@
   messagesProvider: MessagesProvider
 )
 
-@main(subject.code, None) {
+@main(s"Edit Subject ${subject.code}", None) {
 
   <div class="row mb-3">
     <div class="col">
       <h1>Edit Subject</h1>
+      <h5 class="mt-2">
+        <strong>@subject.code</strong>
+        <small class="text-muted">@subject.semester</small>
+      </h5>
     </div>
   </div>
   <div class="row">
-    <div class="col">
-      <p>@subject.code</p>
-      <p>@subject.semester</p>
-      @form(routes.SubjectController.update(subject._id.get)) {
-        @CSRF.formField
-        @inputText(subjectForm("title"))
-      }
+    <div class="col-5">
+      <form class="forms">
+        <div class="md-form form-group mt-5">
+          <input type="text" class="form-control"placeholder="Example input">
+          <label>Example label</label>
+        </div>
+        <div class="md-form form-group mt-5">
+          <input value="John Doe" type="text" class="form-control">
+          <label>Another label</label>
+        </div>
+        <div class="button-rows">
+          <a href="@routes.ClassController.index()" class="btn btn-danger btn-sm">Cancel</a>
+          <button class="btn btn-primary btn-sm" type="submit">Confirm</button>
+        </div>
+      </form>
     </div>
   </div>
 
