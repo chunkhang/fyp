@@ -1,6 +1,6 @@
 @(
   lecturers: List[User]
-)(implicit session: AuthenticatedRequest[AnyContent])
+)(implicit session: UserRequest[AnyContent])
 
 @main("Lecturers", true, Some(2)) {
 

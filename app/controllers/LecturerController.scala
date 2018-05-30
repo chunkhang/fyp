@@ -8,14 +8,14 @@ import models._
 
 class LecturerController @Inject()(
   cc: ControllerComponents,
-  authenticatedAction: AuthenticatedAction,
+  userAction: UserAction,
   userRepo: UserRepository
 
 )(
   implicit ec: ExecutionContext
 ) extends AbstractController(cc) {
 
-  def index = authenticatedAction.async { implicit request =>
+  def index = userAction.async { implicit request =>
     getLecturers().map { lecturers =>
       Ok(views.html.lecturers.index(lecturers))
     }

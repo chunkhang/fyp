@@ -9,13 +9,13 @@ import models._
 
 class SubjectController @Inject()(
   cc: ControllerComponents,
-  authenticatedAction: AuthenticatedAction,
+  userAction: UserAction,
   subjectRepo: SubjectRepository
 )(
   implicit ec: ExecutionContext
 ) extends AbstractController(cc) {
 
-  def edit(id: BSONObjectID) = authenticatedAction.async { implicit request =>
+  def edit(id: BSONObjectID) = userAction.async { implicit request =>
     subjectRepo.read(id).map { maybeSubject =>
       maybeSubject match {
         case Some(subject) =>
@@ -26,7 +26,7 @@ class SubjectController @Inject()(
     }
   }
 
-  def update(id: BSONObjectID) = authenticatedAction { implicit request =>
+  def update(id: BSONObjectID) = userAction { implicit request =>
     Ok("!")
   }
 

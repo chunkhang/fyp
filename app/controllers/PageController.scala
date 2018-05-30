@@ -7,12 +7,12 @@ import actions._
 
 class PageController @Inject()(
   cc: ControllerComponents,
-  authenticatedAction: AuthenticatedAction
+  userAction: UserAction
 )(
   implicit ec: ExecutionContext
 ) extends AbstractController(cc) {
 
-  def index = authenticatedAction { implicit request =>
+  def index = userAction { implicit request =>
     Redirect(routes.CalendarController.index())
   }
 
@@ -25,7 +25,7 @@ class PageController @Inject()(
     } catch {
       case e: NoSuchElementException =>
         // Implicit session for login template
-        implicit val session = new AuthenticatedRequest[AnyContent](
+        implicit val session = new UserRequest[AnyContent](
           name = "",
           email = "",
           request = request_

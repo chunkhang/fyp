@@ -7,12 +7,12 @@ import actions._
 
 class CalendarController @Inject()(
   cc: ControllerComponents,
-  authenticatedAction: AuthenticatedAction
+  userAction: UserAction
 )(
   implicit ec: ExecutionContext
 ) extends AbstractController(cc) {
 
-  def index = authenticatedAction { implicit request =>
+  def index = userAction { implicit request =>
     Ok(views.html.calendar.index())
   }
 

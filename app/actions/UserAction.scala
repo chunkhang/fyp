@@ -6,22 +6,22 @@ import play.api.mvc._
 import controllers._
 import models._
 
-class AuthenticatedRequest[A](
+class UserRequest[A](
   val name: String,
   val email: String,
   request: Request[A]
 ) extends WrappedRequest[A](request)
 
-class AuthenticatedAction @Inject()(
+class UserAction @Inject()(
   val parser: BodyParsers.Default,
   userRepo: UserRepository
 )(
   implicit val executionContext: ExecutionContext
-) extends ActionBuilder[AuthenticatedRequest, AnyContent] {
+) extends ActionBuilder[UserRequest, AnyContent] {
 
   def invokeBlock[A](
     request: Request[A],
-    block: AuthenticatedRequest[A] => Future[Result]
+    block: UserRequest[A] => Future[Result]
   ): Future[Result] = {
     // Check session
     var name: String = ""
@@ -41,7 +41,7 @@ class AuthenticatedAction @Inject()(
     userRepo.findUserByEmail(email).flatMap { maybeUser =>
       maybeUser match {
         case Some(user) =>
-          block(new AuthenticatedRequest(name, email, request))
+          block(new UserRequest(name, email, request))
         case None =>
           Future {
             Results.Redirect(routes.PageController.login())

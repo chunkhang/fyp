@@ -14,7 +14,7 @@ import models._
 
 class ClassController @Inject()(
   cc: ControllerComponents,
-  authenticatedAction: AuthenticatedAction,
+  userAction: UserAction,
   ws: WSClient,
   config: Configuration,
   userRepo: UserRepository,
@@ -29,7 +29,7 @@ class ClassController @Inject()(
   implicit val classReader = Json.reads[JsonClass]
   implicit val subjectReader = Json.reads[JsonSubject]
 
-  def index = authenticatedAction.async { implicit request =>
+  def index = userAction.async { implicit request =>
     getClasses(request.email).map { maybeClasses =>
       maybeClasses match {
         case Some(classes) =>
@@ -40,7 +40,7 @@ class ClassController @Inject()(
     }
   }
 
-  def fetch = authenticatedAction.async { implicit request =>
+  def fetch = userAction.async { implicit request =>
     fetchClasses(request.email).flatMap { maybeResult =>
       maybeResult match {
         case Some((semester, subjects)) =>

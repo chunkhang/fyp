@@ -4,7 +4,7 @@
   activeIndex: Option[Int]
 )(
   content: Html
-)(implicit session: AuthenticatedRequest[AnyContent])
+)(implicit session: UserRequest[AnyContent])
 
 <!DOCTYPE html>
 <html>
