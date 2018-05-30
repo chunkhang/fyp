@@ -17,7 +17,7 @@ case class Class(
   day: Option[Int] = None,
   time: Option[String] = None,
   duration: Option[Int] = None,
-  venueId: Option[BSONObjectID] = None,
+  venue: Option[String] = None,
   subjectId: BSONObjectID
 ) extends Entity
 

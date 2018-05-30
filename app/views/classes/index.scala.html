@@ -39,7 +39,13 @@
                 <strong>@subject.code</strong>
                 <small class="text-muted subject-subtitles">@subject.semester</small>
                 <br>
-                <small>Introduction to Computer Programming</small>
+                <small>
+                  @if(!subject.title.isEmpty) {
+                    @subject.title.get
+                  } else {
+                    (No name)
+                  }
+                </small>
               </div>
               <!-- Edit button -->
               <a href="#" class="btn btn-secondary btn-sm gone subject-edits">Edit</a>
@@ -61,7 +67,13 @@
               <strong class="text-uppercase">@class_.category</strong>
               <small class="text-muted">Group @class_.group</small>
               <br>
-              <small>Day | Time | Venue</small>
+              <small>
+                @if(!class_.day.isEmpty) {
+                  @class_.day.get| @class_.time.get | @class_.duration.get | @class_.venue.get
+                } else {
+                  (No details)
+                }
+              </small>
             </div>
           </li>
         }
