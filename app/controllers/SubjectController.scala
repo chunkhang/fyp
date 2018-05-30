@@ -37,7 +37,7 @@ class SubjectController @Inject()(
           .map(subject => new SubjectRequest(subject, input))
           .toRight(
             Redirect(routes.ClassController.index())
-              .flashing("message" -> "Subject not found")
+              .flashing("danger" -> "Subject not found")
           )
       }
     }
@@ -50,7 +50,7 @@ class SubjectController @Inject()(
       if (input.subject.userId != input.user._id.get) {
         Some(
           Redirect(routes.ClassController.index())
-            .flashing("message" -> "Not allowed to view that subject")
+            .flashing("danger" -> "Not allowed to edit that subject")
         )
       } else {
         None
@@ -94,11 +94,13 @@ class SubjectController @Inject()(
           subjectData => {
             updateSubjectTitle(id, subjectData.title).map { _ =>
               Redirect(routes.ClassController.index())
+                .flashing("success" -> "Successfully edited subject")
             }
           }
         )
   }
 
+  // Update subject title in database
   def updateSubjectTitle(id: BSONObjectID, newTitle: String): Future[Unit] = {
     subjectRepo.read(id).map { maybeSubject =>
       maybeSubject.map { subject =>

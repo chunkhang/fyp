@@ -1,8 +1,8 @@
 @(flash: Flash)
 
-@if(flash.get("message").isDefined) {
-  <div class="alert alert-danger alert-dismissible fade show">
-    @flash("message")
+@if(!flash.isEmpty) {
+  <div class="alert alert-@flash.data.toSeq(0)._1 alert-dismissible fade show">
+    @flash.data.toSeq(0)._2
     <button type="button" class="close" data-dismiss="alert">
       <span>&times;</span>
     </button>
