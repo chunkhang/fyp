@@ -22,13 +22,13 @@ $(document).ready(function() {
         timeout: 3000,
         success: function(response) {
           fetchSpinner.addClass("gone");
+          toastr[response.status](response.message);
           if (response.status == "success") {
-            toastr.success("Fetched new classes");
             setTimeout(function() {
               location.reload();
             }, 2000);
           } else {
-            toastr.error(response.reason);
+            fetchButton.removeClass("gone");
           }
         },
         error: function() {

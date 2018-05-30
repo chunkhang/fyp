@@ -41,22 +41,35 @@ class ClassController @Inject()(
   }
 
   def fetch = authenticatedAction.async { implicit request =>
-    fetchClasses(request.email).map { maybeResult =>
+    fetchClasses(request.email).flatMap { maybeResult =>
       maybeResult match {
         case Some((semester, subjects)) =>
-          // TODO: Only save classes if they are new
-          Ok(Json.obj(
-            "status" -> "success",
-            "semester" -> semester,
-            "subjects" -> subjects.length
-          ))
-          // saveClasses(request.email, semester, subjects).map { _ =>
-          // }
+          // Check if database already has classes under user
+          getClasses(request.email).flatMap { maybeClasses =>
+            maybeClasses match {
+              case Some(classes) =>
+                Future {
+                  Ok(Json.obj(
+                    "status" -> "info",
+                    "message" -> "No new classes"
+                  ))
+                }
+              case None =>
+                saveClasses(request.email, semester, subjects).map { _ =>
+                  Ok(Json.obj(
+                    "status" -> "success",
+                    "message" -> "New classes fetched"
+                  ))
+                }
+            }
+          }
         case None =>
-          Ok(Json.obj(
-            "status" -> "fail",
-            "reason" -> "Email not found"
-          ))
+          Future {
+            Ok(Json.obj(
+              "status" -> "error",
+              "message" -> "Email not found"
+            ))
+          }
       }
     }
   }
