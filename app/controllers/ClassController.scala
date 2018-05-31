@@ -75,6 +75,18 @@ class ClassController @Inject()(
     }
   }
 
+  def view(id: BSONObjectID) = userAction { implicit request =>
+    Ok("Hello!")
+  }
+
+  def edit(id: BSONObjectID) = userAction { implicit request =>
+    Ok("Hello!")
+  }
+
+  def update(id: BSONObjectID) = userAction { implicit request =>
+    Ok("Hello!")
+  }
+
   // Get saved classes from database
   def getClasses(email: String):
     Future[Option[ListMap[Subject, List[Class]]]] = {

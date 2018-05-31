@@ -8,6 +8,9 @@ GET     /calendar               controllers.CalendarController.index
 # Class
 GET     /classes                controllers.ClassController.index
 GET     /classes/fetch          controllers.ClassController.fetch
+GET     /classes/:id            controllers.ClassController.view(id: reactivemongo.bson.BSONObjectID)
+GET     /classes/:id/edit       controllers.ClassController.edit(id: reactivemongo.bson.BSONObjectID)
+POST    /classes/:id            controllers.ClassController.update(id: reactivemongo.bson.BSONObjectID)
 
 # Subject
 GET     /subjects/:id/edit      controllers.SubjectController.edit(id: reactivemongo.bson.BSONObjectID)

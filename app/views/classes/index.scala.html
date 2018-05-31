@@ -61,7 +61,7 @@
       @for(classes <- subjectMap.values) {
         <ul class="list-group class-lists gone">
         @for(class_ <- classes) {
-          <li class="list-group-item list-group-item-action waves-effect">
+          <a class="list-group-item list-group-item-action waves-effect" href="@routes.ClassController.view(class_._id.get)">
             <!-- Class information -->
             <div>
               <strong class="text-uppercase">@class_.category</strong>
@@ -75,7 +75,7 @@
                 }
               </small>
             </div>
-          </li>
+          </a>
         }
         </ul>
       }

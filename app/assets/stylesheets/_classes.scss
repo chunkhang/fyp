@@ -15,7 +15,7 @@
 }
 
 #subject-list, .class-lists {
-  li {
+  .list-group-item {
     display: flex;
     align-items: center;
     justify-content: space-between;
