@@ -22,7 +22,7 @@ class SubjectController @Inject()(
 ) extends AbstractController(cc) with play.api.i18n.I18nSupport {
 
   class SubjectRequest[A](
-    val subject: Subject,
+    val subjectItem: Subject,
     request: UserRequest[A]
   ) extends WrappedRequest[A](request) {
     def user = request.user
@@ -47,10 +47,10 @@ class SubjectController @Inject()(
     new ActionFilter[SubjectRequest] {
     def executionContext = ec
     def filter[A](input: SubjectRequest[A]) = Future {
-      if (input.subject.userId != input.user._id.get) {
+      if (input.subjectItem.userId != input.user._id.get) {
         Some(
           Redirect(routes.ClassController.index())
-            .flashing("danger" -> "Not allowed to edit that subject")
+            .flashing("danger" -> "Not your subject")
         )
       } else {
         None
@@ -67,16 +67,16 @@ class SubjectController @Inject()(
   def edit(id: BSONObjectID) =
     (userAction andThen SubjectAction(id) andThen PermittedAction) {
       implicit request =>
-        request.subject.title match {
+        request.subjectItem.title match {
           case Some(title) =>
             // Subject title exists
             val filledForm = subjectForm.fill(
-              SubjectData(request.subject.title.get)
+              SubjectData(request.subjectItem.title.get)
             )
-            Ok(views.html.subjects.edit(request.subject, filledForm))
+            Ok(views.html.subjects.edit(request.subjectItem, filledForm))
           case None =>
             // Subject title does not exist
-            Ok(views.html.subjects.edit(request.subject, subjectForm))
+            Ok(views.html.subjects.edit(request.subjectItem, subjectForm))
         }
   }
 
@@ -87,7 +87,7 @@ class SubjectController @Inject()(
           formWithErrors => {
             Future {
               BadRequest(
-                views.html.subjects.edit(request.subject, formWithErrors)
+                views.html.subjects.edit(request.subjectItem, formWithErrors)
               )
             }
           },

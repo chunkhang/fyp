@@ -28,6 +28,52 @@ class ClassController @Inject()(
   implicit val classReader = Json.reads[JsonClass]
   implicit val subjectReader = Json.reads[JsonSubject]
 
+  class ClassRequest[A](
+    val classItem: Class,
+    request: UserRequest[A]
+  ) extends WrappedRequest[A](request) {
+    def user = request.user
+  }
+
+  def ClassAction(id: BSONObjectID)(implicit ec: ExecutionContext) =
+    new ActionRefiner[UserRequest, ClassRequest] {
+    def executionContext = ec
+    def refine[A](input: UserRequest[A]) =  {
+      classRepo.read(id).map { maybeClass =>
+        maybeClass
+          .map(class_ => new ClassRequest(class_, input))
+          .toRight(
+            Redirect(routes.ClassController.index())
+              .flashing("danger" -> "Class not found")
+          )
+      }
+    }
+  }
+
+  def PermittedAction(implicit ec: ExecutionContext) =
+    new ActionFilter[ClassRequest] {
+    def executionContext = ec
+    def filter[A](input: ClassRequest[A]) = {
+      subjectRepo.read(input.classItem.subjectId).map { maybeSubject =>
+        maybeSubject.map { subject =>
+          if (subject.userId != input.user._id.get) {
+            Some(
+              Redirect(routes.ClassController.index())
+                .flashing("danger" -> "Not your class")
+            )
+          } else {
+            None
+          }
+        } getOrElse {
+          Some(
+            Redirect(routes.ClassController.index())
+              .flashing("danger" -> "Not your class")
+          )
+        }
+      }
+    }
+  }
+
   def index = userAction.async { implicit request =>
     val email = request.user.email
     getClasses(email).map { maybeClasses =>
@@ -75,16 +121,22 @@ class ClassController @Inject()(
     }
   }
 
-  def view(id: BSONObjectID) = userAction { implicit request =>
-    Ok("Hello!")
+  def view(id: BSONObjectID) =
+    (userAction andThen ClassAction(id) andThen PermittedAction) {
+      implicit request =>
+        Ok("Hello!")
   }
 
-  def edit(id: BSONObjectID) = userAction { implicit request =>
-    Ok("Hello!")
+  def edit(id: BSONObjectID) =
+    (userAction andThen ClassAction(id) andThen PermittedAction) {
+      implicit request =>
+        Ok("Hello!")
   }
 
-  def update(id: BSONObjectID) = userAction { implicit request =>
-    Ok("Hello!")
+  def update(id: BSONObjectID) =
+    (userAction andThen ClassAction(id) andThen PermittedAction) {
+      implicit request =>
+        Ok("Hello!")
   }
 
   // Get saved classes from database
