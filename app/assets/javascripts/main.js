@@ -11,6 +11,9 @@ $(document).ready(function() {
     }
   });
 
+  // Material select
+  $(".mdb-select").material_select();
+
   /* Classes */
 
   var fetchButton = $("#fetch-button");

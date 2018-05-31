@@ -1,0 +1,55 @@
+@(
+  subjectItem: Subject,
+  classItem: Class,
+  classForm: Form[ClassData]
+)(
+  implicit flash: Flash,
+  request: RequestHeader,
+  messagesProvider: MessagesProvider
+)
+
+@main("Edit Class", None) {
+
+  <div class="row mb-3">
+    <div class="col">
+      <h1>Edit Class</h1>
+      <h5 class="mt-2">
+        <strong>@subjectItem.code</strong>
+        <small class="text-muted">@subjectItem.semester</small>
+        <strong>&middot;</strong>
+        <strong>@classItem.category</strong>
+        <small class="text-muted">Group @classItem.group</small>
+      </h5>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-5">
+      @components.form(
+        routes.ClassController.update(classItem._id.get),
+        routes.ClassController.view(classItem._id.get)) {
+        @helper.inputText(
+          classForm("Day"),
+          'id -> "day",
+          'placeholder -> "Class day"
+        )
+        @helper.inputText(
+          classForm("Time"),
+          'id -> "time",
+          'placeholder -> "Class starting time"
+        )
+        @helper.inputText(
+          classForm("Duration"),
+          'id -> "duration",
+          'placeholder -> "Class duration in minutes"
+        )
+        @helper.select(
+          classForm("Venue"),
+          options = Seq(("1", "One"), ("2", "Two")),
+          'id -> "venue",
+          'class -> "mdb-select"
+        )
+      }
+    </div>
+  </div>
+
+}

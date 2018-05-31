@@ -5,11 +5,16 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.collection.mutable.Map
 import scala.collection.immutable.ListMap
 import play.api.mvc._
+import play.api.data._
+import play.api.data.Forms._
+import play.api.data.validation.Constraints._
 import play.api.libs.ws._
 import play.api.libs.json.Json
 import play.api.{Logger, Configuration}
 import reactivemongo.bson.BSONObjectID
 import models._
+
+case class ClassData(day: Int, time: String, duration: Int, venue: String)
 
 class ClassController @Inject()(
   cc: ControllerComponents,
@@ -21,7 +26,7 @@ class ClassController @Inject()(
   classRepo: ClassRepository
 )(
   implicit ec: ExecutionContext
-) extends AbstractController(cc) {
+) extends AbstractController(cc) with play.api.i18n.I18nSupport {
 
   case class JsonSubject(code: String, classes: List[JsonClass])
   case class JsonClass(category: String, group: Int, students: List[String])
@@ -75,6 +80,15 @@ class ClassController @Inject()(
     }
   }
 
+  val classForm = Form(
+    mapping(
+      "Day" -> number,
+      "Time" -> nonEmptyText,
+      "Duration" -> number,
+      "Venue" -> nonEmptyText
+    )(ClassData.apply)(ClassData.unapply)
+  )
+
   def index = userAction.async { implicit request =>
     val email = request.user.email
     getClasses(email).map { maybeClasses =>
@@ -96,7 +110,26 @@ class ClassController @Inject()(
   def edit(id: BSONObjectID) =
     (userAction andThen ClassAction(id) andThen PermittedAction) {
       implicit request =>
-        Ok("Hello!")
+        request.classItem.day match {
+          case Some(day) =>
+            val filledForm = classForm.fill(ClassData(
+              day = request.classItem.day.get,
+              time = request.classItem.time.get,
+              duration = request.classItem.duration.get,
+              venue = request.classItem.venue.get
+            ))
+            Ok(views.html.classes.edit(
+              request.subjectItem,
+              request.classItem,
+              filledForm
+            ))
+          case None =>
+            Ok(views.html.classes.edit(
+              request.subjectItem,
+              request.classItem,
+              classForm
+            ))
+        }
   }
 
   def update(id: BSONObjectID) =
