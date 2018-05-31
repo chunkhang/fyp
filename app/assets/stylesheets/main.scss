@@ -12,7 +12,7 @@ h1 {
   margin-bottom: 0;
 }
 
-form[method="POST"] {
+form[method="POST"], form.forms {
   margin-top: -1rem;
   small {
     display: inline-block;

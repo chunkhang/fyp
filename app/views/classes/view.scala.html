@@ -11,12 +11,59 @@
       <h5 class="mt-2">
         <strong>@subjectItem.code</strong>
         <small class="text-muted">@subjectItem.semester</small>
-      </h5>
-      <h5 class="mt-2">
+        <strong>&middot;</strong>
         <strong>@classItem.category</strong>
         <small class="text-muted">Group @classItem.group</small>
       </h5>
     </div>
   </div>
+  <div class="row">
+    <div class="col-5">
+      <form class="forms">
+        <div class="md-form form-group mt-5">
+          <input id="day" value='@classItem.day.getOrElse("(Not set)")' class="form-control" type="text" disabled>
+          <label for="day">Day</label>
+        </div>
+        <div class="md-form form-group mt-5">
+          <input id="time" value='@classItem.time.getOrElse("(Not set)")' class="form-control" type="text" disabled>
+          <label for="time">Time</label>
+        </div>
+        <div class="md-form form-group mt-5">
+          <input id="duration" value='@classItem.duration.getOrElse("(Not set)")' class="form-control" type="text" disabled>
+          <label for="duration">Duration</label>
+        </div>
+        <div class="md-form form-group mt-5">
+          <input id="venue" value='@classItem.venue.getOrElse("(Not set)")' class="form-control" type="text" disabled>
+          <label for="venue">Venue</label>
+        </div>
+        <div class="button-rows">
+          <a href="#" class="btn btn-primary btn-sm">Edit</a>
+        </div>
+      </form>
+    </div>
+    <div class="col-1">
+    </div>
+    <div class="col-5">
+      <form class="forms">
+        <div class="md-form form-group mt-5">
+        @for(student <- classItem.students) {
+          <input value="@student" class="form-control" type="text" disabled>
+          <label class="student-labels">Students</label>
+        }
+        </div>
+      </form>
+    </div>
+  </div>
+  <script>
+    var studentLabels = $(".student-labels");
+    var first = true;
+    studentLabels.each(function() {
+      if (!first) {
+        $(this).remove();
+      } else {
+        first = false;
+      }
+    });
+  </script>
 
 }
