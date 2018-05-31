@@ -192,7 +192,10 @@ class ClassController @Inject()(
     (for {
       // Get class
       class_ <- classRepo.read(classId).map { maybeClass =>
-        maybeClass.get
+        // Sort students
+        val class_ = maybeClass.get
+        val sortedStudents = class_.students.sortWith(_ < _)
+        class_.copy(students = sortedStudents)
       }
       // Get subject of class
       subject <- subjectRepo.read(class_.subjectId).map { maybeSubject =>

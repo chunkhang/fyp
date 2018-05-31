@@ -41,7 +41,7 @@ class AuthenticationController @Inject()(
       processCode(code).flatMap { result =>
         val (accessToken, refreshToken, name, email) = result
         // Check email domain
-        if (email.endsWith("@" + config.get[String]("my.auth.domain"))) {
+        if (email.endsWith("@" + config.get[String]("my.domain.lecturer"))) {
           saveUser(name, email, refreshToken).map { _ =>
             // Save session
             Redirect(routes.PageController.index())
@@ -57,7 +57,7 @@ class AuthenticationController @Inject()(
           Future {
             Redirect(routes.PageController.login())
               .flashing("danger" ->
-                s"Required domain: ${config.get[String]("my.auth.domain")}"
+                s"Required domain: ${config.get[String]("my.domain.lecturer")}"
               )
           }
         }

@@ -104,12 +104,7 @@ class SubjectController @Inject()(
   def updateSubjectTitle(id: BSONObjectID, newTitle: String): Future[Unit] = {
     subjectRepo.read(id).map { maybeSubject =>
       maybeSubject.map { subject =>
-        subjectRepo.update(id, Subject(
-          code = subject.code,
-          semester = subject.semester,
-          title = Some(newTitle),
-          userId = subject.userId
-        )).map { _ =>
+        subjectRepo.update(id, subject.copy(title = Some(newTitle))).map { _ =>
           Logger.info(s"Updated Subject(${id}, ${newTitle})")
         }
       }
