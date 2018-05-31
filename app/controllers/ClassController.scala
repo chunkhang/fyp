@@ -30,6 +30,7 @@ class ClassController @Inject()(
 
   class ClassRequest[A](
     val classItem: Class,
+    val subjectItem: Subject,
     request: UserRequest[A]
   ) extends WrappedRequest[A](request) {
     def user = request.user
@@ -38,10 +39,10 @@ class ClassController @Inject()(
   def ClassAction(id: BSONObjectID)(implicit ec: ExecutionContext) =
     new ActionRefiner[UserRequest, ClassRequest] {
     def executionContext = ec
-    def refine[A](input: UserRequest[A]) =  {
-      classRepo.read(id).map { maybeClass =>
-        maybeClass
-          .map(class_ => new ClassRequest(class_, input))
+    def refine[A](input: UserRequest[A]) = {
+      getClassWithSubject(id).map { maybeTuple =>
+        maybeTuple
+          .map(tuple => new ClassRequest(tuple._1, tuple._2, input))
           .toRight(
             Redirect(routes.ClassController.index())
               .flashing("danger" -> "Class not found")
@@ -86,6 +87,24 @@ class ClassController @Inject()(
     }
   }
 
+  def view(id: BSONObjectID) =
+    (userAction andThen ClassAction(id) andThen PermittedAction) {
+      implicit request =>
+        Ok(views.html.classes.view(request.subjectItem, request.classItem))
+  }
+
+  def edit(id: BSONObjectID) =
+    (userAction andThen ClassAction(id) andThen PermittedAction) {
+      implicit request =>
+        Ok("Hello!")
+  }
+
+  def update(id: BSONObjectID) =
+    (userAction andThen ClassAction(id) andThen PermittedAction) {
+      implicit request =>
+        Ok("Hello!")
+  }
+
   def fetch = userAction.async { implicit request =>
     val email = request.user.email
     fetchClasses(email).flatMap { maybeResult =>
@@ -121,31 +140,13 @@ class ClassController @Inject()(
     }
   }
 
-  def view(id: BSONObjectID) =
-    (userAction andThen ClassAction(id) andThen PermittedAction) {
-      implicit request =>
-        Ok("Hello!")
-  }
-
-  def edit(id: BSONObjectID) =
-    (userAction andThen ClassAction(id) andThen PermittedAction) {
-      implicit request =>
-        Ok("Hello!")
-  }
-
-  def update(id: BSONObjectID) =
-    (userAction andThen ClassAction(id) andThen PermittedAction) {
-      implicit request =>
-        Ok("Hello!")
-  }
-
   // Get saved classes from database
   def getClasses(email: String):
     Future[Option[ListMap[Subject, List[Class]]]] = {
     (for {
       // Get user id
-      userId <- userRepo.findUserByEmail(email).map { user =>
-        user.get._id.get
+      userId <- userRepo.findUserByEmail(email).map { maybeUser =>
+        maybeUser.get._id.get
       }
       // List subjects under user
       subjects <- subjectRepo.findSubjectsByUserId(userId).map { subjects =>
@@ -185,6 +186,21 @@ class ClassController @Inject()(
     } yield Some(sortedMap)) fallbackTo Future(None)
   }
 
+  // Get class and subject using class id
+  def getClassWithSubject(classId: BSONObjectID):
+    Future[Option[(Class, Subject)]] = {
+    (for {
+      // Get class
+      class_ <- classRepo.read(classId).map { maybeClass =>
+        maybeClass.get
+      }
+      // Get subject of class
+      subject <- subjectRepo.read(class_.subjectId).map { maybeSubject =>
+        maybeSubject.get
+      }
+    } yield Some(class_, subject)) fallbackTo Future(None)
+  }
+
   // Fetch latest active classes from API
   def fetchClasses(email: String):
     Future[Option[(String, List[JsonSubject])]] = {
@@ -212,7 +228,7 @@ class ClassController @Inject()(
   ): Future[Unit] = {
     for {
       // Create subjects under user
-      subjectIdMap <- userRepo.findUserByEmail(email).flatMap { user =>
+      subjectIdMap <- userRepo.findUserByEmail(email).flatMap { maybeUser =>
         var subjectIdMap = Map[BSONObjectID, List[JsonClass]]()
         Future.traverse(activeSubjects) { subject =>
           val subjectId = BSONObjectID.generate
@@ -220,7 +236,7 @@ class ClassController @Inject()(
             _id = Option(subjectId),
             code = subject.code,
             semester = activeSemester,
-            userId = user.get._id.get
+            userId = maybeUser.get._id.get
           )).map { _ =>
             Logger.info(
               s"Created Subject(${subject.code}, ${activeSemester}, " +
