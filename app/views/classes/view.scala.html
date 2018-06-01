@@ -25,15 +25,11 @@
           <label for="day">Day</label>
         </div>
         <div class="md-form form-group mt-5">
-          <input id="time" value='@classItem.time.getOrElse("(Not set)")' class="form-control" type="text" disabled>
+          <input id="time" value='@classItem.startTime.getOrElse("(Not set)")' class="form-control" type="text" disabled>
           <label for="time">Time</label>
         </div>
         <div class="md-form form-group mt-5">
-          <input id="duration" value='@classItem.duration.getOrElse("(Not set)")' class="form-control" type="text" disabled>
-          <label for="duration">Duration</label>
-        </div>
-        <div class="md-form form-group mt-5">
-          <input id="venue" value='@classItem.venue.getOrElse("(Not set)")' class="form-control" type="text" disabled>
+          <input id="venue" value='@classItem.venueId.getOrElse("(Not set)")' class="form-control" type="text" disabled>
           <label for="venue">Venue</label>
         </div>
         <div class="button-rows">

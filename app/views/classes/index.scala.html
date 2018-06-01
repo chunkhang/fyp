@@ -69,7 +69,7 @@
               <br>
               <small>
                 @if(!class_.day.isEmpty) {
-                  @class_.day.get| @class_.time.get | @class_.duration.get | @class_.venue.get
+                  @class_.day.get| @class_.startTime.get - @class_.endTime.get | @class_.venueId.get
                 } else {
                   (No details)
                 }

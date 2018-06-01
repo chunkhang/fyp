@@ -14,10 +14,10 @@ case class Class(
   category: String,
   group: Int,
   students: List[String],
-  day: Option[Int] = None,
-  time: Option[String] = None,
-  duration: Option[Int] = None,
-  venue: Option[String] = None,
+  day: Option[String] = None,
+  startTime: Option[String] = None,
+  endTime: Option[String] = None,
+  venueId: Option[BSONObjectID] = None,
   subjectId: BSONObjectID
 ) extends Entity
 

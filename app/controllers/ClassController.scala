@@ -14,7 +14,12 @@ import play.api.{Logger, Configuration}
 import reactivemongo.bson.BSONObjectID
 import models._
 
-case class ClassData(day: Int, time: String, duration: Int, venue: String)
+case class ClassData(
+  day: String,
+  startTime: String,
+  endTime: String,
+  venue: String
+)
 
 class ClassController @Inject()(
   cc: ControllerComponents,
@@ -83,9 +88,9 @@ class ClassController @Inject()(
 
   val classForm = Form(
     mapping(
-      "Day" -> number,
-      "Time" -> nonEmptyText,
-      "Duration" -> number(min = 60, max = 180),
+      "Day" -> nonEmptyText,
+      "Start Time" -> nonEmptyText,
+      "End Time" -> nonEmptyText,
       "Venue" -> nonEmptyText
     )(ClassData.apply)(ClassData.unapply)
   )
@@ -117,9 +122,9 @@ class ClassController @Inject()(
             case Some(day) =>
               val filledForm = classForm.fill(ClassData(
                 day = request.classItem.day.get,
-                time = request.classItem.time.get,
-                duration = request.classItem.duration.get,
-                venue = request.classItem.venue.get
+                startTime = request.classItem.startTime.get,
+                endTime = request.classItem.endTime.get,
+                venue = request.classItem.venueId.get.stringify
               ))
               Ok(views.html.classes.edit(
                 request.subjectItem,
