@@ -332,14 +332,26 @@ class ClassController @Inject()(
 
   // Selections for venue form field
   def getVenueSelections(): Future[Seq[(String, String)]] = {
+    // Get all venues from database
     venueRepo.readAll().map { venues =>
-      val venueIds = venues.map { venue =>
-        venue._id.get.stringify
+      val venueTuples = venues.map { venue =>
+        (venue._id.get.stringify, venue.name, venue.building)
       }
-      val venueNames = venues.map { venue =>
-        venue.name + ", " + venue.building
+      // Sort venues
+      val universityVenues = venueTuples.filter { item =>
+        item._3 == "Sunway University"
+      } sortBy(item => item._2)
+      val collegeVenues = venueTuples.filter { item =>
+        item._3 == "Sunway College"
+      } sortBy(item => item._2)
+      val graduateVenues = venueTuples.filter { item =>
+        item._3 == "Graduate Centre"
+      } sortBy(item => item._2)
+      val sortedVenues = universityVenues ++ collegeVenues ++ graduateVenues
+      sortedVenues.map { tuple =>
+        val (id, name, building) = tuple
+        (id, name + ", " + building)
       }
-      venueIds zip venueNames
     }
   }
 
