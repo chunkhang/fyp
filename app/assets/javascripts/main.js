@@ -29,7 +29,7 @@ $(document).ready(function() {
 
   /* Forms */
 
-  // Select chosen value for select input
+  // Material select
   var selects = $("select");
   selects.each(function() {
     var defaultOption;
@@ -43,14 +43,14 @@ $(document).ready(function() {
     }
     $(this).prepend(defaultOption);
   });
-
-  // Initialize material select
   $(".mdb-select").material_select();
 
-  // Initialize material time picker
-  $("#time").pickatime({
-    autoclose: true,
-    "default": "now"
+  // Material time picker
+  var timePicker = $("#time");
+  var defaultTime = timePicker.val();
+  timePicker.pickatime({
+    twelvehour: true,
+    default: defaultTime === "" ? "08:00AM" : defaultTime
   });
 
   // Disable enter to submit
