@@ -2,7 +2,6 @@ package controllers
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
-import scala.concurrent.duration._
 import scala.collection.mutable.{Map, ListBuffer}
 import scala.collection.immutable.ListMap
 import play.api.mvc._
@@ -141,9 +140,30 @@ class ClassController @Inject()(
   }
 
   def update(id: BSONObjectID) =
-    (userAction andThen ClassAction(id) andThen PermittedAction) {
+    (userAction andThen ClassAction(id) andThen PermittedAction).async {
       implicit request =>
-        Ok("Hello!")
+        val daySelections = getDaySelections()
+        getVenueSelections().map { venueSelections =>
+          classForm.bindFromRequest.fold(
+            formWithErrors => {
+              println(formWithErrors)
+              BadRequest(
+                views.html.classes.edit(
+                  request.subjectItem,
+                  request.classItem,
+                  daySelections,
+                  venueSelections,
+                  formWithErrors
+                )
+              )
+            },
+            classData => {
+              println(classData)
+              Redirect(routes.ClassController.index())
+                .flashing("success" -> "Successfully edited class")
+            }
+          )
+        }
   }
 
   def fetch = userAction.async { implicit request =>
@@ -179,15 +199,6 @@ class ClassController @Inject()(
           }
       }
     }
-  }
-
-  // Get list of venues given list of classes
-  def getClassesVenues(classes: List[Class]): Future[List[Venue]] = {
-    Future.traverse(classes) { class_ =>
-      venueRepo.read(class_.venueId.get).map { maybeVenue =>
-        maybeVenue.get
-      }
-    }.map(r => r)
   }
 
   // Get saved classes from database
