@@ -2,12 +2,69 @@
 
 $(document).ready(function() {
 
-  /* General */
+  /* Miscellaneous */
+
+  // Add active class to navigation tab
+  var activeIndex= parseInt($("active").first().text());
+  if (activeIndex != -1) {
+    var activeTab = $("#navigation-tabs").children()[activeIndex];
+    $(activeTab).addClass("active");
+  }
+
+  // Close flash messages automatically
+  setTimeout(function() {
+    $(".alert").alert("close");
+  }, 3000);
+
+  // Remove all but first student label
+  var studentLabels = $(".student-labels");
+  var first = true;
+  studentLabels.each(function() {
+    if (!first) {
+      $(this).remove();
+    } else {
+      first = false;
+    }
+  });
+
+  /* Forms */
+
+  // Select chosen value for select input
+  var selects = $("select");
+  selects.each(function() {
+    var defaultOption;
+    if ($(this).is("[chosen]")) {
+      var selectedValue = $(this).attr("chosen");
+      var selectedOption = $(`option[value="${selectedValue}"]`)[0];
+      $(selectedOption).attr("selected", "");
+      defaultOption = `<option value="" disabled>Choose a ${$(this).attr("id")}</option>`;
+    } else {
+      defaultOption = `<option value="" disabled selected>Choose a ${$(this).attr("id")}</option>`;
+    }
+    $(this).prepend(defaultOption);
+  });
+
+  // Initialize material select
+  $(".mdb-select").material_select();
+
+  // Initialize material time picker
+  $("#time").pickatime({
+    autoclose: true,
+    "default": "now"
+  });
 
   // Disable enter to submit
   $(window).keydown(function(event){
     if (event.keyCode == 13) {
       event.preventDefault();
+    }
+  });
+
+  // Add invalid classes to inputs
+  var inputs = $("input");
+  inputs.each(function() {
+    if ($(this).siblings("invalid").length == 1) {
+      $(this).addClass("invalid");
     }
   });
 

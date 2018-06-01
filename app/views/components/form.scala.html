@@ -15,27 +15,3 @@
     <button class="btn btn-primary btn-sm" type="submit">Confirm</button>
   </div>
 }
-<script>
-  var inputs = $("input");
-  inputs.each(function() {
-    if ($(this).siblings("invalid").length == 1) {
-      $(this).addClass("invalid");
-    }
-  });
-  var selects = $("select");
-  selects.each(function() {
-    var defaultOption;
-    if ($(this).is("[selectValue]")) {
-      var selectedValue = $(this).attr("selectValue");
-      var selectedOption = $(`option[value="${selectedValue}"]`)[0];
-      $(selectedOption).attr("selected", "");
-      defaultOption = `<option value="" disabled>Choose a ${$(this).attr("id")}</option>`;
-    } else {
-      defaultOption = `<option value="" disabled selected>Choose a ${$(this).attr("id")}</option>`;
-    }
-    $(this).prepend(defaultOption);
-  });
-  $(document).ready(function() {
-    $('.mdb-select').material_select();
-  });
-</script>

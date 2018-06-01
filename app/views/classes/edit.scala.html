@@ -33,13 +33,14 @@
           classForm("Day"),
           options = daySelections,
           'id -> "day",
-          'class -> "mdb-select"
+          'class -> "mdb-select",
+          'chosen -> "Friday"
         )
         @helper.inputText(
           classForm("Time"),
           'id -> "time",
-          'class -> "form-control",
-          'placeholder -> "Class starting time"
+          'class -> "form-control timepicker",
+          'placeholder -> "Class start time"
         )
         @helper.inputText(
           classForm("Duration"),

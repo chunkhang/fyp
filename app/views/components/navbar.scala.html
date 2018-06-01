@@ -10,6 +10,7 @@
   </a>
   @if(request.session.get("name").isDefined && request.session.get("email").isDefined) {
     <!-- Navigation -->
+    <active class="gone">@activeIndex.getOrElse(-1)</active>
     <ul class="navbar-nav mr-auto" id="navigation-tabs">
       <li class="nav-item">
         <a class="nav-link" href="@routes.CalendarController.index()">Calendar</a>
@@ -31,10 +32,3 @@
     </form>
   }
 </nav>
-@if(activeIndex.isDefined) {
-  <script>
-    var navigationTabs = $("#navigation-tabs");
-    var activeTab = $(navigationTabs.children()[@activeIndex.get]);
-    activeTab.addClass("active");
-  </script>
-}
