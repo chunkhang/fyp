@@ -1,7 +1,7 @@
 @import scala.collection.immutable.ListMap
 
 @(
-  subjectMap: ListMap[Subject, List[Class]]
+  subjectMap: ListMap[Subject, List[(Class, Option[String])]]
 )(implicit flash: Flash, request: RequestHeader)
 
 @main("Classes", Some(1)) {
@@ -58,26 +58,30 @@
     </div>
     <div class="col">
       <!-- Class lists -->
-      @for(classes <- subjectMap.values) {
-        <ul class="list-group class-lists gone">
-        @for(class_ <- classes) {
-          <a class="list-group-item list-group-item-action waves-effect" href="@routes.ClassController.view(class_._id.get)">
-            <!-- Class information -->
-            <div>
-              <strong class="text-uppercase">@class_.category</strong>
-              <small class="text-muted">Group @class_.group</small>
-              <br>
-              <small>
-                @if(!class_.day.isEmpty) {
-                  @class_.day.get| @class_.startTime.get - @class_.endTime.get | @class_.venueId.get
-                } else {
-                  (No details)
-                }
-              </small>
-            </div>
-          </a>
+      @if(!subjectMap.isEmpty) {
+        @for(classTuple <- subjectMap.values) {
+          <ul class="list-group class-lists gone">
+          @for((class_, venue) <- classTuple) {
+            <li class="list-group-item list-group-item-action waves-effect">
+              <!-- Class information -->
+              <div>
+                <strong class="text-uppercase">@class_.category</strong>
+                <small class="text-muted">Group @class_.group</small>
+                <br>
+                <small>
+                  @if(class_.day.isDefined) {
+                    @class_.day.get| @class_.startTime.get - @class_.endTime.get | @venue.get
+                  } else {
+                    (No details)
+                  }
+                </small>
+              </div>
+              <!-- Edit button -->
+              <a href="@routes.ClassController.edit(class_._id.get)" class="btn btn-secondary btn-sm class-edits">Edit</a>
+            </li>
+          }
+          </ul>
         }
-        </ul>
       }
     </div>
   </div>

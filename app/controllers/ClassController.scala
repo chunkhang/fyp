@@ -2,7 +2,8 @@ package controllers
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
-import scala.collection.mutable.Map
+import scala.concurrent.duration._
+import scala.collection.mutable.{Map, ListBuffer}
 import scala.collection.immutable.ListMap
 import play.api.mvc._
 import play.api.data._
@@ -107,12 +108,6 @@ class ClassController @Inject()(
     }
   }
 
-  def view(id: BSONObjectID) =
-    (userAction andThen ClassAction(id) andThen PermittedAction) {
-      implicit request =>
-        Ok(views.html.classes.view(request.subjectItem, request.classItem))
-  }
-
   def edit(id: BSONObjectID) =
     (userAction andThen ClassAction(id) andThen PermittedAction).async {
       implicit request =>
@@ -186,9 +181,18 @@ class ClassController @Inject()(
     }
   }
 
+  // Get list of venues given list of classes
+  def getClassesVenues(classes: List[Class]): Future[List[Venue]] = {
+    Future.traverse(classes) { class_ =>
+      venueRepo.read(class_.venueId.get).map { maybeVenue =>
+        maybeVenue.get
+      }
+    }.map(r => r)
+  }
+
   // Get saved classes from database
   def getClasses(email: String):
-    Future[Option[ListMap[Subject, List[Class]]]] = {
+    Future[Option[ListMap[Subject, List[(Class, Option[String])]]]] = {
     (for {
       // Get user id
       userId <- userRepo.findUserByEmail(email).map { maybeUser =>
@@ -201,12 +205,36 @@ class ClassController @Inject()(
         }
         subjects
       }
-      // Map subject to classes
-      subjectMap <- {
-        var subjectMap = Map[Subject, List[Class]]()
+      // Get classes with venues under each subject
+      subjectTuples <- {
+        var subjectTuples = ListBuffer[(Subject, List[Class])]()
         Future.traverse(subjects) { subject =>
           classRepo.findClassesBySubjectId(subject._id.get).map { classes =>
-            subjectMap += (subject -> classes)
+            val subjectTuple: (Subject, List[Class]) = (subject, classes)
+            subjectTuples += subjectTuple
+          }
+        }.map { _ =>
+          subjectTuples
+        }
+      }
+      // Get venues for classes and create map
+      subjectMap <- {
+        var subjectMap = Map[Subject, List[(Class, Option[String])]]()
+        Future.traverse(subjectTuples) { subjectTuple =>
+          val (subject, classes) = subjectTuple
+          Future.traverse(classes) { class_ =>
+            if (class_.venueId.isDefined) {
+              venueRepo.read(class_.venueId.get).map { maybeVenue =>
+                Some(maybeVenue.get.name + ", " + maybeVenue.get.building)
+              }
+            } else {
+              Future {
+                None
+              }
+            }
+          }.map { venues =>
+            val classTuples = classes zip venues
+            subjectMap += (subject -> classTuples)
           }
         }.map { _ =>
           subjectMap
@@ -221,11 +249,12 @@ class ClassController @Inject()(
         }
         // Then sort classes
         val sortedSequence = sequenceWithSortedSubjects.map { item =>
-          val (subject, classes) = item
-          val sortedClasses = classes.sortBy { class_ =>
+          val (subject, classTuples) = item
+          val sortedClassTuples = classTuples.sortBy { tuple =>
+            val (class_, venue) = tuple
             (class_.category, class_.group)
           }
-          (subject, sortedClasses)
+          (subject, sortedClassTuples)
         }
         ListMap(sortedSequence :_*)
       }

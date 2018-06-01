@@ -28,7 +28,7 @@
     <div class="col-5">
       @components.form(
         routes.ClassController.update(classItem._id.get),
-        routes.ClassController.view(classItem._id.get)) {
+        routes.ClassController.index()) {
         @helper.select(
           classForm("Day"),
           options = daySelections,
