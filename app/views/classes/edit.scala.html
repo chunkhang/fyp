@@ -1,6 +1,8 @@
 @(
   subjectItem: Subject,
   classItem: Class,
+  daySelections: Seq[(String, String)],
+  venueSelections: Seq[(String, String)],
   classForm: Form[ClassData]
 )(
   implicit flash: Flash,
@@ -27,24 +29,27 @@
       @components.form(
         routes.ClassController.update(classItem._id.get),
         routes.ClassController.view(classItem._id.get)) {
-        @helper.inputText(
+        @helper.select(
           classForm("Day"),
+          options = daySelections,
           'id -> "day",
-          'placeholder -> "Class day"
+          'class -> "mdb-select"
         )
         @helper.inputText(
           classForm("Time"),
           'id -> "time",
+          'class -> "form-control",
           'placeholder -> "Class starting time"
         )
         @helper.inputText(
           classForm("Duration"),
           'id -> "duration",
+          'class -> "form-control",
           'placeholder -> "Class duration in minutes"
         )
         @helper.select(
           classForm("Venue"),
-          options = Seq(("1", "One"), ("2", "Two")),
+          options = venueSelections,
           'id -> "venue",
           'class -> "mdb-select"
         )

@@ -23,7 +23,8 @@ class ClassController @Inject()(
   config: Configuration,
   userRepo: UserRepository,
   subjectRepo: SubjectRepository,
-  classRepo: ClassRepository
+  classRepo: ClassRepository,
+  venueRepo: VenueRepository
 )(
   implicit ec: ExecutionContext
 ) extends AbstractController(cc) with play.api.i18n.I18nSupport {
@@ -84,7 +85,7 @@ class ClassController @Inject()(
     mapping(
       "Day" -> number,
       "Time" -> nonEmptyText,
-      "Duration" -> number,
+      "Duration" -> number(min = 60, max = 180),
       "Venue" -> nonEmptyText
     )(ClassData.apply)(ClassData.unapply)
   )
@@ -108,27 +109,34 @@ class ClassController @Inject()(
   }
 
   def edit(id: BSONObjectID) =
-    (userAction andThen ClassAction(id) andThen PermittedAction) {
+    (userAction andThen ClassAction(id) andThen PermittedAction).async {
       implicit request =>
-        request.classItem.day match {
-          case Some(day) =>
-            val filledForm = classForm.fill(ClassData(
-              day = request.classItem.day.get,
-              time = request.classItem.time.get,
-              duration = request.classItem.duration.get,
-              venue = request.classItem.venue.get
-            ))
-            Ok(views.html.classes.edit(
-              request.subjectItem,
-              request.classItem,
-              filledForm
-            ))
-          case None =>
-            Ok(views.html.classes.edit(
-              request.subjectItem,
-              request.classItem,
-              classForm
-            ))
+        val daySelections = getDaySelections()
+        getVenueSelections().map { venueSelections =>
+          request.classItem.day match {
+            case Some(day) =>
+              val filledForm = classForm.fill(ClassData(
+                day = request.classItem.day.get,
+                time = request.classItem.time.get,
+                duration = request.classItem.duration.get,
+                venue = request.classItem.venue.get
+              ))
+              Ok(views.html.classes.edit(
+                request.subjectItem,
+                request.classItem,
+                daySelections,
+                venueSelections,
+                filledForm
+              ))
+            case None =>
+              Ok(views.html.classes.edit(
+                request.subjectItem,
+                request.classItem,
+                daySelections,
+                venueSelections,
+                classForm
+              ))
+          }
         }
   }
 
@@ -307,6 +315,32 @@ class ClassController @Inject()(
         }
       }
     } yield Unit
+  }
+
+  // Selections for day form field
+  def getDaySelections(): Seq[(String, String)] = {
+    val days = Seq(
+      "Monday",
+      "Tuesday",
+      "Wednesday",
+      "Thursday",
+      "Friday",
+      "Saturday"
+    )
+    days zip days
+  }
+
+  // Selections for venue form field
+  def getVenueSelections(): Future[Seq[(String, String)]] = {
+    venueRepo.readAll().map { venues =>
+      val venueIds = venues.map { venue =>
+        venue._id.get.stringify
+      }
+      val venueNames = venues.map { venue =>
+        venue.name + ", " + venue.building
+      }
+      venueIds zip venueNames
+    }
   }
 
 }
