@@ -2,7 +2,8 @@ package controllers
 
 import java.text.SimpleDateFormat
 import javax.inject.Inject
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{ExecutionContext, Future, Await}
+import scala.concurrent.duration._
 import scala.collection.mutable.{Map, ListBuffer}
 import scala.collection.immutable.ListMap
 import play.api.mvc._
@@ -121,6 +122,20 @@ class ClassController @Inject()(
     }
   }
 
+  def validateVenue(venue: String) = {
+    val result = venueRepo.readAll().map { venues =>
+      val venueNames = venues.map { venue_ =>
+        venue_.name + ", " + venue_.building
+      }
+      if (venueNames contains venue) {
+        Some(venue)
+      } else {
+        None
+      }
+    }
+    Await.result(result, 5.seconds)
+  }
+
   val classForm = Form(
     mapping(
       "Day" -> nonEmptyText,
@@ -140,6 +155,13 @@ class ClassController @Inject()(
         fields => fields match {
           case classData =>
             validateDuration(classData.startTime, classData.endTime).isDefined
+        }
+      )
+      verifying(
+        "Invalid venue",
+        fields => fields match {
+          case classData =>
+            validateVenue(classData.venue).isDefined
         }
       )
   )
@@ -196,30 +218,34 @@ class ClassController @Inject()(
     (userAction andThen ClassAction(id) andThen PermittedAction).async {
       implicit request =>
         val daySelections = getDaySelections()
-        getVenueSelections().map { venueSelections =>
+        getVenueSelections().flatMap { venueSelections =>
           classForm.bindFromRequest.fold(
             formWithErrors => {
-              BadRequest(
-                views.html.classes.edit(
-                  request.subjectItem,
-                  request.classItem,
-                  daySelections,
-                  venueSelections,
-                  formWithErrors
+              Future {
+                BadRequest(
+                  views.html.classes.edit(
+                    request.subjectItem,
+                    request.classItem,
+                    daySelections,
+                    venueSelections,
+                    formWithErrors
+                  )
                 )
-              )
+              }
             },
             classData => {
-              classRepo.update(id, request.classItem.copy(
-                day = Some(classData.day),
-                startTime = Some(classData.startTime),
-                endTime = Some(classData.endTime),
-                venueId = Some(BSONObjectID.parse(classData.venue).get)
-              )).map { _ =>
-                Logger.info(s"Updated Class(${id})")
+              getVenueId(classData.venue).flatMap { venueId_ =>
+                classRepo.update(id, request.classItem.copy(
+                  day = Some(classData.day),
+                  startTime = Some(classData.startTime),
+                  endTime = Some(classData.endTime),
+                  venueId = Some(venueId_)
+                )).map { _ =>
+                  Logger.info(s"Updated Class(${id})")
+                  Redirect(routes.ClassController.index())
+                    .flashing("success" -> "Successfully edited class")
+                }
               }
-              Redirect(routes.ClassController.index())
-                .flashing("success" -> "Successfully edited class")
             }
           )
         }
@@ -469,6 +495,16 @@ class ClassController @Inject()(
   def getVenueName(id: BSONObjectID): Future[String] = {
     venueRepo.read(id).map { maybeVenue =>
       maybeVenue.get.name + ", " + maybeVenue.get.building
+    }
+  }
+
+  // Get venue id given venue name
+  def getVenueId(name: String): Future[BSONObjectID] = {
+    venueRepo.readAll().map { venues =>
+      val venue = venues.filter { venue =>
+        name == venue.name + ", " + venue.building
+      }(0)
+      venue._id.get
     }
   }
 

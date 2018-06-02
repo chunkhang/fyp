@@ -30,15 +30,6 @@ $(document).ready(function() {
       default: defaultTime === "" ? "08:00AM" : defaultTime
     });
   });
-  var errors = $("error");
-  if (errors.length != 0) {
-    errors.each(function() {
-      toastr.error($(this).text());
-    });
-    timePickers.each(function() {
-      $(this).addClass("invalid");
-    });
-  }
 
   // Material autocomplete
   var autocomplete = $("#venue");
@@ -53,13 +44,29 @@ $(document).ready(function() {
     window.scrollTo(0,document.body.scrollHeight);
   });
 
-  // Add invalid classes to inputs
+  // Add invalid classes to text inputs
   var inputs = $("input");
   inputs.each(function() {
     if ($(this).siblings("invalid").length == 1) {
       $(this).addClass("invalid");
     }
   });
+
+  // Constraint errors
+  var errors = $("error");
+  if (errors.length != 0) {
+    errors.each(function() {
+      var error = $(this).text();
+      toastr.error(error);
+      if (error.indexOf("venue") != -1) {
+        autocomplete.addClass("invalid");
+      } else {
+        timePickers.each(function() {
+          $(this).addClass("invalid");
+        });
+      }
+    });
+  }
 
   /* Classes */
 
