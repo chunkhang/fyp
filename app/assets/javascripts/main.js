@@ -30,6 +30,15 @@ $(document).ready(function() {
       default: defaultTime === "" ? "08:00AM" : defaultTime
     });
   });
+  var errors = $("error");
+  if (errors.length != 0) {
+    errors.each(function() {
+      toastr.error($(this).text());
+    });
+    timePickers.each(function() {
+      $(this).addClass("invalid");
+    });
+  }
 
   // Disable enter to submit
   $(window).keydown(function(event){

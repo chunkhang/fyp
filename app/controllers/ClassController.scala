@@ -1,5 +1,6 @@
 package controllers
 
+import java.text.SimpleDateFormat
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 import scala.collection.mutable.{Map, ListBuffer}
@@ -86,13 +87,61 @@ class ClassController @Inject()(
     }
   }
 
+  // Convert time string to integer for comparison
+  def timeInteger(time: String): Int = {
+    // Convert to 24-hour format
+    val inputTimeFormat = new SimpleDateFormat("hh:mma")
+    val outputTimeFormat = new SimpleDateFormat("HH:mm")
+    val timeObject = inputTimeFormat.parse(time)
+    val convertedTime = outputTimeFormat.format(timeObject)
+    // Convert to total minutes
+    val hours = convertedTime.slice(0, 2).toInt
+    val minutes = convertedTime.slice(3, 5).toInt
+    (hours * 60) + minutes
+  }
+
+  def validateTimes(startTime: String, endTime: String) = {
+    val start = timeInteger(startTime)
+    val end = timeInteger(endTime)
+    if (end > start) {
+      Some(startTime, endTime)
+    } else {
+      None
+    }
+  }
+
+  def validateDuration(startTime: String, endTime: String) = {
+    val start = timeInteger(startTime)
+    val end = timeInteger(endTime)
+    val duration = end - start
+    if (duration >= 60 && duration <= 180) {
+      Some(startTime, endTime)
+    } else {
+      None
+    }
+  }
+
   val classForm = Form(
     mapping(
       "Day" -> nonEmptyText,
       "Start Time" -> nonEmptyText,
       "End Time" -> nonEmptyText,
       "Venue" -> nonEmptyText
-    )(ClassData.apply)(ClassData.unapply)
+      )(ClassData.apply)(ClassData.unapply)
+      verifying(
+        "End time must be later than start time",
+        fields => fields match {
+          case classData =>
+            validateTimes(classData.startTime, classData.endTime).isDefined
+        }
+      )
+      verifying(
+        "Class should be 1 - 3 hours",
+        fields => fields match {
+          case classData =>
+            validateDuration(classData.startTime, classData.endTime).isDefined
+        }
+      )
   )
 
   def index = userAction.async { implicit request =>

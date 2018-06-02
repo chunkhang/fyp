@@ -53,6 +53,11 @@
           'id -> "venue",
           'class -> "mdb-select"
         )
+        @if(classForm.hasGlobalErrors) {
+          @for(error <- classForm.globalErrors) {
+            <error class="gone">@error.format</error>
+          }
+        }
       }
     </div>
   </div>
