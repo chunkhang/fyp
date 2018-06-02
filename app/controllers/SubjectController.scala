@@ -60,7 +60,7 @@ class SubjectController @Inject()(
 
   val subjectForm = Form(
     mapping(
-      "Title" -> nonEmptyText
+      "Title" -> nonEmptyText(maxLength = 40)
     )(SubjectData.apply)(SubjectData.unapply)
   )
 
