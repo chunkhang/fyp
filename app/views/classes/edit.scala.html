@@ -37,15 +37,15 @@
         )
         @helper.inputText(
           classForm("Start Time"),
-          'id -> "time",
+          'id -> "start-time",
           'class -> "form-control timepicker",
           'placeholder -> "Class start time"
         )
         @helper.inputText(
           classForm("End Time"),
-          'id -> "duration",
-          'class -> "form-control",
-          'placeholder -> "Class duration in minutes"
+          'id -> "end-time",
+          'class -> "form-control timepicker",
+          'placeholder -> "Class end time"
         )
         @helper.select(
           classForm("Venue"),

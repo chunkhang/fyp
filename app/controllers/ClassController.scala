@@ -146,7 +146,6 @@ class ClassController @Inject()(
         getVenueSelections().map { venueSelections =>
           classForm.bindFromRequest.fold(
             formWithErrors => {
-              println(formWithErrors)
               BadRequest(
                 views.html.classes.edit(
                   request.subjectItem,
@@ -158,7 +157,14 @@ class ClassController @Inject()(
               )
             },
             classData => {
-              println(classData)
+              classRepo.update(id, request.classItem.copy(
+                day = Some(classData.day),
+                startTime = Some(classData.startTime),
+                endTime = Some(classData.endTime),
+                venueId = Some(BSONObjectID.parse(classData.venue).get)
+              )).map { _ =>
+                Logger.info(s"Updated Class(${id})")
+              }
               Redirect(routes.ClassController.index())
                 .flashing("success" -> "Successfully edited class")
             }

@@ -19,27 +19,16 @@ $(document).ready(function() {
   /* Forms */
 
   // Material select
-  var selects = $("select");
-  selects.each(function() {
-    var defaultOption;
-    if ($(this).is("[chosen]")) {
-      var selectedValue = $(this).attr("chosen");
-      var selectedOption = $(`option[value="${selectedValue}"]`)[0];
-      $(selectedOption).attr("selected", "");
-      defaultOption = `<option value="" disabled>Choose a ${$(this).attr("id")}</option>`;
-    } else {
-      defaultOption = `<option value="" disabled selected>Choose a ${$(this).attr("id")}</option>`;
-    }
-    $(this).prepend(defaultOption);
-  });
   $(".mdb-select").material_select();
 
   // Material time picker
-  var timePicker = $("#time");
-  var defaultTime = timePicker.val();
-  timePicker.pickatime({
-    twelvehour: true,
-    default: defaultTime === "" ? "08:00AM" : defaultTime
+  var timePickers = $(".timepicker");
+  timePickers.each(function() {
+    var defaultTime = $(this).val();
+    $(this).pickatime({
+      twelvehour: true,
+      default: defaultTime === "" ? "08:00AM" : defaultTime
+    });
   });
 
   // Disable enter to submit
@@ -151,11 +140,13 @@ $(document).ready(function() {
     item.addClass("active");
     item.find("small").first().removeClass("text-muted");
     item.find("a").first().removeClass("gone");
+    item.find("div").first().addClass("truncate");
   }
   function deactivateItem(item) {
     item.removeClass("active");
     item.find("small").first().addClass("text-muted");
     item.find("a").first().addClass("gone");
+    item.find("div").first().removeClass("truncate");
   }
 
   // Edit buttons

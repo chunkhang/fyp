@@ -39,7 +39,7 @@
                 <strong>@subject.code</strong>
                 <small class="text-muted">@subject.semester</small>
                 <br>
-                <small>
+                <small class="detail">
                   @if(subject.title.isDefined) {
                     @subject.title.get
                   } else {
@@ -65,12 +65,12 @@
             <li class="list-group-item list-group-item-action waves-effect" data-self="@class_._id.get.stringify">
               <!-- Class information -->
               <div>
-                <strong class="text-uppercase">@class_.category</strong>
+                <strong>@class_.category</strong>
                 <small class="text-muted">Group @class_.group</small>
                 <br>
-                <small>
+                <small class="detail">
                   @if(class_.day.isDefined) {
-                    @class_.day.get| @class_.startTime.get - @class_.endTime.get | @venue.get
+                    @class_.day.get <strong>&middot;</strong> @class_.startTime.get - @class_.endTime.get <strong>&middot;</strong> @venue.get
                   } else {
                     (No details)
                   }

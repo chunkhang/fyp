@@ -20,7 +20,14 @@
     align-items: center;
     justify-content: space-between;
     div {
-      line-height: 1.25;
+      line-height: 1.15;
+      display: inline-block;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      .detail {
+        font-size: 75%;
+      }
     }
     .btn {
       margin: 0;
@@ -31,4 +38,5 @@
 
 .student-lists {
   font-size: smaller;
+  line-height: 1.15;
 }
