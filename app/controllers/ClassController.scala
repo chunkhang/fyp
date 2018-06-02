@@ -160,30 +160,34 @@ class ClassController @Inject()(
     (userAction andThen ClassAction(id) andThen PermittedAction).async {
       implicit request =>
         val daySelections = getDaySelections()
-        getVenueSelections().map { venueSelections =>
+        getVenueSelections().flatMap { venueSelections =>
           request.classItem.day match {
             case Some(day) =>
-              val filledForm = classForm.fill(ClassData(
-                day = request.classItem.day.get,
-                startTime = request.classItem.startTime.get,
-                endTime = request.classItem.endTime.get,
-                venue = request.classItem.venueId.get.stringify
-              ))
-              Ok(views.html.classes.edit(
-                request.subjectItem,
-                request.classItem,
-                daySelections,
-                venueSelections,
-                filledForm
-              ))
+              getVenueName(request.classItem.venueId.get).map { venueName =>
+                val filledForm = classForm.fill(ClassData(
+                  day = request.classItem.day.get,
+                  startTime = request.classItem.startTime.get,
+                  endTime = request.classItem.endTime.get,
+                  venue = venueName
+                ))
+                Ok(views.html.classes.edit(
+                  request.subjectItem,
+                  request.classItem,
+                  daySelections,
+                  venueSelections,
+                  filledForm
+                ))
+              }
             case None =>
-              Ok(views.html.classes.edit(
-                request.subjectItem,
-                request.classItem,
-                daySelections,
-                venueSelections,
-                classForm
-              ))
+              Future {
+                Ok(views.html.classes.edit(
+                  request.subjectItem,
+                  request.classItem,
+                  daySelections,
+                  venueSelections,
+                  classForm
+                ))
+              }
           }
         }
   }
@@ -437,27 +441,34 @@ class ClassController @Inject()(
   }
 
   // Selections for venue form field
-  def getVenueSelections(): Future[Seq[(String, String)]] = {
+  def getVenueSelections(): Future[Seq[String]] = {
     // Get all venues from database
     venueRepo.readAll().map { venues =>
       val venueTuples = venues.map { venue =>
-        (venue._id.get.stringify, venue.name, venue.building)
+        (venue.name, venue.building)
       }
       // Sort venues
       val universityVenues = venueTuples.filter { item =>
-        item._3 == "Sunway University"
-      } sortBy(item => item._2)
+        item._2 == "Sunway University"
+      } sortBy(item => item._1)
       val collegeVenues = venueTuples.filter { item =>
-        item._3 == "Sunway College"
-      } sortBy(item => item._2)
+        item._2 == "Sunway College"
+      } sortBy(item => item._1)
       val graduateVenues = venueTuples.filter { item =>
-        item._3 == "Graduate Centre"
-      } sortBy(item => item._2)
+        item._2 == "Graduate Centre"
+      } sortBy(item => item._1)
       val sortedVenues = universityVenues ++ collegeVenues ++ graduateVenues
       sortedVenues.map { tuple =>
-        val (id, name, building) = tuple
-        (id, name + ", " + building)
+        val (name, building) = tuple
+        name + ", " + building
       }
+    }
+  }
+
+  // Get venue name given venue id
+  def getVenueName(id: BSONObjectID): Future[String] = {
+    venueRepo.read(id).map { maybeVenue =>
+      maybeVenue.get.name + ", " + maybeVenue.get.building
     }
   }
 

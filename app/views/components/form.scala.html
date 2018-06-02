@@ -7,7 +7,7 @@
   implicit request: RequestHeader
 )
 
-@helper.form(postRoute) {
+@helper.form(postRoute, 'autocomplete -> "off") {
   @helper.CSRF.formField
   @formInputs
   <div class="button-rows">
