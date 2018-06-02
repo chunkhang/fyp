@@ -267,7 +267,7 @@ class ClassController @Inject()(
       // List subjects under user
       subjects <- subjectRepo.findSubjectsByUserId(userId).map { subjects =>
         if (subjects.isEmpty) {
-          throw new Exception("no subjects found")
+          throw new Exception("No subject found")
         }
         subjects
       }
@@ -329,7 +329,11 @@ class ClassController @Inject()(
         }
         ListMap(sortedSequence :_*)
       }
-    } yield Some(sortedMap)) fallbackTo Future(None)
+    } yield Some(sortedMap)) recover {
+      case e: Exception =>
+        Logger.warn(e.toString)
+        None
+    }
   }
 
   // Get class and subject using class id
@@ -344,7 +348,11 @@ class ClassController @Inject()(
       subject <- subjectRepo.read(class_.subjectId).map { maybeSubject =>
         maybeSubject.get
       }
-    } yield Some(class_, subject)) fallbackTo Future(None)
+    } yield Some(class_, subject)) recover {
+      case e: Exception =>
+        Logger.warn(e.toString)
+        None
+    }
   }
 
   // Fetch latest active classes from API
