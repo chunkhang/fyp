@@ -16,17 +16,6 @@ $(document).ready(function() {
     $(".alert").alert("close");
   }, 3000);
 
-  // Remove all but first student label
-  var studentLabels = $(".student-labels");
-  var first = true;
-  studentLabels.each(function() {
-    if (!first) {
-      $(this).remove();
-    } else {
-      first = false;
-    }
-  });
-
   /* Forms */
 
   // Material select
@@ -70,13 +59,8 @@ $(document).ready(function() {
 
   /* Classes */
 
-  var fetchButton = $("#fetch-button");
-  var subjectItems = $("#subject-list li");
-  var subjectSubtitles = $(".subject-subtitles");
-  var subjectEditButtons = $(".subject-edits");
-  var classLists = $(".class-lists");
-
   // Fetch button
+  var fetchButton = $("#fetch-button");
   fetchButton.click(function() {
     var fetchSpinner = $("#fetch-spinner");
     fetchButton.addClass("gone");
@@ -107,39 +91,76 @@ $(document).ready(function() {
     }, 1000);
   });
 
-  // Toggle subject list
-  var lastSubjectClicked = -1;
+  // Toggle lists
+  var subjectItems = $("#subject-list li");
+  var classLists = $(".class-lists");
+  var classItems = $(".class-lists li");
+  var studentLists = $(".student-lists");
+  var currentSubject = null;
+  var currentClass = null;
   subjectItems.click(function() {
     subjectItems.each(function() {
-      $(this).removeClass("active");
-    });
-    subjectSubtitles.each(function() {
-      $(this).addClass("text-muted");
-    });
-    subjectEditButtons.each(function() {
-      $(this).addClass("gone");
+      deactivateItem($(this));
     });
     classLists.each(function() {
       $(this).addClass("gone");
     });
-    var index = $(this).index();
-    if (index != lastSubjectClicked) {
-      var clickedItem = $(subjectItems[index]);
-      var clickedSmallText = $(subjectSubtitles[index]);
-      var editButton = $(subjectEditButtons[index]);
-      var classList = $(classLists[index]);
-      clickedItem.addClass("active");
-      clickedSmallText.removeClass("text-muted");
-      editButton.removeClass("gone");
+    classItems.each(function() {
+      $(this).removeClass("active");
+    });
+    studentLists.each(function() {
+      $(this).addClass("gone");
+    });
+    var subject = $(this).data("self");
+    if (currentSubject != subject) {
+      // Opening subject
+      activateItem($(this));
+      var classList = $(classLists.filter(`[data-parent="${subject}"]`));
       classList.removeClass("gone");
-      lastSubjectClicked = index;
+      currentSubject = subject;
     } else {
-      lastSubjectClicked = -1;
+      // Closing subject
+      classItems.each(function() {
+        deactivateItem($(this));
+      });
+      currentSubject = null;
+      currentClass = null;
     }
   });
+  classItems.click(function() {
+    classItems.each(function() {
+      deactivateItem($(this));
+    });
+    studentLists.each(function() {
+      $(this).addClass("gone");
+    });
+    var class_ = $(this).data("self");
+    if (currentClass != class_) {
+      // Opening class
+      activateItem($(this));
+      var studentList = $(studentLists.filter(`[data-parent="${class_}"]`));
+      console.log(studentList);
+      studentList.removeClass("gone");
+      currentClass = class_;
+    } else {
+      // Closing class
+      currentClass = null;
+    }
+  });
+  function activateItem(item) {
+    item.addClass("active");
+    item.find("small").first().removeClass("text-muted");
+    item.find("a").first().removeClass("gone");
+  }
+  function deactivateItem(item) {
+    item.removeClass("active");
+    item.find("small").first().addClass("text-muted");
+    item.find("a").first().addClass("gone");
+  }
 
   // Edit buttons
-  subjectEditButtons.click(function(event) {
+  var editButtons = $(".edit-buttons");
+  editButtons.click(function(event) {
     event.stopPropagation();
   });
 

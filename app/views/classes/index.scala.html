@@ -7,7 +7,7 @@
 @main("Classes", Some(1)) {
 
   <div class="row mb-3">
-    <div class="col-6" id="classes-header">
+    <div class="col-5" id="classes-header">
         <h1>Classes</h1>
         <!-- Fetch button -->
         <button class="btn btn-primary btn-sm" id="fetch-button">Fetch</button>
@@ -28,19 +28,19 @@
     </div>
   </div>
   <div class="row">
-    <div class="col">
+    <div class="col-5">
       <!-- Subject list -->
       @if(!subjectMap.isEmpty) {
         <ul class="list-group" id="subject-list">
           @for(subject <- subjectMap.keys) {
-            <li class="list-group-item list-group-item-action waves-effect">
+            <li class="list-group-item list-group-item-action waves-effect" data-self="@subject._id.get.stringify">
               <!-- Subject information -->
               <div>
                 <strong>@subject.code</strong>
-                <small class="text-muted subject-subtitles">@subject.semester</small>
+                <small class="text-muted">@subject.semester</small>
                 <br>
                 <small>
-                  @if(!subject.title.isEmpty) {
+                  @if(subject.title.isDefined) {
                     @subject.title.get
                   } else {
                     (No name)
@@ -48,7 +48,7 @@
                 </small>
               </div>
               <!-- Edit button -->
-              <a href="@routes.SubjectController.edit(subject._id.get)" class="btn btn-secondary btn-sm gone subject-edits">Edit</a>
+              <a href="@routes.SubjectController.edit(subject._id.get)" class="btn btn-secondary btn-sm edit-buttons gone">Edit</a>
             </li>
           }
         </ul>
@@ -56,13 +56,13 @@
         <p>No class found</p>
       }
     </div>
-    <div class="col">
+    <div class="col-5">
       <!-- Class lists -->
       @if(!subjectMap.isEmpty) {
-        @for(classTuple <- subjectMap.values) {
-          <ul class="list-group class-lists gone">
+        @for((subject, classTuple) <- subjectMap) {
+          <ul class="list-group class-lists gone" data-parent="@subject._id.get.stringify">
           @for((class_, venue) <- classTuple) {
-            <li class="list-group-item list-group-item-action waves-effect">
+            <li class="list-group-item list-group-item-action waves-effect" data-self="@class_._id.get.stringify">
               <!-- Class information -->
               <div>
                 <strong class="text-uppercase">@class_.category</strong>
@@ -77,10 +77,26 @@
                 </small>
               </div>
               <!-- Edit button -->
-              <a href="@routes.ClassController.edit(class_._id.get)" class="btn btn-secondary btn-sm class-edits">Edit</a>
+              <a href="@routes.ClassController.edit(class_._id.get)" class="btn btn-secondary btn-sm edit-buttons gone">Edit</a>
             </li>
           }
           </ul>
+        }
+      }
+    </div>
+    <div class="col-2">
+      <!-- Student lists -->
+      @if(!subjectMap.isEmpty) {
+        @for(classTuple <- subjectMap.values) {
+          @for((class_, _) <- classTuple) {
+            <ul class="list-group student-lists gone" data-parent="@class_._id.get.stringify">
+              @for(student <- class_.students) {
+                <li class="list-group-item">
+                  <strong>@student</strong>
+                </li>
+              }
+            </ul>
+          }
         }
       }
     </div>

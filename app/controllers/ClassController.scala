@@ -221,7 +221,12 @@ class ClassController @Inject()(
         var subjectTuples = ListBuffer[(Subject, List[Class])]()
         Future.traverse(subjects) { subject =>
           classRepo.findClassesBySubjectId(subject._id.get).map { classes =>
-            val subjectTuple: (Subject, List[Class]) = (subject, classes)
+            // Sort students
+            val sortedClasses = classes.map { class_ =>
+              val sortedStudents = class_.students.sortWith(_ < _)
+              class_.copy(students = sortedStudents)
+            }
+            val subjectTuple: (Subject, List[Class]) = (subject, sortedClasses)
             subjectTuples += subjectTuple
           }
         }.map { _ =>
@@ -278,14 +283,7 @@ class ClassController @Inject()(
     (for {
       // Get class
       class_ <- classRepo.read(classId).map { maybeClass =>
-        val class_ = maybeClass.get
-        // Sort students
-        val sortedStudents = class_.students.sortWith(_ < _)
-        // Append student email domains
-        val studentEmails = sortedStudents.map { student =>
-          student + "@" + config.get[String]("my.domain.student")
-        }
-        class_.copy(students = studentEmails)
+        maybeClass.get
       }
       // Get subject of class
       subject <- subjectRepo.read(class_.subjectId).map { maybeSubject =>
