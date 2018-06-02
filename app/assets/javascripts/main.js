@@ -40,13 +40,6 @@ $(document).ready(function() {
     });
   }
 
-  // Disable enter to submit
-  $(window).keydown(function(event){
-    if (event.keyCode == 13) {
-      event.preventDefault();
-    }
-  });
-
   // Add invalid classes to inputs
   var inputs = $("input");
   inputs.each(function() {
