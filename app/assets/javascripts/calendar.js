@@ -31,11 +31,7 @@ export function calendar() {
       nowIndicator: true,
       minTime: "08:00:00",
       maxTime: "18:00:00",
-      businessHours: {
-        dow: [1, 2, 3, 4, 5, 6],
-        start: "08:00",
-        end: "18:00"
-      },
+      hiddenDays: [0],
       contentHeight: "auto",
       viewRender: handleNewView,
       dayClick: handleClickDay
