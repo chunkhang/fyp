@@ -4,7 +4,7 @@ GET     /login                  controllers.PageController.login
 
 # Calendar
 GET     /calendar               controllers.CalendarController.index
-GET     /calendar/events        controllers.CalendarController.events
+GET     /calendar/events        controllers.CalendarController.events(start: String, end: String)
 
 # Class
 GET     /classes                controllers.ClassController.index

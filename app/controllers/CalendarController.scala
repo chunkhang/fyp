@@ -12,7 +12,8 @@ import models._
 class CalendarController @Inject()(
   cc: ControllerComponents,
   userAction: UserAction,
-  classController: ClassController
+  classController: ClassController,
+  subjectController: SubjectController
 )(
   implicit ec: ExecutionContext
 ) extends AbstractController(cc) {
@@ -37,11 +38,19 @@ class CalendarController @Inject()(
     Ok(views.html.calendar.index())
   }
 
-  def events = userAction.async { implicit request =>
-    val email = request.user.email
-    getEvents(email).map { events =>
-      Ok(Json.toJson(events))
-    }
+  def events(start: String, end: String) = userAction.async {
+    implicit request =>
+      val email = request.user.email
+      getEvents(email).map { events =>
+        // Filter events based on queried date range
+        val startInteger = subjectController.dateInteger(start)
+        val endInteger = subjectController.dateInteger(end)
+        val filteredEvents = events.filter { event =>
+          subjectController.dateInteger(event.start) >= startInteger &&
+          subjectController.dateInteger(event.end) <= endInteger
+        }
+        Ok(Json.toJson(filteredEvents))
+      }
   }
 
   // Get all classes as calendar events
@@ -69,7 +78,7 @@ class CalendarController @Inject()(
             val (subject, class_, venue) = classItem
             Event(
               id = class_._id.get.stringify,
-              title = s"${subject.code} ${class_.category} Group ${class_.group} ${venue.get}",
+              title = s"${subject.code} ${class_.category} ${class_.group}",
               allDay = false,
               start = s"2018-06-04T${timeString(class_.startTime.get)}",
               end = s"2018-06-04T${timeString(class_.endTime.get)}"
