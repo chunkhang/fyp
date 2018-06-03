@@ -170,7 +170,7 @@ class ClassController @Inject()(
         }
       )
       verifying(
-        "Class should be 1 - 3 hours",
+        "Class duration: 1 - 3 hours",
         fields => fields match {
           case classData =>
             validateDuration(classData.startTime, classData.endTime).isDefined

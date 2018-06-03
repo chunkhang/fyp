@@ -1,7 +1,8 @@
 package controllers
 
 import javax.inject.Inject
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{ExecutionContext, Future, Await}
+import scala.concurrent.duration._
 import play.api.mvc._
 import play.api.data._
 import play.api.data.Forms._
@@ -10,7 +11,10 @@ import play.api.Logger
 import reactivemongo.bson.BSONObjectID
 import models._
 
-case class SubjectData(title: String)
+case class SubjectData(
+  title: String,
+  endDate: String
+)
 
 class SubjectController @Inject()(
   cc: ControllerComponents,
@@ -58,10 +62,61 @@ class SubjectController @Inject()(
     }
   }
 
+  // Convert date string to integer for comparison
+  def dateInteger(date: String): Int = {
+    // Convert to total days
+    val years = date.slice(0, 4).toInt
+    val months = date.slice(5, 7).toInt
+    val days = date.slice(8, 10).toInt
+    (years * 365) + (months * 30) + days
+  }
+
+  def validateDate(endDate: String) = {
+    val result = subjectRepo.readAll().map { subjects =>
+      val start = dateInteger(subjects(0).semester)
+      val end = dateInteger(endDate)
+      if (end > start) {
+        Some(endDate)
+      } else {
+        None
+      }
+    }
+    Await.result(result, 5.seconds)
+  }
+
+  def validatePeriod(endDate: String) = {
+    val result = subjectRepo.readAll().map { subjects =>
+      val start = dateInteger(subjects(0).semester)
+      val end = dateInteger(endDate)
+      val period = end - start
+      if (period >= 60 && period <= 180) {
+        Some(endDate)
+      } else {
+        None
+      }
+    }
+    Await.result(result, 5.seconds)
+  }
+
   val subjectForm = Form(
     mapping(
-      "Title" -> nonEmptyText(maxLength = 40)
+      "Title" -> nonEmptyText(maxLength = 40),
+      "End Date" -> nonEmptyText
     )(SubjectData.apply)(SubjectData.unapply)
+    verifying(
+      "End date must be later than start date",
+      fields => fields match {
+        case subjectData =>
+          validateDate(subjectData.endDate).isDefined
+      }
+    )
+    verifying(
+      "Subject period: 60 - 180 days",
+      fields => fields match {
+        case subjectData =>
+          validatePeriod(subjectData.endDate).isDefined
+      }
+    )
   )
 
   def edit(id: BSONObjectID) =
@@ -71,7 +126,10 @@ class SubjectController @Inject()(
           case Some(title) =>
             // Subject title exists
             val filledForm = subjectForm.fill(
-              SubjectData(request.subjectItem.title.get)
+              SubjectData(
+                request.subjectItem.title.get,
+                request.subjectItem.endDate.get
+              )
             )
             Ok(views.html.subjects.edit(request.subjectItem, filledForm))
           case None =>
@@ -92,23 +150,19 @@ class SubjectController @Inject()(
             }
           },
           subjectData => {
-            updateSubjectTitle(id, subjectData.title).map { _ =>
-              Redirect(routes.ClassController.index())
-                .flashing("success" -> "Successfully edited subject")
+            subjectRepo.read(id).flatMap { maybeSubject =>
+              val subject = maybeSubject.get
+                subjectRepo.update(id, subject.copy(
+                  title = Some(subjectData.title),
+                  endDate = Some(subjectData.endDate)
+                )).map { _ =>
+                  Logger.info(s"Updated Subject(${id})")
+                  Redirect(routes.ClassController.index())
+                    .flashing("success" -> "Successfully edited subject")
+                }
             }
           }
         )
-  }
-
-  // Update subject title in database
-  def updateSubjectTitle(id: BSONObjectID, newTitle: String): Future[Unit] = {
-    subjectRepo.read(id).map { maybeSubject =>
-      maybeSubject.map { subject =>
-        subjectRepo.update(id, subject.copy(title = Some(newTitle))).map { _ =>
-          Logger.info(s"Updated Subject(${id}, ${newTitle})")
-        }
-      }
-    }
   }
 
 }

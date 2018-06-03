@@ -14,7 +14,7 @@
       <h1>Edit Subject</h1>
       <h5 class="mt-2">
         <strong>@subject.code</strong>
-        <small class="text-muted">@subject.semester</small>
+        <small class="text-muted" id="start-date">@subject.semester</small>
       </h5>
     </div>
   </div>
@@ -29,6 +29,17 @@
           'class -> "form-control",
           'placeholder -> "Subject title"
         )
+        @helper.inputText(
+          subjectForm("End Date"),
+          'id -> "end-date",
+          'class -> "form-control datepicker",
+          'placeholder -> "Subject end date"
+        )
+      }
+      @if(subjectForm.hasGlobalErrors) {
+        @for(error <- subjectForm.globalErrors) {
+          <error class="gone">@error.format</error>
+        }
       }
     </div>
   </div>

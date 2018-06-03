@@ -15,6 +15,23 @@ export function forms() {
     });
   });
 
+  // Material datepicker
+  var datePicker = $(".datepicker");
+  var startDate = $("#start-date");
+  var minimumDate = new Date(
+    parseInt(startDate.text().substring(0, 4)),
+    parseInt(startDate.text().substring(5, 7)) - 1,
+    parseInt(startDate.text().substring(8, 10)) + 1
+  );
+  datePicker.pickadate({
+    format: "yyyy-mm-dd",
+    min: minimumDate,
+    closeOnSelect: false,
+    closeOnClear: false,
+    today: "",
+    clear: ""
+  });
+
   // Material autocomplete
   var autocomplete = $("#venue");
   var venues = $("venueSelection");
@@ -48,6 +65,7 @@ export function forms() {
         timePickers.each(function() {
           $(this).addClass("invalid");
         });
+        datePicker.addClass("invalid");
       }
     });
   }

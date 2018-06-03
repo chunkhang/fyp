@@ -13,6 +13,7 @@ case class Subject(
   _id: Option[BSONObjectID] = None,
   code: String,
   semester: String,
+  endDate: Option[String] = None,
   title: Option[String] = None,
   userId: BSONObjectID
 ) extends Entity
