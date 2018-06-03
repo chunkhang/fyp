@@ -2,27 +2,33 @@
 
 export function calendar() {
 
-  // Fetch events for calendar
+  // Initial calendar
+  var calendar = $("#calendar");
+  renderCalendar();
+
+  // Fetch events for calendars
   $.ajax({
     method: "GET",
     url: "/calendar/events",
     dataType: "json",
     timeout: 3000,
     success: function(response) {
-      renderCalendar(response);
+      renderCalendarEvents(response);
     },
     error: function() {
-      renderCalendar([]);
       console.log("Failed to fetch calendar events");
     }
   });
 
-  // Render calendar with given events
-  function renderCalendar(eventList) {
-    var calendar = $("#calendar");
+  // Render empty calendar
+  function renderCalendar() {
     calendar.fullCalendar({
-      events: eventList
     });
+  }
+
+  // Render events on calendar
+  function renderCalendarEvents(events) {
+    calendar.fullCalendar("renderEvents", events);
   }
 
 }
