@@ -29,7 +29,6 @@ export function calendar() {
         today: "Today"
       },
       nowIndicator: true,
-      // scrollTime: "08:00:00",
       minTime: "08:00:00",
       maxTime: "18:00:00",
       businessHours: {
@@ -37,18 +36,19 @@ export function calendar() {
         start: "08:00",
         end: "18:00"
       },
-      viewRender: handleViewRender,
-      dayClick: handleDayClick
+      contentHeight: "auto",
+      viewRender: handleNewView,
+      dayClick: handleClickDay
     });
   }
 
-  function handleViewRender(view, element) {
+  function handleNewView(view, element) {
     if (view.name != "timelineDay") {
       calendar.fullCalendar("today");
     }
   }
 
-  function handleDayClick(date, event, view, resource) {
+  function handleClickDay(date, event, view, resource) {
     if (view.name == "month") {
       calendar.fullCalendar("gotoDate", date.format());
       calendar.fullCalendar("changeView", "timelineDay");

@@ -111,6 +111,18 @@ class ClassController @Inject()(
     }
   }
 
+  def validateHours(startTime: String, endTime: String) = {
+    val start = timeInteger(startTime)
+    val end = timeInteger(endTime)
+    val min = timeInteger("08:00AM")
+    val max = timeInteger("06:00PM")
+    if (start >= min && end <= max) {
+      Some(startTime, endTime)
+    } else {
+      None
+    }
+  }
+
   def validateDuration(startTime: String, endTime: String) = {
     val start = timeInteger(startTime)
     val end = timeInteger(endTime)
@@ -148,6 +160,13 @@ class ClassController @Inject()(
         fields => fields match {
           case classData =>
             validateTimes(classData.startTime, classData.endTime).isDefined
+        }
+      )
+      verifying(
+        "Class hours: 08:00AM - 06:00PM",
+        fields => fields match {
+          case classData =>
+            validateHours(classData.startTime, classData.endTime).isDefined
         }
       )
       verifying(
