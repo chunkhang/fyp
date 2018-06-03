@@ -24,15 +24,29 @@ export function calendar() {
   function initializeCalender() {
     calendar.fullCalendar({
       header: {
-        center: "month,timelineDay"
+        left: "month,listWeek",
+        center: "title"
       },
-      schedulerLicenseKey: "CC-Attribution-NonCommercial-NoDerivatives"
+      buttonText: {
+        month: "Month",
+        listWeek: "Week",
+        today: "Today"
+      },
+      schedulerLicenseKey: "CC-Attribution-NonCommercial-NoDerivatives",
+      dayClick: handleDayClick
     });
   }
 
   // Render events on calendar
   function renderCalendarEvents(events) {
     calendar.fullCalendar("renderEvents", events);
+  }
+
+  // Handler function for day click in month view
+  function handleDayClick(date, event, view) {
+    // Change to timeline view
+    console.log("Day click!");
+    
   }
 
 }
