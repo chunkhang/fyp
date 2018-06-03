@@ -177,4 +177,10 @@ $(document).ready(function() {
     event.stopPropagation();
   });
 
+  /* Calendar */
+
+  var calendar = $("#calendar");
+  calendar.fullCalendar({
+  });
+
 });
