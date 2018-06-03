@@ -24,14 +24,15 @@ export function calendar() {
   function initializeCalender() {
     calendar.fullCalendar({
       header: {
-        left: "month,listWeek",
+        left: "month,agendaWeek",
         center: "title"
       },
       buttonText: {
         month: "Month",
-        listWeek: "Week",
+        agendaWeek: "Week",
         today: "Today"
       },
+      nowIndicator: true,
       schedulerLicenseKey: "CC-Attribution-NonCommercial-NoDerivatives",
       dayClick: handleDayClick
     });
@@ -44,9 +45,11 @@ export function calendar() {
 
   // Handler function for day click in month view
   function handleDayClick(date, event, view) {
-    // Change to timeline view
-    console.log("Day click!");
-    
+    if (view.name == "month") {
+      // Change to timeline view
+      calendar.fullCalendar("gotoDate", date.format());
+      calendar.fullCalendar("changeView", "timelineDay");
+    }
   }
 
 }
