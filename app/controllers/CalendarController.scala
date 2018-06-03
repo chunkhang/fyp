@@ -1,6 +1,5 @@
 package controllers
 
-import java.text.SimpleDateFormat
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 import scala.collection.mutable.ListBuffer
@@ -8,12 +7,13 @@ import play.api.mvc._
 import play.api.libs.json._
 import play.api.libs.functional.syntax._
 import models._
+import utils.Utils
 
 class CalendarController @Inject()(
   cc: ControllerComponents,
   userAction: UserAction,
   classController: ClassController,
-  subjectController: SubjectController
+  utils: Utils
 )(
   implicit ec: ExecutionContext
 ) extends AbstractController(cc) {
@@ -43,11 +43,11 @@ class CalendarController @Inject()(
       val email = request.user.email
       getEvents(email).map { events =>
         // Filter events based on queried date range
-        val startInteger = subjectController.dateInteger(start)
-        val endInteger = subjectController.dateInteger(end)
+        val startInteger = utils.dateInteger(start)
+        val endInteger = utils.dateInteger(end)
         val filteredEvents = events.filter { event =>
-          subjectController.dateInteger(event.start) >= startInteger &&
-          subjectController.dateInteger(event.end) <= endInteger
+          utils.dateInteger(event.start) >= startInteger &&
+          utils.dateInteger(event.end) <= endInteger
         }
         Ok(Json.toJson(filteredEvents))
       }
@@ -80,24 +80,14 @@ class CalendarController @Inject()(
               id = class_._id.get.stringify,
               title = s"${subject.code} ${class_.category} ${class_.group}",
               allDay = false,
-              start = s"2018-06-04T${timeString(class_.startTime.get)}",
-              end = s"2018-06-04T${timeString(class_.endTime.get)}"
+              start = s"2018-06-04T${utils.timeString(class_.startTime.get)}",
+              end = s"2018-06-04T${utils.timeString(class_.endTime.get)}"
             )
           }
         case None =>
           events.toList
       }
     }
-  }
-
-  // Convert time string in database to moment time string
-  def timeString(time: String): String = {
-    // Convert to 24-hour format
-    val inputTimeFormat = new SimpleDateFormat("hh:mma")
-    val outputTimeFormat = new SimpleDateFormat("HH:mm")
-    val timeObject = inputTimeFormat.parse(time)
-    val convertedTime = outputTimeFormat.format(timeObject)
-    convertedTime + ":00"
   }
 
 }

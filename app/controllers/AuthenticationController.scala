@@ -10,19 +10,21 @@ import play.api.Configuration
 import play.api.http.HeaderNames.AUTHORIZATION
 import reactivemongo.bson.BSONObjectID
 import models._
+import utils.Utils
 
 class AuthenticationController @Inject()(
   cc: ControllerComponents,
   ws: WSClient,
   config: Configuration,
-  userRepo: UserRepository
+  userRepo: UserRepository,
+  utils: Utils
 )(
   implicit ec: ExecutionContext
 ) extends AbstractController(cc) {
 
   def logon = Action { implicit request =>
     // GET request to logon page
-    val logonUrl = urlWithParams(config.get[String]("my.auth.logonUrl"),
+    val logonUrl = utils.urlWithParams(config.get[String]("my.auth.logonUrl"),
       Map(
         "client_id" -> config.get[String]("my.auth.clientId"),
         "redirect_uri" -> config.get[String]("my.auth.authUri"),
@@ -74,12 +76,6 @@ class AuthenticationController @Inject()(
     // Clear session
     Redirect(routes.PageController.login())
       .withNewSession
-  }
-
-  def urlWithParams(url: String, params: Map[String, String]) = {
-    url + "?" + params.foldLeft("")( (acc, kv) =>
-      acc + "&" + kv._1 + "=" + kv._2
-    ).substring(1)
   }
 
   // Process code to obtain tokens and user information

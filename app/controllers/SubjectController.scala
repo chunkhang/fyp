@@ -10,6 +10,7 @@ import play.api.data.validation.Constraints._
 import play.api.Logger
 import reactivemongo.bson.BSONObjectID
 import models._
+import utils.Utils
 
 case class SubjectData(
   title: String,
@@ -20,7 +21,8 @@ class SubjectController @Inject()(
   cc: ControllerComponents,
   userAction: UserAction,
   userRepo: UserRepository,
-  subjectRepo: SubjectRepository
+  subjectRepo: SubjectRepository,
+  utils: Utils
 )(
   implicit ec: ExecutionContext
 ) extends AbstractController(cc) with play.api.i18n.I18nSupport {
@@ -62,19 +64,10 @@ class SubjectController @Inject()(
     }
   }
 
-  // Convert date string to integer for comparison
-  def dateInteger(date: String): Int = {
-    // Convert to total days
-    val years = date.slice(0, 4).toInt
-    val months = date.slice(5, 7).toInt
-    val days = date.slice(8, 10).toInt
-    (years * 365) + (months * 30) + days
-  }
-
   def validateDate(endDate: String) = {
     val result = subjectRepo.readAll().map { subjects =>
-      val start = dateInteger(subjects(0).semester)
-      val end = dateInteger(endDate)
+      val start = utils.dateInteger(subjects(0).semester)
+      val end = utils.dateInteger(endDate)
       if (end > start) {
         Some(endDate)
       } else {
@@ -86,8 +79,8 @@ class SubjectController @Inject()(
 
   def validatePeriod(endDate: String) = {
     val result = subjectRepo.readAll().map { subjects =>
-      val start = dateInteger(subjects(0).semester)
-      val end = dateInteger(endDate)
+      val start = utils.dateInteger(subjects(0).semester)
+      val end = utils.dateInteger(endDate)
       val period = end - start
       if (period >= 60 && period <= 180) {
         Some(endDate)

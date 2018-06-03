@@ -1,6 +1,5 @@
 package controllers
 
-import java.text.SimpleDateFormat
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future, Await}
 import scala.concurrent.duration._
@@ -15,6 +14,7 @@ import play.api.libs.json.Json
 import play.api.{Logger, Configuration}
 import reactivemongo.bson.BSONObjectID
 import models._
+import utils.Utils
 
 case class ClassData(
   day: String,
@@ -31,7 +31,8 @@ class ClassController @Inject()(
   userRepo: UserRepository,
   subjectRepo: SubjectRepository,
   classRepo: ClassRepository,
-  venueRepo: VenueRepository
+  venueRepo: VenueRepository,
+  utils: Utils
 )(
   implicit ec: ExecutionContext
 ) extends AbstractController(cc) with play.api.i18n.I18nSupport {
@@ -88,22 +89,9 @@ class ClassController @Inject()(
     }
   }
 
-  // Convert time string to integer for comparison
-  def timeInteger(time: String): Int = {
-    // Convert to 24-hour format
-    val inputTimeFormat = new SimpleDateFormat("hh:mma")
-    val outputTimeFormat = new SimpleDateFormat("HH:mm")
-    val timeObject = inputTimeFormat.parse(time)
-    val convertedTime = outputTimeFormat.format(timeObject)
-    // Convert to total minutes
-    val hours = convertedTime.slice(0, 2).toInt
-    val minutes = convertedTime.slice(3, 5).toInt
-    (hours * 60) + minutes
-  }
-
   def validateTimes(startTime: String, endTime: String) = {
-    val start = timeInteger(startTime)
-    val end = timeInteger(endTime)
+    val start = utils.timeInteger(startTime)
+    val end = utils.timeInteger(endTime)
     if (end > start) {
       Some(startTime, endTime)
     } else {
@@ -112,10 +100,10 @@ class ClassController @Inject()(
   }
 
   def validateHours(startTime: String, endTime: String) = {
-    val start = timeInteger(startTime)
-    val end = timeInteger(endTime)
-    val min = timeInteger("08:00AM")
-    val max = timeInteger("06:00PM")
+    val start = utils.timeInteger(startTime)
+    val end = utils.timeInteger(endTime)
+    val min = utils.timeInteger("08:00AM")
+    val max = utils.timeInteger("06:00PM")
     if (start >= min && end <= max) {
       Some(startTime, endTime)
     } else {
@@ -124,8 +112,8 @@ class ClassController @Inject()(
   }
 
   def validateDuration(startTime: String, endTime: String) = {
-    val start = timeInteger(startTime)
-    val end = timeInteger(endTime)
+    val start = utils.timeInteger(startTime)
+    val end = utils.timeInteger(endTime)
     val duration = end - start
     if (duration >= 60 && duration <= 180) {
       Some(startTime, endTime)
