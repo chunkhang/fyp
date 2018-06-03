@@ -33,19 +33,13 @@ export function calendar() {
       maxTime: "18:00:00",
       hiddenDays: [0],
       contentHeight: "auto",
-      viewRender: handleNewView,
       dayClick: handleClickDay
     });
   }
 
-  function handleNewView(view, element) {
-    if (view.name != "timelineDay") {
-      calendar.fullCalendar("today");
-    }
-  }
-
   function handleClickDay(date, event, view, resource) {
     if (view.name == "month") {
+      // Open timeline view
       calendar.fullCalendar("gotoDate", date.format());
       calendar.fullCalendar("changeView", "timelineDay");
     }
