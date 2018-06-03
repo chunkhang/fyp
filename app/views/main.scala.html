@@ -15,7 +15,7 @@
     <title>@title - Class Activity Management System</title>
     <!-- Favicon -->
     <link rel="shortcut icon" type="image/png" href='@routes.Assets.versioned("images/favicon.svg")'/>
-    <!-- Bootstrap core CSS -->
+    <!-- Bootstrap Core CSS -->
     <link rel="stylesheet" href='@routes.Assets.versioned("stylesheets/bootstrap.min.css")'>
     <!-- Material Design Bootstrap -->
     <link rel="stylesheet" href='@routes.Assets.versioned("stylesheets/mdb.min.css")'>
@@ -23,12 +23,14 @@
     <link rel="stylesheet" href='@routes.Assets.versioned("stylesheets/materialdesignicons.min.css")'>
     <!-- Full Calendar -->
     <link rel="stylesheet" href='@routes.Assets.versioned("stylesheets/fullcalendar.min.css")'>
+    <!-- Full Calendar Scheduler -->
+    <link rel="stylesheet" href='@routes.Assets.versioned("stylesheets/scheduler.min.css")'>
     <!-- Main stylesheet -->
     <link rel="stylesheet" href='@routes.Assets.versioned("stylesheets/main.css")'>
-    <!-- JQuery -->
-    <script type="text/javascript" src='@routes.Assets.versioned("javascripts/jquery-3.2.1.min.js")'></script>
     <!-- Moment -->
     <script type="text/javascript" src='@routes.Assets.versioned("javascripts/moment.min.js")'></script>
+    <!-- JQuery -->
+    <script type="text/javascript" src='@routes.Assets.versioned("javascripts/jquery-3.2.1.min.js")'></script>
   </head>
   <body>
     @components.navbar(request, activeIndex)
@@ -36,14 +38,16 @@
       @components.alert(flash)
       @content
     </div>
-    <!-- Bootstrap tooltips -->
+    <!-- Bootstrap Tooltips -->
     <script type="text/javascript" src='@routes.Assets.versioned("javascripts/popper.min.js")'></script>
-    <!-- Bootstrap core JavaScript -->
+    <!-- Bootstrap Core JavaScript -->
     <script type="text/javascript" src='@routes.Assets.versioned("javascripts/bootstrap.min.js")'></script>
-    <!-- MDB core JavaScript -->
+    <!-- MDB Core JavaScript -->
     <script type="text/javascript" src='@routes.Assets.versioned("javascripts/mdb.min.js")'></script>
     <!-- Full Calendar -->
     <script type="text/javascript" src='@routes.Assets.versioned("javascripts/fullcalendar.min.js")'></script>
+    <!-- Full Calendar Scheduler -->
+    <script type="text/javascript" src='@routes.Assets.versioned("javascripts/scheduler.min.js")'></script>
     <!-- Main JavaScript -->
     <script type="module" src='@routes.Assets.versioned("javascripts/main.js")'></script>
   </body>

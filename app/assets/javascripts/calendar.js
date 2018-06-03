@@ -2,9 +2,9 @@
 
 export function calendar() {
 
-  // Initial calendar
+  // Initialize calendar
   var calendar = $("#calendar");
-  renderCalendar();
+  initializeCalender();
 
   // Fetch events for calendars
   $.ajax({
@@ -21,8 +21,12 @@ export function calendar() {
   });
 
   // Render empty calendar
-  function renderCalendar() {
+  function initializeCalender() {
     calendar.fullCalendar({
+      header: {
+        center: "month,timelineDay"
+      },
+      schedulerLicenseKey: "CC-Attribution-NonCommercial-NoDerivatives"
     });
   }
 
