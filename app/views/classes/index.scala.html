@@ -41,9 +41,9 @@
                 <br>
                 <small class="detail">
                   @if(subject.title.isDefined) {
-                    @subject.title.get
+                    @subject.title.get <strong>&middot;</strong> Ends @subject.endDate.get
                   } else {
-                    (No name)
+                    (No details)
                   }
                 </small>
               </div>
