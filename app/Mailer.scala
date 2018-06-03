@@ -1,4 +1,4 @@
-package mailer
+package com.chunkhang.fyp
 
 import java.io.File
 import javax.inject.Inject
