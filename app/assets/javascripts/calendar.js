@@ -6,47 +6,50 @@ export function calendar() {
   var calendar = $("#calendar");
   initializeCalender();
 
-  // Fetch events for calendars
-  $.ajax({
-    method: "GET",
-    url: "/calendar/events",
-    dataType: "json",
-    timeout: 3000,
-    success: function(response) {
-      renderCalendarEvents(response);
-    },
-    error: function() {
-      console.log("Failed to fetch calendar events");
-    }
-  });
-
-  // Render empty calendar
   function initializeCalender() {
     calendar.fullCalendar({
+      schedulerLicenseKey: "CC-Attribution-NonCommercial-NoDerivatives",
+      eventSources: [
+        {
+          url: "/calendar/events",
+          type: "GET",
+          error: function() {
+            console.log("Failed to fetch calendar events");
+          }
+        }
+      ],
       header: {
-        left: "month,agendaWeek",
+        left: "month,agendaWeek,listWeek",
         center: "title"
       },
       buttonText: {
         month: "Month",
         agendaWeek: "Week",
+        listWeek: "List",
         today: "Today"
       },
       nowIndicator: true,
-      schedulerLicenseKey: "CC-Attribution-NonCommercial-NoDerivatives",
+      // scrollTime: "08:00:00",
+      minTime: "08:00:00",
+      maxTime: "18:00:00",
+      businessHours: {
+        dow: [1, 2, 3, 4, 5, 6],
+        start: "08:00",
+        end: "18:00"
+      },
+      viewRender: handleViewRender,
       dayClick: handleDayClick
     });
   }
 
-  // Render events on calendar
-  function renderCalendarEvents(events) {
-    calendar.fullCalendar("renderEvents", events);
+  function handleViewRender(view, element) {
+    if (view.name != "timelineDay") {
+      calendar.fullCalendar("today");
+    }
   }
 
-  // Handler function for day click in month view
-  function handleDayClick(date, event, view) {
+  function handleDayClick(date, event, view, resource) {
     if (view.name == "month") {
-      // Change to timeline view
       calendar.fullCalendar("gotoDate", date.format());
       calendar.fullCalendar("changeView", "timelineDay");
     }
