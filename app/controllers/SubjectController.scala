@@ -10,7 +10,7 @@ import play.api.data.validation.Constraints._
 import play.api.Logger
 import reactivemongo.bson.BSONObjectID
 import models._
-import utils.Utils
+import helpers.Utils
 
 case class SubjectData(
   title: String,

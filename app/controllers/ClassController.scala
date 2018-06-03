@@ -14,7 +14,7 @@ import play.api.libs.json.Json
 import play.api.{Logger, Configuration}
 import reactivemongo.bson.BSONObjectID
 import models._
-import utils.Utils
+import helpers.Utils
 
 case class ClassData(
   day: String,

@@ -1,4 +1,4 @@
-package com.chunkhang.fyp
+package helpers
 
 object MaterialHelper {
   import views.html.helper.FieldConstructor

@@ -7,7 +7,7 @@ import play.api.mvc._
 import play.api.libs.json._
 import play.api.libs.functional.syntax._
 import models._
-import utils.Utils
+import helpers.Utils
 
 class CalendarController @Inject()(
   cc: ControllerComponents,

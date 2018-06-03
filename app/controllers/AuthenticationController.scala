@@ -10,7 +10,7 @@ import play.api.Configuration
 import play.api.http.HeaderNames.AUTHORIZATION
 import reactivemongo.bson.BSONObjectID
 import models._
-import utils.Utils
+import helpers.Utils
 
 class AuthenticationController @Inject()(
   cc: ControllerComponents,
