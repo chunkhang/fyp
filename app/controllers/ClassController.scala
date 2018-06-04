@@ -90,8 +90,8 @@ class ClassController @Inject()(
   }
 
   def validateTimes(startTime: String, endTime: String) = {
-    val start = utils.timeInteger(startTime)
-    val end = utils.timeInteger(endTime)
+    val start = utils.totalMinutes(startTime)
+    val end = utils.totalMinutes(endTime)
     if (end > start) {
       Some(startTime, endTime)
     } else {
@@ -100,10 +100,10 @@ class ClassController @Inject()(
   }
 
   def validateHours(startTime: String, endTime: String) = {
-    val start = utils.timeInteger(startTime)
-    val end = utils.timeInteger(endTime)
-    val min = utils.timeInteger("08:00AM")
-    val max = utils.timeInteger("06:00PM")
+    val start = utils.totalMinutes(startTime)
+    val end = utils.totalMinutes(endTime)
+    val min = utils.totalMinutes("08:00AM")
+    val max = utils.totalMinutes("06:00PM")
     if (start >= min && end <= max) {
       Some(startTime, endTime)
     } else {
@@ -112,8 +112,8 @@ class ClassController @Inject()(
   }
 
   def validateDuration(startTime: String, endTime: String) = {
-    val start = utils.timeInteger(startTime)
-    val end = utils.timeInteger(endTime)
+    val start = utils.totalMinutes(startTime)
+    val end = utils.totalMinutes(endTime)
     val duration = end - start
     if (duration >= 60 && duration <= 180) {
       Some(startTime, endTime)

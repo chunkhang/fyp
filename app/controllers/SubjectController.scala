@@ -66,8 +66,8 @@ class SubjectController @Inject()(
 
   def validateDate(endDate: String) = {
     val result = subjectRepo.readAll().map { subjects =>
-      val start = utils.dateInteger(subjects(0).semester)
-      val end = utils.dateInteger(endDate)
+      val start = utils.totalDays(subjects(0).semester)
+      val end = utils.totalDays(endDate)
       if (end > start) {
         Some(endDate)
       } else {
@@ -79,8 +79,8 @@ class SubjectController @Inject()(
 
   def validatePeriod(endDate: String) = {
     val result = subjectRepo.readAll().map { subjects =>
-      val start = utils.dateInteger(subjects(0).semester)
-      val end = utils.dateInteger(endDate)
+      val start = utils.totalDays(subjects(0).semester)
+      val end = utils.totalDays(endDate)
       val period = end - start
       if (period >= 60 && period <= 180) {
         Some(endDate)

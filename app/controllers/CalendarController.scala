@@ -45,11 +45,11 @@ class CalendarController @Inject()(
       val email = request.user.email
       getEvents(email).map { events =>
         // Filter events based on queried date range
-        val startInteger = utils.dateInteger(start)
-        val endInteger = utils.dateInteger(end)
+        val startInteger = utils.totalDays(start)
+        val endInteger = utils.totalDays(end)
         val filteredEvents = events.filter { event =>
-          utils.dateInteger(event.start) >= startInteger &&
-          utils.dateInteger(event.end) <= endInteger
+          utils.totalDays(event.start) >= startInteger &&
+          utils.totalDays(event.end) <= endInteger
         }
         Ok(Json.toJson(filteredEvents))
       }
@@ -76,17 +76,26 @@ class CalendarController @Inject()(
           classItems = classItems.filter { classItem =>
             classItem._2.day.isDefined
           }
-          classItems.toList.map { classItem =>
+          // First day of classes
+          val firstClasses = classItems.toList.map { classItem =>
             val (subject, class_, venue) = classItem
             Event(
               id = class_._id.get.stringify,
               title = s"${subject.code} ${class_.category} ${class_.group}",
               allDay = false,
-              start = s"2018-06-04T${utils.timeString(class_.startTime.get)}",
-              end = s"2018-06-04T${utils.timeString(class_.endTime.get)}",
+              start = utils.momentTime(
+                utils.firstDate(subject.semester, class_.day.get),
+                class_.startTime.get
+              ),
+              end = utils.momentTime(
+                // subject.endDate.get,
+                utils.firstDate(subject.semester, class_.day.get),
+                class_.endTime.get
+              ),
               venue = venue.get
             )
           }
+          firstClasses
         case None =>
           events.toList
       }

@@ -14,7 +14,8 @@ libraryDependencies ++= Seq(
   specs2 % Test,
   "org.reactivemongo" %% "play2-reactivemongo" % "0.13.0-play26",
   "com.typesafe.play" %% "play-mailer" % "6.0.1",
-  "com.typesafe.play" %% "play-mailer-guice" % "6.0.1"
+  "com.typesafe.play" %% "play-mailer-guice" % "6.0.1",
+  "com.github.nscala-time" %% "nscala-time" % "2.20.0"
 ).map(_.exclude("org.slf4j", "*"))
 
 evictionWarningOptions in update := EvictionWarningOptions.default
