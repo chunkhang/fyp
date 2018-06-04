@@ -30,7 +30,9 @@ export function calendar() {
       },
       nowIndicator: true,
       businessHours: {
-        dow: [1, 2, 3, 4, 5, 6]
+        dow: [1, 2, 3, 4, 5, 6],
+        start: "08:00",
+        end: "18:00"
       },
       minTime: "08:00:00",
       maxTime: "18:00:00",
