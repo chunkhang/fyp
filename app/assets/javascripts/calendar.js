@@ -29,9 +29,11 @@ export function calendar() {
         today: "Today"
       },
       nowIndicator: true,
+      businessHours: {
+        dow: [1, 2, 3, 4, 5, 6]
+      },
       minTime: "08:00:00",
       maxTime: "18:00:00",
-      hiddenDays: [0],
       contentHeight: "auto",
       dayClick: handleClickDay
     });
@@ -39,9 +41,15 @@ export function calendar() {
 
   function handleClickDay(date, event, view, resource) {
     if (view.name == "month") {
-      // Open timeline view
-      calendar.fullCalendar("gotoDate", date.format());
-      calendar.fullCalendar("changeView", "timelineDay");
+      var viewMonth = view.intervalStart.format("M");
+      var clickedMonth = date.format("M");
+      var clickedDayOfWeek = date.format("d");
+      // Current month and not Sunday
+      if (clickedMonth == viewMonth && clickedDayOfWeek != "0") {
+        // Open timeline view
+        calendar.fullCalendar("gotoDate", date.format());
+        calendar.fullCalendar("changeView", "timelineDay");
+      }
     }
   }
 
