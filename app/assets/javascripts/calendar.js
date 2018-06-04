@@ -37,11 +37,25 @@ export function calendar() {
       minTime: "08:00:00",
       maxTime: "18:00:00",
       contentHeight: "auto",
-      dayClick: handleClickDay
+      eventAfterRender: handleDoneRenderEvent,
+      eventAfterAllRender: handleDoneRenderAllEvents,
+      dayClick: handleClickDay,
     });
   }
 
-  function handleClickDay(date, event, view, resource) {
+  function handleDoneRenderEvent(event, element) {
+    // Set tooltip text
+    $(element).attr("title", event.venue);
+  }
+
+  function handleDoneRenderAllEvents() {
+    // Initalize tooltips
+    $(".fc-event").tooltip({
+      placement: "right"
+    });
+  }
+
+  function handleClickDay(date, jsEvent, view) {
     if (view.name == "month") {
       var viewMonth = view.intervalStart.format("M");
       var clickedMonth = date.format("M");

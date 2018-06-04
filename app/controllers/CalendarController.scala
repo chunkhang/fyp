@@ -23,7 +23,8 @@ class CalendarController @Inject()(
     title: String,
     allDay: Boolean,
     start: String,
-    end: String
+    end: String,
+    venue: String
   )
 
   implicit val eventWrites: Writes[Event] = (
@@ -31,7 +32,8 @@ class CalendarController @Inject()(
     (JsPath \ "title").write[String] and
     (JsPath \ "allDay").write[Boolean] and
     (JsPath \ "start").write[String] and
-    (JsPath \ "end").write[String]
+    (JsPath \ "end").write[String] and
+    (JsPath \ "venue").write[String]
   )(unlift(Event.unapply))
 
   def index = userAction { implicit request =>
@@ -81,7 +83,8 @@ class CalendarController @Inject()(
               title = s"${subject.code} ${class_.category} ${class_.group}",
               allDay = false,
               start = s"2018-06-04T${utils.timeString(class_.startTime.get)}",
-              end = s"2018-06-04T${utils.timeString(class_.endTime.get)}"
+              end = s"2018-06-04T${utils.timeString(class_.endTime.get)}",
+              venue = venue.get
             )
           }
         case None =>
