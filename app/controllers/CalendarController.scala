@@ -19,21 +19,21 @@ class CalendarController @Inject()(
 ) extends AbstractController(cc) {
 
   case class Event(
-    id: String,
     title: String,
     allDay: Boolean,
     start: String,
     end: String,
-    venue: String
+    venue: String,
+    startEditable: Boolean
   )
 
   implicit val eventWrites: Writes[Event] = (
-    (JsPath \ "id").write[String] and
     (JsPath \ "title").write[String] and
     (JsPath \ "allDay").write[Boolean] and
     (JsPath \ "start").write[String] and
     (JsPath \ "end").write[String] and
-    (JsPath \ "venue").write[String]
+    (JsPath \ "venue").write[String] and
+    (JsPath \ "startEditable").write[Boolean]
   )(unlift(Event.unapply))
 
   def index = userAction { implicit request =>
@@ -76,26 +76,27 @@ class CalendarController @Inject()(
           classItems = classItems.filter { classItem =>
             classItem._2.day.isDefined
           }
-          // First day of classes
-          val firstClasses = classItems.toList.map { classItem =>
+          // Create events
+          var events = ListBuffer[Event]()
+          classItems.toList.map { classItem =>
             val (subject, class_, venue) = classItem
-            Event(
-              id = class_._id.get.stringify,
-              title = s"${subject.code} ${class_.category} ${class_.group}",
-              allDay = false,
-              start = utils.momentTime(
-                utils.firstDate(subject.semester, class_.day.get),
-                class_.startTime.get
-              ),
-              end = utils.momentTime(
-                // subject.endDate.get,
-                utils.firstDate(subject.semester, class_.day.get),
-                class_.endTime.get
-              ),
-              venue = venue.get
-            )
+            // First day of class from start date
+            val firstDate = utils.firstDate(subject.semester, class_.day.get)
+            // Repeat classes weekly until end date
+            val dates =
+              utils.weeklyDates(firstDate, subject.endDate.get)
+            dates.foreach { date =>
+              events += Event(
+                title = s"${subject.code} ${class_.category} ${class_.group}",
+                allDay = false,
+                start = utils.momentTime(date, class_.startTime.get),
+                end = utils.momentTime(date, class_.endTime.get),
+                venue = venue.get,
+                startEditable = true
+              )
+            }
           }
-          firstClasses
+          events.toList
         case None =>
           events.toList
       }

@@ -1,5 +1,6 @@
 package helpers
 
+import scala.collection.mutable.ListBuffer
 import com.github.nscala_time.time.Imports._
 
 class Utils {
@@ -60,6 +61,22 @@ class Utils {
     }
     val firstDateTime = startDateTime + daysToAdd.days
     firstDateTime.toString(inputFormatter)
+  }
+
+  // Get all weekly recurring dates given first date and end date
+  def weeklyDates(firstDate: String, endDate: String): List[String] = {
+    val inputFormatter = DateTimeFormat.forPattern("yyyy-MM-dd")
+    val firstDateTime = inputFormatter.parseDateTime(firstDate)
+    val endDateTime = inputFormatter.parseDateTime(endDate)
+    var dates = ListBuffer[DateTime]()
+    var currentDateTime = firstDateTime
+    while (currentDateTime <= endDateTime) {
+      dates += currentDateTime
+      currentDateTime += 7.days
+    }
+    dates.toList.map { date =>
+      date.toString(inputFormatter)
+    }
   }
 
 }
