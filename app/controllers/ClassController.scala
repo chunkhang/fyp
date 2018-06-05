@@ -1,5 +1,6 @@
 package controllers
 
+import java.io._
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future, Await}
 import scala.concurrent.duration._
@@ -17,6 +18,7 @@ import biweekly._
 import biweekly.component._
 import models._
 import helpers.Utils
+import mailer.Mailer
 
 case class ClassData(
   day: String,
@@ -34,7 +36,8 @@ class ClassController @Inject()(
   subjectRepo: SubjectRepository,
   classRepo: ClassRepository,
   venueRepo: VenueRepository,
-  utils: Utils
+  utils: Utils,
+  mailer: Mailer
 )(
   implicit ec: ExecutionContext
 ) extends AbstractController(cc) with play.api.i18n.I18nSupport {
@@ -244,6 +247,18 @@ class ClassController @Inject()(
             },
             classData => {
               getVenueId(classData.venue).flatMap { venueId_ =>
+                // Create ical
+                val ical = new ICalendar()
+                val event = new VEvent()
+                event.setSummary("the summary")
+                ical.addEvent(event)
+                // Send email
+                mailer.sendIcs(
+                  subject = "New Class",
+                  toList = Seq("15011122@imail.sunway.edu.my"),
+                  ics = ical,
+                  filename = "fyp.ics"
+                )
                 classRepo.update(id, request.classItem.copy(
                   day = Some(classData.day),
                   startTime = Some(classData.startTime),
@@ -251,13 +266,6 @@ class ClassController @Inject()(
                   venueId = Some(venueId_)
                 )).map { _ =>
                   Logger.info(s"Updated Class(${id})")
-                  // Create ics string
-                  val ical = new ICalendar()
-                  val event = new VEvent()
-                  event.setSummary("the summary")
-                  ical.addEvent(event)
-                  val icsString = Biweekly.write(ical).go()
-                  Logger.info(icsString)
                   Redirect(routes.ClassController.index())
                     .flashing("success" -> "Successfully edited class")
                 }
