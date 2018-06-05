@@ -1,7 +1,13 @@
 package helpers
 
+import java.util.Date
+import java.text.SimpleDateFormat
 import scala.collection.mutable.ListBuffer
 import com.github.nscala_time.time.Imports._
+import biweekly._
+import biweekly.component._
+import biweekly.property._
+import biweekly.util._
 
 class Utils {
 
@@ -77,6 +83,54 @@ class Utils {
     dates.toList.map { date =>
       date.toString(inputFormatter)
     }
+  }
+
+  // Create ical event
+  def createIcal(
+    calendar: String,
+    title: String,
+    date: String,
+    startTime: String,
+    endTime: String,
+    location: String,
+    description: String,
+    recurUntil: Option[String] = None
+  ): (ICalendar, Uid) = {
+    val ical = new ICalendar()
+    // Calendar name
+    ical.addName(calendar)
+    val event = new VEvent()
+    // Uid
+    val uid = Uid.random()
+    event.setUid(uid)
+    // Title
+    event.setSummary(title)
+    // Date and time
+    val formatter = new SimpleDateFormat("yyyy-MM-dd hh:mmaa")
+    val dateStart = new DateStart(formatter.parse(s"${date} ${startTime}"))
+    val dateEnd = new DateEnd(formatter.parse(s"${date} ${endTime}"))
+    event.setDateStart(dateStart)
+    event.setDateEnd(dateEnd)
+    // Location
+    event.setLocation(location)
+    // Description
+    event.setDescription(description)
+    // Recurrence
+    if (recurUntil.isDefined) {
+      // Add one day to recurrence end date
+      val jodaFormatter = DateTimeFormat.forPattern("yyyy-MM-dd")
+      val recurEndDate =
+        (jodaFormatter.parseDateTime(recurUntil.get) + 1.day)
+        .toString(jodaFormatter)
+      val simpleFormatter = new SimpleDateFormat("yyyy-MM-dd")
+      val recurDateEnd = simpleFormatter.parse(recurEndDate)
+      val recurrenceRule =
+        new Recurrence.Builder(Frequency.WEEKLY).until(recurDateEnd, false)
+        .build()
+      event.setRecurrenceRule(recurrenceRule)
+    }
+    ical.addEvent(event)
+    (ical, uid)
   }
 
 }

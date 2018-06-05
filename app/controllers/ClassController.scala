@@ -1,6 +1,5 @@
 package controllers
 
-import java.io._
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future, Await}
 import scala.concurrent.duration._
@@ -14,8 +13,6 @@ import play.api.libs.ws._
 import play.api.libs.json.Json
 import play.api.{Logger, Configuration}
 import reactivemongo.bson.BSONObjectID
-import biweekly._
-import biweekly.component._
 import models._
 import helpers.Utils
 import mailer.Mailer
@@ -246,19 +243,40 @@ class ClassController @Inject()(
               }
             },
             classData => {
+              // Create ical
+              val (ical, uid) = utils.createIcal(
+                calendar = "Classes",
+                title =
+                  s"${request.subjectItem.title.get} " +
+                  s"(${request.classItem.category})",
+                date = utils.firstDate(
+                  request.subjectItem.semester,
+                  classData.day
+                ),
+                startTime = classData.startTime,
+                endTime = classData.endTime,
+                location = classData.venue,
+                description =
+                  s"Subject Code: ${request.subjectItem.code}\n" +
+                  s"Subject Name: ${request.subjectItem.title.get}\n" +
+                  s"Class Type: ${request.classItem.category}\n" +
+                  s"Class Group: ${request.classItem.group}\n" +
+                  s"Lecturer Name: ${request.user.name}\n" +
+                  s"Lecturer Email: ${request.user.email}",
+                recurUntil = Some(request.subjectItem.endDate.get)
+              )
+              // Send email
+              mailer.sendIcs(
+                subject =
+                  s"New Class: ${request.subjectItem.title.get} " +
+                  s"(${request.classItem.category})",
+                toList = request.classItem.students.map { student =>
+                  student + "@" + config.get[String]("my.domain.student")
+                },
+                lecturer = request.user.name,
+                ics = ical
+              )
               getVenueId(classData.venue).flatMap { venueId_ =>
-                // Create ical
-                val ical = new ICalendar()
-                val event = new VEvent()
-                event.setSummary("the summary")
-                ical.addEvent(event)
-                // Send email
-                mailer.sendIcs(
-                  subject = "New Class",
-                  toList = Seq("15011122@imail.sunway.edu.my"),
-                  ics = ical,
-                  filename = "fyp.ics"
-                )
                 classRepo.update(id, request.classItem.copy(
                   day = Some(classData.day),
                   startTime = Some(classData.startTime),

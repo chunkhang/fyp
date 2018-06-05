@@ -18,7 +18,7 @@ class CalendarController @Inject()(
   implicit ec: ExecutionContext
 ) extends AbstractController(cc) {
 
-  case class Event(
+  case class FullCalendarEvent(
     title: String,
     allDay: Boolean,
     start: String,
@@ -27,14 +27,14 @@ class CalendarController @Inject()(
     startEditable: Boolean
   )
 
-  implicit val eventWrites: Writes[Event] = (
+  implicit val eventWrites: Writes[FullCalendarEvent] = (
     (JsPath \ "title").write[String] and
     (JsPath \ "allDay").write[Boolean] and
     (JsPath \ "start").write[String] and
     (JsPath \ "end").write[String] and
     (JsPath \ "venue").write[String] and
     (JsPath \ "startEditable").write[Boolean]
-  )(unlift(Event.unapply))
+  )(unlift(FullCalendarEvent.unapply))
 
   def index = userAction { implicit request =>
     Ok(views.html.calendar.index())
@@ -56,9 +56,9 @@ class CalendarController @Inject()(
   }
 
   // Get all classes as calendar events
-  def getEvents(email: String): Future[List[Event]] = {
+  def getEvents(email: String): Future[List[FullCalendarEvent]] = {
     // Find subjects
-    var events = ListBuffer[Event]()
+    var events = ListBuffer[FullCalendarEvent]()
     classController.getClasses(email).map { maybeSubjectMap =>
       maybeSubjectMap match {
         case Some(subjectMap) =>
@@ -77,7 +77,7 @@ class CalendarController @Inject()(
             classItem._2.day.isDefined
           }
           // Create events
-          var events = ListBuffer[Event]()
+          var events = ListBuffer[FullCalendarEvent]()
           classItems.toList.map { classItem =>
             val (subject, class_, venue) = classItem
             // First day of class from start date
@@ -86,7 +86,7 @@ class CalendarController @Inject()(
             val dates =
               utils.weeklyDates(firstDate, subject.endDate.get)
             dates.foreach { date =>
-              events += Event(
+              events += FullCalendarEvent(
                 title = s"${subject.code} ${class_.category} ${class_.group}",
                 allDay = false,
                 start = utils.momentTime(date, class_.startTime.get),

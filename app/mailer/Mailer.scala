@@ -41,14 +41,17 @@ class Mailer @Inject()(
   def sendIcs(
     subject: String,
     toList: Seq[String],
-    ics: ICalendar,
-    filename: String
+    lecturer: String,
+    ics: ICalendar
   ) = {
     val body = s"""
-      |Hello!
-      |This is an email sent from Play Scala.
+      |Dear Student,
+      |
+      |Your lecturer, ${lecturer}, has just added a new class you are enrolled in.
+      |
+      |Attached is the ics file.
     """
-    val file = new File(s"/tmp/${filename}")
+    val file = new File(s"/tmp/CAMS.ics")
     Biweekly.write(ics).go(file)
     val attachments = Seq(
       AttachmentFile(file.getName(), file)
