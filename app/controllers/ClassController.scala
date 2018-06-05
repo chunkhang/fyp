@@ -13,6 +13,8 @@ import play.api.libs.ws._
 import play.api.libs.json.Json
 import play.api.{Logger, Configuration}
 import reactivemongo.bson.BSONObjectID
+import biweekly._
+import biweekly.component._
 import models._
 import helpers.Utils
 
@@ -249,6 +251,13 @@ class ClassController @Inject()(
                   venueId = Some(venueId_)
                 )).map { _ =>
                   Logger.info(s"Updated Class(${id})")
+                  // Create ics string
+                  val ical = new ICalendar()
+                  val event = new VEvent()
+                  event.setSummary("the summary")
+                  ical.addEvent(event)
+                  val icsString = Biweekly.write(ical).go()
+                  Logger.info(icsString)
                   Redirect(routes.ClassController.index())
                     .flashing("success" -> "Successfully edited class")
                 }
