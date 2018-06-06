@@ -66,7 +66,8 @@ class CalendarController @Inject()(
                     title =
                       s"${data.subjectItem.code}\n" +
                       s"${data.subjectItem.title.map(_+"\n").getOrElse("")}" +
-                      s"${data.classItem.category} Group ${data.classItem.group}",
+                      s"${data.classItem.category} " +
+                      s"Group ${data.classItem.group}",
                     start = data.start,
                     end = data.end
                   )
@@ -74,7 +75,11 @@ class CalendarController @Inject()(
               case "list" =>
                 events = eventData.map { data =>
                   Event(
-                    title = "List",
+                    title =
+                      s"${data.subjectItem.code}" +
+                      s"${data.subjectItem.title.map(" | "+_).getOrElse("")}" +
+                      s" | ${data.classItem.category} " +
+                      s"Group ${data.classItem.group}",
                     start = data.start,
                     end = data.end
                   )

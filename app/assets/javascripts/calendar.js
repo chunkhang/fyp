@@ -55,6 +55,10 @@ export function calendar() {
         columnHeaderFormat: "ddd, D/M",
         slotLabelFormat: "hh:mmA",
         allDayText: "All Day"
+      },
+      listWeek: {
+        listDayAltFormat: "MMM D, YYYY",
+        noEventsMessage: "No classes to display"
       }
     },
     slotEventOverlap: false,
