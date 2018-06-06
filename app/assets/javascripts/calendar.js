@@ -38,8 +38,7 @@ export function calendar() {
       maxTime: "18:00:00",
       contentHeight: "auto",
       eventAfterRender: handleDoneRenderEvent,
-      eventAfterAllRender: handleDoneRenderAllEvents,
-      dayClick: handleClickDay,
+      eventAfterAllRender: handleDoneRenderAllEvents
     });
   }
 
@@ -53,20 +52,6 @@ export function calendar() {
     $(".fc-event").tooltip({
       placement: "right"
     });
-  }
-
-  function handleClickDay(date, jsEvent, view) {
-    if (view.name == "month") {
-      var viewMonth = view.intervalStart.format("M");
-      var clickedMonth = date.format("M");
-      var clickedDayOfWeek = date.format("d");
-      // Current month and not Sunday
-      if (clickedMonth == viewMonth && clickedDayOfWeek != "0") {
-        // Open timeline view
-        calendar.fullCalendar("gotoDate", date.format());
-        calendar.fullCalendar("changeView", "timelineDay");
-      }
-    }
   }
 
 }
