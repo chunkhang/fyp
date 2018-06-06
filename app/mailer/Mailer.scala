@@ -41,15 +41,24 @@ class Mailer @Inject()(
   def sendIcs(
     subject: String,
     toList: Seq[String],
-    lecturer: String,
     ics: ICalendar
   ) = {
+    val event = ics.getEvents().get(0)
     val body = s"""
-      |Dear Student,
+      |Dear students,
       |
-      |Your lecturer, ${lecturer}, has just added a new class you are enrolled in.
+      |Below are the latest details for the class:
       |
-      |Attached is the ics file.
+      |##########
+      |
+      |${event.getDescription().getValue()}
+      |
+      |##########
+      |
+      |Please open the attached ics file to update your personal calendar.
+      |
+      |Best regards,
+      |Class Activity Management System
     """
     val file = new File(s"/tmp/CAMS.ics")
     Biweekly.write(ics).go(file)

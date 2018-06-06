@@ -267,6 +267,9 @@ class ClassController @Inject()(
                     var biweeklyIcal = new ICalendar()
                     var emailSubject =
                       s": ${subject.title.get} (${class_.category})"
+                    val emailTos = class_.students.map { student =>
+                      student + "@" + config.get[String]("my.domain.student")
+                    }
                     class_.uid match {
                       case Some(uid_) =>
                         // Update ical
@@ -278,7 +281,12 @@ class ClassController @Inject()(
                           ical = classIcal,
                           recurUntil = Some(subject.endDate.get)
                         )
-                        emailSubject = "Changes to Class" + emailSubject
+                        // Send ical
+                        mailer.sendIcs(
+                          subject = "Updated" + emailSubject,
+                          toList = emailTos,
+                          ics = biweeklyIcal
+                        )
                       case None =>
                         // Add ical
                         val uid_ = Uid.random()
@@ -289,13 +297,18 @@ class ClassController @Inject()(
                           ical = classIcal,
                           recurUntil = Some(subject.endDate.get)
                         )
-                        emailSubject = "New Class" + emailSubject
                         // Save uid
                         classRepo.update(id, class_.copy(
                           uid = Some(uid_.getValue())
                         )).map { _ =>
                           Logger.info(s"Updated Class(${id}, uid = ${uid_})")
                         }
+                        // Send ical
+                        mailer.sendIcs(
+                          subject = "Added" + emailSubject,
+                          toList = emailTos,
+                          ics = biweeklyIcal
+                        )
                     }
                     // Update ical sequence in database
                     classRepo.update(id, class_.copy(
@@ -305,15 +318,6 @@ class ClassController @Inject()(
                         s"Updated Class(${id}, sequence = ${sequence_})"
                       )
                     }
-                    // Send ical to students
-                    mailer.sendIcs(
-                      subject = emailSubject,
-                      toList = request.classItem.students.map { student =>
-                        student + "@" + config.get[String]("my.domain.student")
-                      },
-                      lecturer = request.user.name,
-                      ics = biweeklyIcal
-                    )
                   }
                   Redirect(routes.ClassController.index())
                     .flashing("success" -> "Successfully edited class")

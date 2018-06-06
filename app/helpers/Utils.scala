@@ -111,12 +111,14 @@ class Utils @Inject()(config: Configuration) {
       endTime = classItem.endTime.get,
       location = venue,
       description = s"""
-        |Subject Code: ${subjectItem.code}
-        |Subject Name: ${subjectItem.title.get}
-        |Class Type: ${classItem.category}
-        |Class Group: ${classItem.group}
-        |Lecturer Name: ${user.name}
-        |Lecturer Email: ${user.email}
+        |${subjectItem.title.get} (${subjectItem.code})
+        |${classItem.category} (Group ${classItem.group})
+        |
+        |Every ${classItem.day.get}
+        |${classItem.startTime.get} - ${classItem.endTime.get}
+        |${venue}
+        |
+        |${user.name} (${user.email})
       """.stripMargin.trim
     )
   }
