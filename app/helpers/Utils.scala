@@ -1,15 +1,27 @@
 package helpers
 
+import javax.inject.Inject
 import java.util.Date
 import java.text.SimpleDateFormat
 import scala.collection.mutable.ListBuffer
+import play.api.Configuration
 import com.github.nscala_time.time.Imports._
 import biweekly._
 import biweekly.component._
 import biweekly.property._
 import biweekly.util._
+import models._
 
-class Utils {
+case class Ical(
+  summary: String,
+  date: String,
+  startTime: String,
+  endTime: String,
+  location: String,
+  description: String
+)
+
+class Utils @Inject()(config: Configuration) {
 
   // Append url with query params
   def urlWithParams(url: String, params: Map[String, String]) = {
@@ -85,39 +97,55 @@ class Utils {
     }
   }
 
-  // Create ical event
-  def createIcal(
-    calendar: String,
-    title: String,
-    date: String,
-    startTime: String,
-    endTime: String,
-    location: String,
-    description: String,
+  // Generate ical object for class containing event details
+  def classIcal(
+    user: User,
+    subjectItem: Subject,
+    classItem: Class,
+    venue: String
+  ): Ical = {
+    Ical(
+      summary = s"${subjectItem.title.get} (${classItem.category})",
+      date = firstDate(subjectItem.semester, classItem.day.get),
+      startTime = classItem.startTime.get,
+      endTime = classItem.endTime.get,
+      location = venue,
+      description = s"""
+        |Subject Code: ${subjectItem.code}
+        |Subject Name: ${subjectItem.title.get}
+        |Class Type: ${classItem.category}
+        |Class Group: ${classItem.group}
+        |Lecturer Name: ${user.name}
+        |Lecturer Email: ${user.email}
+      """.stripMargin.trim
+    )
+  }
+
+  // Create biweekly ical event from ical object
+  def biweeklyIcal(
+    method: String,
+    uid: Uid,
+    sequence: Int,
+    ical: Ical,
     recurUntil: Option[String] = None
-  ): (ICalendar, Uid) = {
-    val ical = new ICalendar()
-    // Calendar name
-    ical.addName(calendar)
+  ): ICalendar = {
+    val icalendar = new ICalendar()
+    icalendar.setMethod(method)
     val event = new VEvent()
-    // Uid
-    val uid = Uid.random()
     event.setUid(uid)
-    // Title
-    event.setSummary(title)
-    // Date and time
+    event.setOrganizer(config.get[String]("play.mailer.user"))
+    event.setSequence(sequence)
+    event.setSummary(ical.summary)
     val formatter = new SimpleDateFormat("yyyy-MM-dd hh:mmaa")
-    val dateStart = new DateStart(formatter.parse(s"${date} ${startTime}"))
-    val dateEnd = new DateEnd(formatter.parse(s"${date} ${endTime}"))
+    val dateStart = new DateStart(
+      formatter.parse(s"${ical.date} ${ical.startTime}")
+    )
+    val dateEnd = new DateEnd(formatter.parse(s"${ical.date} ${ical.endTime}"))
     event.setDateStart(dateStart)
     event.setDateEnd(dateEnd)
-    // Location
-    event.setLocation(location)
-    // Description
-    event.setDescription(description)
-    // Recurrence
+    event.setLocation(ical.location)
+    event.setDescription(ical.description)
     if (recurUntil.isDefined) {
-      // Add one day to recurrence end date
       val jodaFormatter = DateTimeFormat.forPattern("yyyy-MM-dd")
       val recurEndDate =
         (jodaFormatter.parseDateTime(recurUntil.get) + 1.day)
@@ -129,8 +157,8 @@ class Utils {
         .build()
       event.setRecurrenceRule(recurrenceRule)
     }
-    ical.addEvent(event)
-    (ical, uid)
+    icalendar.addEvent(event)
+    icalendar
   }
 
 }

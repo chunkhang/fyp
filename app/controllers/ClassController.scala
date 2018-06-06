@@ -13,6 +13,8 @@ import play.api.libs.ws._
 import play.api.libs.json.Json
 import play.api.{Logger, Configuration}
 import reactivemongo.bson.BSONObjectID
+import biweekly._
+import biweekly.property._
 import models._
 import helpers.Utils
 import mailer.Mailer
@@ -243,39 +245,7 @@ class ClassController @Inject()(
               }
             },
             classData => {
-              // Create ical
-              val (ical, uid) = utils.createIcal(
-                calendar = "Classes",
-                title =
-                  s"${request.subjectItem.title.get} " +
-                  s"(${request.classItem.category})",
-                date = utils.firstDate(
-                  request.subjectItem.semester,
-                  classData.day
-                ),
-                startTime = classData.startTime,
-                endTime = classData.endTime,
-                location = classData.venue,
-                description =
-                  s"Subject Code: ${request.subjectItem.code}\n" +
-                  s"Subject Name: ${request.subjectItem.title.get}\n" +
-                  s"Class Type: ${request.classItem.category}\n" +
-                  s"Class Group: ${request.classItem.group}\n" +
-                  s"Lecturer Name: ${request.user.name}\n" +
-                  s"Lecturer Email: ${request.user.email}",
-                recurUntil = Some(request.subjectItem.endDate.get)
-              )
-              // Send email
-              mailer.sendIcs(
-                subject =
-                  s"New Class: ${request.subjectItem.title.get} " +
-                  s"(${request.classItem.category})",
-                toList = request.classItem.students.map { student =>
-                  student + "@" + config.get[String]("my.domain.student")
-                },
-                lecturer = request.user.name,
-                ics = ical
-              )
+              // Update class in database
               getVenueId(classData.venue).flatMap { venueId_ =>
                 classRepo.update(id, request.classItem.copy(
                   day = Some(classData.day),
@@ -284,6 +254,67 @@ class ClassController @Inject()(
                   venueId = Some(venueId_)
                 )).map { _ =>
                   Logger.info(s"Updated Class(${id})")
+                  getClassWithSubject(id).map { maybeTuple =>
+                    val (class_, subject) = maybeTuple.get
+                    // Create ical
+                    val classIcal = utils.classIcal(
+                      request.user,
+                      subject,
+                      class_,
+                      classData.venue
+                    )
+                    var sequence_ = 0
+                    var biweeklyIcal = new ICalendar()
+                    var emailSubject =
+                      s": ${subject.title.get} (${class_.category})"
+                    class_.uid match {
+                      case Some(uid_) =>
+                        // Update ical
+                        sequence_ = class_.sequence.get + 1
+                        biweeklyIcal = utils.biweeklyIcal(
+                          method= "Request",
+                          uid = new Uid(uid_),
+                          sequence = sequence_,
+                          ical = classIcal,
+                          recurUntil = Some(subject.endDate.get)
+                        )
+                        emailSubject = "Changes to Class" + emailSubject
+                      case None =>
+                        // Add ical
+                        val uid_ = Uid.random()
+                        biweeklyIcal = utils.biweeklyIcal(
+                          method= "Publish",
+                          uid = uid_,
+                          sequence = sequence_,
+                          ical = classIcal,
+                          recurUntil = Some(subject.endDate.get)
+                        )
+                        emailSubject = "New Class" + emailSubject
+                        // Save uid
+                        classRepo.update(id, class_.copy(
+                          uid = Some(uid_.getValue())
+                        )).map { _ =>
+                          Logger.info(s"Updated Class(${id}, uid = ${uid_})")
+                        }
+                    }
+                    // Update ical sequence in database
+                    classRepo.update(id, class_.copy(
+                      sequence = Some(sequence_)
+                    )).map { _ =>
+                      Logger.info(
+                        s"Updated Class(${id}, sequence = ${sequence_})"
+                      )
+                    }
+                    // Send ical to students
+                    mailer.sendIcs(
+                      subject = emailSubject,
+                      toList = request.classItem.students.map { student =>
+                        student + "@" + config.get[String]("my.domain.student")
+                      },
+                      lecturer = request.user.name,
+                      ics = biweeklyIcal
+                    )
+                  }
                   Redirect(routes.ClassController.index())
                     .flashing("success" -> "Successfully edited class")
                 }
