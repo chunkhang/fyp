@@ -53,7 +53,9 @@ class CalendarController @Inject()(
               case "month" =>
                 events = eventData.map { data =>
                   Event(
-                    title = "Month",
+                    title =
+                      s"${data.subjectItem.code} " +
+                      s"${data.classItem.category(0)}${data.classItem.group}",
                     start = data.start,
                     end = data.end
                   )

@@ -48,7 +48,14 @@ export function calendar() {
     minTime: "08:00:00",
     maxTime: "18:00:00",
     contentHeight: "auto",
-    viewRender: handleViewRender
+    eventLimit: true,
+    views: {
+      month: {
+        timeFormat: "hh:mmA"
+      }
+    },
+    viewRender: handleViewRender,
+    eventDataTransform: handleEventDataTransform
   });
 
   function handleEventSourceError() {
@@ -63,6 +70,13 @@ export function calendar() {
       calendar.fullCalendar("addEventSource", sources[view.name]);
       lastView = view.name;
     }
+  }
+
+  function handleEventDataTransform(eventData) {
+    var event = eventData;
+    event.backgroundColor = "#3f729b";
+    event.textColor = "#ffffff";
+    return event;
   }
 
 }

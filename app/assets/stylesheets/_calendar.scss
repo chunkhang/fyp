@@ -1,0 +1,22 @@
+.fc-day-header {
+  padding: 2px !important;
+}
+
+.fc-event {
+  margin-left: 5px;
+  margin-right: 5px;
+  margin-bottom: 2px;
+  .fc-content {
+    padding: 5px;
+    border: none;
+    font-size: 0.7rem;
+    .fc-time {
+      font-weight: bolder !important;
+      display: inline-block;
+      margin-right: 2px;
+    }
+    .fc-title {
+      font-weight: lighter !important;
+    }
+  }
+}
