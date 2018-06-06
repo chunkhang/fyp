@@ -49,13 +49,16 @@ export function calendar() {
     maxTime: "18:00:00",
     contentHeight: "auto",
     eventLimit: true,
+    timeFormat: "hh:mmA",
     views: {
-      month: {
-        timeFormat: "hh:mmA"
+      agendaWeek: {
+        columnHeaderFormat: "ddd, D/M",
+        slotLabelFormat: "hh:mmA",
+        allDayText: "All Day"
       }
     },
-    viewRender: handleViewRender,
-    eventDataTransform: handleEventDataTransform
+    slotEventOverlap: false,
+    viewRender: handleViewRender
   });
 
   function handleEventSourceError() {
@@ -70,13 +73,6 @@ export function calendar() {
       calendar.fullCalendar("addEventSource", sources[view.name]);
       lastView = view.name;
     }
-  }
-
-  function handleEventDataTransform(eventData) {
-    var event = eventData;
-    event.backgroundColor = "#3f729b";
-    event.textColor = "#ffffff";
-    return event;
   }
 
 }
