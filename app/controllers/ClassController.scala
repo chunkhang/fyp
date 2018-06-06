@@ -192,35 +192,43 @@ class ClassController @Inject()(
   def edit(id: BSONObjectID) =
     (userAction andThen ClassAction(id) andThen PermittedAction).async {
       implicit request =>
-        val daySelections = getDaySelections()
-        getVenueSelections().flatMap { venueSelections =>
-          request.classItem.day match {
-            case Some(day) =>
-              getVenueName(request.classItem.venueId.get).map { venueName =>
-                val filledForm = classForm.fill(ClassData(
-                  day = request.classItem.day.get,
-                  startTime = request.classItem.startTime.get,
-                  endTime = request.classItem.endTime.get,
-                  venue = venueName
-                ))
-                Ok(views.html.classes.edit(
-                  request.subjectItem,
-                  request.classItem,
-                  daySelections,
-                  venueSelections,
-                  filledForm
-                ))
-              }
-            case None =>
-              Future {
-                Ok(views.html.classes.edit(
-                  request.subjectItem,
-                  request.classItem,
-                  daySelections,
-                  venueSelections,
-                  classForm
-                ))
-              }
+        // Check if subject has details
+        if (request.subjectItem.title.isDefined) {
+          val daySelections = getDaySelections()
+          getVenueSelections().flatMap { venueSelections =>
+            request.classItem.day match {
+              case Some(day) =>
+                getVenueName(request.classItem.venueId.get).map { venueName =>
+                  val filledForm = classForm.fill(ClassData(
+                    day = request.classItem.day.get,
+                    startTime = request.classItem.startTime.get,
+                    endTime = request.classItem.endTime.get,
+                    venue = venueName
+                  ))
+                  Ok(views.html.classes.edit(
+                    request.subjectItem,
+                    request.classItem,
+                    daySelections,
+                    venueSelections,
+                    filledForm
+                  ))
+                }
+              case None =>
+                Future {
+                  Ok(views.html.classes.edit(
+                    request.subjectItem,
+                    request.classItem,
+                    daySelections,
+                    venueSelections,
+                    classForm
+                  ))
+                }
+            }
+          }
+        } else {
+          Future {
+            Redirect(routes.ClassController.index())
+              .flashing("danger" -> "Fill in details for subject first")
           }
         }
   }
