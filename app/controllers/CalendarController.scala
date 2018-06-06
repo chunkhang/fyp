@@ -23,8 +23,7 @@ class CalendarController @Inject()(
     allDay: Boolean,
     start: String,
     end: String,
-    venue: String,
-    startEditable: Boolean
+    venue: String
   )
 
   implicit val eventWrites: Writes[Event] = (
@@ -32,8 +31,7 @@ class CalendarController @Inject()(
     (JsPath \ "allDay").write[Boolean] and
     (JsPath \ "start").write[String] and
     (JsPath \ "end").write[String] and
-    (JsPath \ "venue").write[String] and
-    (JsPath \ "startEditable").write[Boolean]
+    (JsPath \ "venue").write[String]
   )(unlift(Event.unapply))
 
   def index = userAction { implicit request =>
@@ -91,8 +89,7 @@ class CalendarController @Inject()(
                 allDay = false,
                 start = utils.momentTime(date, class_.startTime.get),
                 end = utils.momentTime(date, class_.endTime.get),
-                venue = venue.get,
-                startEditable = true
+                venue = venue.get
               )
             }
           }
