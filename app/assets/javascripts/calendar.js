@@ -38,20 +38,42 @@ export function calendar() {
       maxTime: "18:00:00",
       contentHeight: "auto",
       eventAfterRender: handleDoneRenderEvent,
-      eventAfterAllRender: handleDoneRenderAllEvents
+      eventAfterAllRender: handleDoneRenderAllEvents,
+      dayClick: handleClickDay
     });
   }
 
   function handleDoneRenderEvent(event, element) {
-    // Set tooltip text
-    $(element).attr("title", event.venue);
+    // Set popover content
+    $(element).attr("title", event.description);
+    $(element).attr("data-content", "Hello World!");
+    $(element).attr("data-trigger", "focus");
+    $(element).attr("tabindex", 0);
   }
 
   function handleDoneRenderAllEvents() {
-    // Initalize tooltips
-    $(".fc-event").tooltip({
-      placement: "right"
+    // Initalize popovers
+    var events = $(".fc-event");
+    events.popover({
+      placement: "bottom",
+      html: true
     });
+    events.on("show.bs.popover", function() {
+      console.log("Show!");
+      popoverShowing = true;
+    });
+    events.on("hide.bs.popover", function() {
+      console.log("Hide!");
+      popoverShowing = false;
+    });
+  }
+
+  var popoverShowing = false;
+  function handleClickDay() {
+    // Hide popovers
+    if (popoverShowing) {
+      $(".fc-event").popover("hide");
+    }
   }
 
 }

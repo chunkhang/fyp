@@ -23,7 +23,7 @@ class CalendarController @Inject()(
     allDay: Boolean,
     start: String,
     end: String,
-    venue: String
+    description: String
   )
 
   implicit val eventWrites: Writes[Event] = (
@@ -31,7 +31,7 @@ class CalendarController @Inject()(
     (JsPath \ "allDay").write[Boolean] and
     (JsPath \ "start").write[String] and
     (JsPath \ "end").write[String] and
-    (JsPath \ "venue").write[String]
+    (JsPath \ "description").write[String]
   )(unlift(Event.unapply))
 
   def index = userAction { implicit request =>
@@ -85,11 +85,18 @@ class CalendarController @Inject()(
               utils.weeklyDates(firstDate, subject.endDate.get)
             dates.foreach { date =>
               events += Event(
-                title = s"${subject.code} ${class_.category} ${class_.group}",
+                title =
+                  s"${subject.code} " +
+                  s"(${class_.category(0)}${class_.group})",
                 allDay = false,
                 start = utils.momentTime(date, class_.startTime.get),
                 end = utils.momentTime(date, class_.endTime.get),
-                venue = venue.get
+                description = "test"
+                  // s"${subject.title.map(_).getOrElse("")}" +
+                  // |${subject.code}${subject.title.map(": " + _).getOrElse("")}
+                  // |${class_.category}
+                  // |Group ${class_.group}
+                  // |${venue.get}
               )
             }
           }
