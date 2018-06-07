@@ -62,7 +62,8 @@ export function calendar() {
       }
     },
     slotEventOverlap: false,
-    viewRender: handleViewRender
+    viewRender: handleViewRender,
+    eventRender: handleEventRender
   });
 
   function handleEventSourceError() {
@@ -77,6 +78,12 @@ export function calendar() {
       calendar.fullCalendar("addEventSource", sources[view.name]);
       lastView = view.name;
     }
+  }
+
+  function handleEventRender(event, element) {
+    // Enable event modal
+    element.attr("data-toggle", "modal");
+    element.attr("data-target", "#event-modal");
   }
 
 }
