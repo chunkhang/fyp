@@ -2,26 +2,54 @@
 
 export function calendar() {
 
-  // Event sources
+  var calendar = $("#calendar");
   var sources = {
     month: {
       url: "/calendar/month/events",
       type: "GET",
-      error: handleEventSourceError
+      error: function() {
+        console.log("Failed to fetch calendar month events");
+      }
     },
     agendaWeek: {
       url: "/calendar/week/events",
       type: "GET",
-      error: handleEventSourceError
+      error: function() {
+        console.log("Failed to fetch calendar week events");
+      }
     },
     listWeek: {
       url: "/calendar/list/events",
       type: "GET",
-      error: handleEventSourceError
+      error: function() {
+        console.log("Failed to fetch calendar list events");
+      }
     },
   };
+  var lastView = "";
+  var eventModal = $("#event-modal");
+  var eventModalSubject = $("#event-modal-subject");
+  var eventModalClass = $("#event-modal-class");
+  var eventModalDate = $("#event-modal-date");
+  var eventModalTime = $("#event-modal-time");
+  var eventModalVenue = $("#event-modal-venue");
+
+  // Disable scrolling when event modal is showing
+  eventModal.on("show.bs.modal", function() {
+    $("html").css({
+      overflow: "hidden"
+    });
+  });
+  eventModal.on("hide.bs.modal", function() {
+    $("html").css({
+      "overflow": "auto"
+    });
+  });
+
+  // Initialize tooltip
+  $("#event-modal-subject").tooltip();
+
   // Initialize calendar
-  var calendar = $("#calendar");
   calendar.fullCalendar({
     schedulerLicenseKey: "CC-Attribution-NonCommercial-NoDerivatives",
     eventSources: [
@@ -62,41 +90,28 @@ export function calendar() {
       }
     },
     slotEventOverlap: false,
-    viewRender: handleViewRender,
-    eventRender: handleEventRender
-  });
-
-  function handleEventSourceError() {
-    console.log("Failed to fetch calendar events");
-  }
-
-  var lastView = "month";
-  function handleViewRender(view) {
-    if (view.name != lastView) {
-      // Change event source
-      calendar.fullCalendar("removeEventSources");
-      calendar.fullCalendar("addEventSource", sources[view.name]);
-      lastView = view.name;
+    viewRender: function(view) {
+      if (view.name != lastView) {
+        // Change event source
+        calendar.fullCalendar("removeEventSources");
+        calendar.fullCalendar("addEventSource", sources[view.name]);
+        lastView = view.name;
+      }
+    },
+    eventRender: function(event, element) {
+      // Enable event modal
+      element.attr("data-toggle", "modal");
+      element.attr("data-target", "#event-modal");
+    },
+    eventClick: function(event) {
+      // Populate event modal
+      eventModalSubject.text(event.modalSubjectCode);
+      eventModalSubject.attr("data-original-title", event.modalSubjectName);
+      eventModalClass.text(event.modalClass);
+      eventModalDate.text(event.modalDate);
+      eventModalTime.text(event.modalTime);
+      eventModalVenue.text(event.modalVenue);
     }
-  }
-
-  function handleEventRender(event, element) {
-    // Enable event modal
-    element.attr("data-toggle", "modal");
-    element.attr("data-target", "#event-modal");
-  }
-
-  // Disable scrolling when event modal is showing
-  var eventModal = $("#event-modal");
-  eventModal.on("show.bs.modal", function() {
-    $("html").css({
-      overflow: "hidden"
-    });
-  });
-  eventModal.on("hide.bs.modal", function() {
-    $("html").css({
-      "overflow": "auto"
-    });
   });
 
 }

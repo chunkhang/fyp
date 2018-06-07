@@ -61,7 +61,33 @@
   cursor: pointer;
 }
 
+.modal-body {
+  h5 {
+    line-height: 0.95;
+    small {
+      font-weight: inherit;
+    }
+  }
+  p {
+    font-size: 1rem;
+    margin-bottom: 0;
+    line-height: 1.1;
+    #event-modal-date {
+      font-weight: bolder;
+      margin-bottom: 3px;
+      display: inline-block;
+    }
+    #event-modal-time, #event-modal-venue {
+      font-size: 0.85rem;
+    }
+  }
+}
+
 .modal-header, .modal-footer {
   padding-top: 12px;
   padding-bottom: 12px;
+  button {
+    margin-left: 5px !important;
+    margin-right: 5px !important;
+  }
 }

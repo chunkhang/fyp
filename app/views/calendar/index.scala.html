@@ -20,12 +20,20 @@
         <div class="modal-header">
           <p class="heading lead">Perform an action</p>
         </div>
-        <div class="modal-body" id="event-modal-body">
-          Hello World
+        <div class="modal-body">
+          <h5 class="text-center mb-3">
+            <strong id="event-modal-subject" data-toggle="tooltip" data-placement="right" title="apple"></strong><br>
+            <small id="event-modal-class"></small>
+          </h5>
+          <p class="text-center">
+            <span id="event-modal-date"></span><br>
+            <span id="event-modal-time"></span><br>
+            <span id="event-modal-venue"></span>
+          </p>
         </div>
         <div class="modal-footer justify-content-center">
-          <button class="btn btn-danger btn-sm">Cancel Class</button>
-          <button class="btn btn-primary btn-sm">Replace Class</button>
+          <button class="btn btn-warning btn-sm" id="event-modal-cancel">Cancel Class</button>
+          <button class="btn btn-secondary btn-sm" id="event-modal-replace">Replace Class</button>
         </div>
       </div>
     </div>

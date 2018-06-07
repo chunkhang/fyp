@@ -29,13 +29,25 @@ class CalendarController @Inject()(
   case class Event(
     title: String,
     start: String,
-    end: String
+    end: String,
+    modalSubjectCode: String,
+    modalSubjectName: String,
+    modalClass: String,
+    modalDate: String,
+    modalTime: String,
+    modalVenue: String
   )
 
   implicit val eventWrites: Writes[Event] = (
     (JsPath \ "title").write[String] and
     (JsPath \ "start").write[String] and
-    (JsPath \ "end").write[String]
+    (JsPath \ "end").write[String] and
+    (JsPath \ "modalSubjectCode").write[String] and
+    (JsPath \ "modalSubjectName").write[String] and
+    (JsPath \ "modalClass").write[String] and
+    (JsPath \ "modalDate").write[String] and
+    (JsPath \ "modalTime").write[String] and
+    (JsPath \ "modalVenue").write[String]
   )(unlift(Event.unapply))
 
   def index = userAction { implicit request =>
@@ -57,7 +69,17 @@ class CalendarController @Inject()(
                       s"${data.subjectItem.code} " +
                       s"${data.classItem.category(0)}${data.classItem.group}",
                     start = data.start,
-                    end = data.end
+                    end = data.end,
+                    modalSubjectCode = data.subjectItem.code,
+                    modalSubjectName = data.subjectItem.title.get,
+                    modalClass =
+                      s"${data.classItem.category} " +
+                      s"Group ${data.classItem.group}",
+                    modalDate = utils.eventModalDate(data.start),
+                    modalTime =
+                      s"${data.classItem.startTime.get} - " +
+                      s"${data.classItem.endTime.get}",
+                    modalVenue = data.venue
                   )
                 }
               case "week" =>
@@ -65,11 +87,20 @@ class CalendarController @Inject()(
                   Event(
                     title =
                       s"${data.subjectItem.code}\n" +
-                      s"${data.subjectItem.title.get}\n" +
                       s"${data.classItem.category} " +
                       s"Group ${data.classItem.group}",
                     start = data.start,
-                    end = data.end
+                    end = data.end,
+                    modalSubjectCode = data.subjectItem.code,
+                    modalSubjectName = data.subjectItem.title.get,
+                    modalClass =
+                      s"${data.classItem.category} " +
+                      s"Group ${data.classItem.group}",
+                    modalDate = utils.eventModalDate(data.start),
+                    modalTime =
+                      s"${data.classItem.startTime.get} - " +
+                      s"${data.classItem.endTime.get}",
+                    modalVenue = data.venue
                   )
                 }
               case "list" =>
@@ -81,7 +112,17 @@ class CalendarController @Inject()(
                       s"${data.classItem.category} " +
                       s"Group ${data.classItem.group}",
                     start = data.start,
-                    end = data.end
+                    end = data.end,
+                    modalSubjectCode = data.subjectItem.code,
+                    modalSubjectName = data.subjectItem.title.get,
+                    modalClass =
+                      s"${data.classItem.category} " +
+                      s"Group ${data.classItem.group}",
+                    modalDate = utils.eventModalDate(data.start),
+                    modalTime =
+                      s"${data.classItem.startTime.get} - " +
+                      s"${data.classItem.endTime.get}",
+                    modalVenue = data.venue
                   )
                 }
               case _ =>

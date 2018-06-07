@@ -175,4 +175,11 @@ class Utils @Inject()(config: Configuration) {
     System.currentTimeMillis().toString
   }
 
+  // Format date for event modal
+  def eventModalDate(dateTime: String): String = {
+    val date = dateTime.split("T")(0)
+    val jodaDate = DateTimeFormat.forPattern("yyyy-MM-dd").parseDateTime(date)
+    jodaDate.toString(DateTimeFormat.forPattern("MMM d, yyyy (E)"))
+  }
+
 }
