@@ -1,4 +1,4 @@
-/* globals $ */
+/* globals $, moment */
 
 export function calendar() {
 
@@ -98,10 +98,16 @@ export function calendar() {
         lastView = view.name;
       }
     },
-    eventRender: function(event, element) {
-      // Enable event modal
-      element.attr("data-toggle", "modal");
-      element.attr("data-target", "#event-modal");
+    eventAfterRender: function(event, element) {
+      if (!moment(event.start).isSameOrBefore(moment())) {
+        // Enable event modal
+        element.attr("data-toggle", "modal");
+        element.attr("data-target", "#event-modal");
+      } else {
+        // Blur past events
+        element.css("opacity", "0.5");
+        element.css("cursor", "default");
+      }
     },
     eventClick: function(event) {
       // Populate event modal
