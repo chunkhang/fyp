@@ -13,10 +13,12 @@
     <div class="col-5">
       <ul class="list-group">
         @for(lecturer <- lecturers) {
-          <li class="list-group-item">
-            <strong>@lecturer.name</strong>
-            <small class="text-muted">@lecturer.email</small>
-          </li>
+          @if(lecturer.email != request.session("email")) {
+            <li class="list-group-item">
+              <strong>@lecturer.name</strong>
+              <small class="text-muted">@lecturer.email</small>
+            </li>
+          }
         }
       </ul>
     </div>
