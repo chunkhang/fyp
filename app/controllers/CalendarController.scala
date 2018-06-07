@@ -151,7 +151,12 @@ class CalendarController @Inject()(
             val firstDate = utils.firstDate(subject.semester, class_.day.get)
             // Repeat classes weekly until end date
             val dates = utils.weeklyDates(firstDate, subject.endDate.get)
-            dates.foreach { date =>
+            // Do not include cancelled classes
+            dates.filter { date =>
+              val cancelledDates =
+                class_.exceptionDates.getOrElse(List[String]())
+              !cancelledDates.contains(date)
+            } foreach { date =>
               eventData += EventData(
                 subjectItem = subject,
                 classItem = class_,
