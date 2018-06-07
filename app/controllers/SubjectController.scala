@@ -9,8 +9,10 @@ import play.api.data.Forms._
 import play.api.data.validation.Constraints._
 import play.api.Logger
 import reactivemongo.bson.BSONObjectID
+import biweekly.property._
 import models._
 import helpers.Utils
+import mailer.Mailer
 
 case class SubjectData(
   title: String,
@@ -22,7 +24,10 @@ class SubjectController @Inject()(
   userAction: UserAction,
   userRepo: UserRepository,
   subjectRepo: SubjectRepository,
-  utils: Utils
+  classRepo: ClassRepository,
+  classController: ClassController,
+  utils: Utils,
+  mailer: Mailer
 )(
   implicit ec: ExecutionContext
 ) extends AbstractController(cc) with play.api.i18n.I18nSupport {
@@ -143,6 +148,7 @@ class SubjectController @Inject()(
             }
           },
           subjectData => {
+            // Update subject in database
             subjectRepo.read(id).flatMap { maybeSubject =>
               val subject = maybeSubject.get
                 subjectRepo.update(id, subject.copy(
@@ -150,12 +156,67 @@ class SubjectController @Inject()(
                   endDate = Some(subjectData.endDate)
                 )).map { _ =>
                   Logger.info(s"Updated Subject(${id})")
+                  // Create ical if there are classes with details
+                  getSubjectWithClasses(id).map { tuple =>
+                    val (subject, classes) = tuple
+                    val detailedClasses = classes.filter { class_ =>
+                      class_.day.isDefined
+                    }
+                    Future.traverse(detailedClasses) { class_ =>
+                      classController.getVenueName(class_.venueId.get).map {
+                        venue =>
+                          val classIcal = utils.classIcal(
+                            request.user,
+                            subject,
+                            class_,
+                            venue
+                          )
+                          // Update ical
+                          val sequence_ = class_.sequence.get + 1
+                          val biweeklyIcal = utils.biweeklyIcal(
+                            method= "Request",
+                            uid = new Uid(class_.uid.get),
+                            sequence = sequence_,
+                            ical = classIcal,
+                            recurUntil = Some(subject.endDate.get)
+                          )
+                          // Send ical
+                          mailer.sendIcs(
+                            subject =
+                              s"Updated: ${subject.title.get} " +
+                              s"(${class_.category})",
+                            toList = utils.studentEmails(class_.students),
+                            ics = biweeklyIcal
+                          )
+                          // Update ical sequence in database
+                          classRepo.update(class_._id.get, class_.copy(
+                            sequence = Some(sequence_)
+                          )).map { _ =>
+                            Logger.info(
+                              s"Updated Class(${class_._id.get}, " +
+                              s"sequence = ${sequence_})"
+                            )
+                          }
+                      }
+                    }
+                  }
                   Redirect(routes.ClassController.index())
                     .flashing("success" -> "Successfully edited subject")
                 }
             }
           }
         )
+  }
+
+  // Get subject and its classes given subject it
+  def getSubjectWithClasses(subjectId: BSONObjectID):
+    Future[(Subject, List[Class])] = {
+    subjectRepo.read(subjectId).flatMap { maybeSubject =>
+      val subject = maybeSubject.get
+      classRepo.findClassesBySubjectId(subjectId).map { classes =>
+        (subject, classes)
+      }
+    }
   }
 
 }

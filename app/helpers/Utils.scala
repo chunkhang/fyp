@@ -163,4 +163,16 @@ class Utils @Inject()(config: Configuration) {
     icalendar
   }
 
+  // Convert student list to list of student emails
+  def studentEmails(students: List[String]): List[String] = {
+    students.map { student =>
+      student + "@" + config.get[String]("my.domain.student")
+    }
+  }
+
+  // Return current timestamp in milliseconds
+  def timestampNow(): String = {
+    System.currentTimeMillis().toString
+  }
+
 }

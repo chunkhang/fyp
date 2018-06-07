@@ -275,9 +275,6 @@ class ClassController @Inject()(
                     var biweeklyIcal = new ICalendar()
                     var emailSubject =
                       s": ${subject.title.get} (${class_.category})"
-                    val emailTos = class_.students.map { student =>
-                      student + "@" + config.get[String]("my.domain.student")
-                    }
                     class_.uid match {
                       case Some(uid_) =>
                         // Update ical
@@ -292,7 +289,7 @@ class ClassController @Inject()(
                         // Send ical
                         mailer.sendIcs(
                           subject = "Updated" + emailSubject,
-                          toList = emailTos,
+                          toList = utils.studentEmails(class_.students),
                           ics = biweeklyIcal
                         )
                       case None =>
@@ -314,7 +311,7 @@ class ClassController @Inject()(
                         // Send ical
                         mailer.sendIcs(
                           subject = "Added" + emailSubject,
-                          toList = emailTos,
+                          toList = utils.studentEmails(class_.students),
                           ics = biweeklyIcal
                         )
                     }

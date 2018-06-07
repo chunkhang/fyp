@@ -9,10 +9,12 @@ import play.api.Logger
 import play.api.libs.mailer._
 import org.apache.commons.mail.EmailAttachment
 import biweekly._
+import helpers.Utils
 
 class Mailer @Inject()(
   mailerClient: MailerClient,
-  config: Configuration
+  config: Configuration,
+  utils: Utils
 ) {
 
   private def sendEmail(
@@ -60,7 +62,7 @@ class Mailer @Inject()(
       |Best regards,
       |Class Activity Management System
     """
-    val file = new File(s"/tmp/CAMS.ics")
+    val file = new File(s"/tmp/CAMS-${utils.timestampNow()}.ics")
     Biweekly.write(ics).go(file)
     val attachments = Seq(
       AttachmentFile(file.getName(), file)
