@@ -35,7 +35,8 @@ class CalendarController @Inject()(
     modalClass: String,
     modalDate: String,
     modalTime: String,
-    modalVenue: String
+    modalVenue: String,
+    modalClassId: String
   )
 
   implicit val eventWrites: Writes[Event] = (
@@ -47,7 +48,8 @@ class CalendarController @Inject()(
     (JsPath \ "modalClass").write[String] and
     (JsPath \ "modalDate").write[String] and
     (JsPath \ "modalTime").write[String] and
-    (JsPath \ "modalVenue").write[String]
+    (JsPath \ "modalVenue").write[String] and
+    (JsPath \ "modalClassId").write[String]
   )(unlift(Event.unapply))
 
   def index = userAction { implicit request =>
@@ -61,71 +63,46 @@ class CalendarController @Inject()(
         var events = List[Event]()
         maybeEventData match {
           case Some(eventData) =>
+            var eventTitles = List[String]()
             view match {
               case "month" =>
-                events = eventData.map { data =>
-                  Event(
-                    title =
-                      s"${data.subjectItem.code} " +
-                      s"${data.classItem.category(0)}${data.classItem.group}",
-                    start = data.start,
-                    end = data.end,
-                    modalSubjectCode = data.subjectItem.code,
-                    modalSubjectName = data.subjectItem.title.get,
-                    modalClass =
-                      s"${data.classItem.category} " +
-                      s"Group ${data.classItem.group}",
-                    modalDate = utils.eventModalDate(data.start),
-                    modalTime =
-                      s"${data.classItem.startTime.get} - " +
-                      s"${data.classItem.endTime.get}",
-                    modalVenue = data.venue
-                  )
+                eventTitles = eventData.map { data =>
+                  s"${data.subjectItem.code} " +
+                  s"${data.classItem.category(0)}${data.classItem.group}"
                 }
               case "week" =>
-                events = eventData.map { data =>
-                  Event(
-                    title =
-                      s"${data.subjectItem.code}\n" +
-                      s"${data.classItem.category} " +
-                      s"Group ${data.classItem.group}",
-                    start = data.start,
-                    end = data.end,
-                    modalSubjectCode = data.subjectItem.code,
-                    modalSubjectName = data.subjectItem.title.get,
-                    modalClass =
-                      s"${data.classItem.category} " +
-                      s"Group ${data.classItem.group}",
-                    modalDate = utils.eventModalDate(data.start),
-                    modalTime =
-                      s"${data.classItem.startTime.get} - " +
-                      s"${data.classItem.endTime.get}",
-                    modalVenue = data.venue
-                  )
+                eventTitles = eventData.map { data =>
+                  s"${data.subjectItem.code}\n" +
+                  s"${data.classItem.category} " +
+                  s"Group ${data.classItem.group}"
                 }
               case "list" =>
-                events = eventData.map { data =>
-                  Event(
-                    title =
-                      s"${data.subjectItem.code} | " +
-                      s"${data.subjectItem.title.get} | " +
-                      s"${data.classItem.category} " +
-                      s"Group ${data.classItem.group}",
-                    start = data.start,
-                    end = data.end,
-                    modalSubjectCode = data.subjectItem.code,
-                    modalSubjectName = data.subjectItem.title.get,
-                    modalClass =
-                      s"${data.classItem.category} " +
-                      s"Group ${data.classItem.group}",
-                    modalDate = utils.eventModalDate(data.start),
-                    modalTime =
-                      s"${data.classItem.startTime.get} - " +
-                      s"${data.classItem.endTime.get}",
-                    modalVenue = data.venue
-                  )
+                eventTitles = eventData.map { data =>
+                  s"${data.subjectItem.code} | " +
+                  s"${data.subjectItem.title.get} | " +
+                  s"${data.classItem.category} " +
+                  s"Group ${data.classItem.group}"
                 }
               case _ =>
+            }
+            events = (eventData zip eventTitles).map { tuple =>
+              var (data, eventTitle) = tuple
+              Event(
+                title = eventTitle,
+                start = data.start,
+                end = data.end,
+                modalSubjectCode = data.subjectItem.code,
+                modalSubjectName = data.subjectItem.title.get,
+                modalClass =
+                  s"${data.classItem.category} " +
+                  s"Group ${data.classItem.group}",
+                modalDate = utils.eventModalDate(data.start),
+                modalTime =
+                  s"${data.classItem.startTime.get} - " +
+                  s"${data.classItem.endTime.get}",
+                modalVenue = data.venue,
+                modalClassId = data.classItem._id.get.stringify
+              )
             }
             // Filter events based on queried date range
             val startInteger = utils.totalDays(start)

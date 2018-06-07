@@ -33,6 +33,8 @@ export function calendar() {
   var eventModalDate = $("#event-modal-date");
   var eventModalTime = $("#event-modal-time");
   var eventModalVenue = $("#event-modal-venue");
+  var eventModalCancelButton = $("#event-modal-cancel");
+  var eventModalReplaceButton = $("#event-modal-replace");
 
   // Disable scrolling when event modal is showing
   eventModal.on("show.bs.modal", function() {
@@ -118,6 +120,16 @@ export function calendar() {
       eventModalTime.text(event.modalTime);
       eventModalVenue.text(event.modalVenue);
     }
+  });
+
+  // Cancel class
+  eventModalCancelButton.click(function() {
+    alert("Cancel!");
+  });
+
+  // Replace class
+  eventModalReplaceButton.click(function() {
+    alert("Replace!");
   });
 
 }
