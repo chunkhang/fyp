@@ -86,4 +86,17 @@ export function calendar() {
     element.attr("data-target", "#event-modal");
   }
 
+  // Disable scrolling when event modal is showing
+  var eventModal = $("#event-modal");
+  eventModal.on("show.bs.modal", function() {
+    $("html").css({
+      overflow: "hidden"
+    });
+  });
+  eventModal.on("hide.bs.modal", function() {
+    $("html").css({
+      "overflow": "auto"
+    });
+  });
+
 }
