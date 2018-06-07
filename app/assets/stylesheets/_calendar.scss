@@ -64,7 +64,10 @@
 .modal-body {
   h5 {
     line-height: 0.95;
-    small {
+    #event-modal-subject {
+      font-size: 1.2rem;
+    }
+    #event-modal-class {
       font-weight: inherit;
     }
   }
