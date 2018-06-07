@@ -58,7 +58,7 @@ export function calendar() {
       },
       listWeek: {
         listDayAltFormat: "MMM D, YYYY",
-        noEventsMessage: "No classes to display"
+        noEventsMessage: "Nothing to display"
       }
     },
     slotEventOverlap: false,
