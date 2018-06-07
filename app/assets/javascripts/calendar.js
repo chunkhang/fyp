@@ -1,4 +1,4 @@
-/* globals $, moment */
+/* globals $, moment, toastr */
 
 export function calendar() {
 
@@ -35,6 +35,7 @@ export function calendar() {
   var eventModalVenue = $("#event-modal-venue");
   var eventModalCancelButton = $("#event-modal-cancel");
   var eventModalReplaceButton = $("#event-modal-replace");
+  var eventModalSpinner = $("#event-modal-spinner");
 
   // Disable scrolling when event modal is showing
   eventModal.on("show.bs.modal", function() {
@@ -121,6 +122,8 @@ export function calendar() {
       eventModalVenue.text(event.modalVenue);
       eventModal.data("classId", event.modalClassId);
       eventModal.data("date", event.modalDate);
+      eventModalCancelButton.removeClass("gone");
+      eventModalReplaceButton.removeClass("gone");
     }
   });
 
@@ -130,20 +133,30 @@ export function calendar() {
     var payload = {
       "date": eventModal.data("date")
     };
-    $.ajax({
-      method: "POST",
-      url: `/classes/${classId}/cancel`,
-      contentType: "application/json",
-      dataType: "json",
-      data: JSON.stringify(payload),
-      timeout: 3000,
-      success: function(response) {
-        alert(response.message);
-      },
-      error: function() {
-        console.log("Something went wrong");
-      }
-    });
+    eventModalCancelButton.addClass("gone");
+    eventModalReplaceButton.addClass("gone");
+    eventModalSpinner.removeClass("gone");
+    setTimeout(function() {
+      $.ajax({
+        method: "POST",
+        url: `/classes/${classId}/cancel`,
+        contentType: "application/json",
+        dataType: "json",
+        data: JSON.stringify(payload),
+        timeout: 3000,
+        success: function(response) {
+          calendar.fullCalendar("refetchEvents");
+          eventModalSpinner.addClass("gone");
+          toastr[response.status](response.message);
+          setTimeout(function() {
+            eventModal.click();
+          }, 1000);
+        },
+        error: function() {
+          console.log("Something went wrong");
+        }
+      });
+    }, 1000);
   });
 
   // Replace class

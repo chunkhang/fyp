@@ -280,7 +280,7 @@ class ClassController @Inject()(
                         // Update ical
                         sequence_ = class_.sequence.get + 1
                         biweeklyIcal = utils.biweeklyIcal(
-                          method= "Request",
+                          method= "REQUEST",
                           uid = new Uid(uid_),
                           sequence = sequence_,
                           ical = classIcal,
@@ -296,7 +296,7 @@ class ClassController @Inject()(
                         // Add ical
                         val uid_ = Uid.random()
                         biweeklyIcal = utils.biweeklyIcal(
-                          method= "Publish",
+                          method= "PUBLISH",
                           uid = uid_,
                           sequence = sequence_,
                           ical = classIcal,
@@ -399,7 +399,7 @@ class ClassController @Inject()(
                 // Update ical
                 val sequence_ = class_.sequence.get + 1
                 val biweeklyIcal = utils.biweeklyIcal(
-                  method= "Request",
+                  method= "REQUEST",
                   uid = new Uid(class_.uid.get),
                   sequence = sequence_,
                   ical = classIcal,
@@ -425,7 +425,10 @@ class ClassController @Inject()(
                   )
                 }
               }
-              Ok(Json.obj("message" -> "OK"))
+              Ok(Json.obj(
+                "status" -> "success",
+                "message" -> "Class cancelled"
+              ))
             }
           } getOrElse {
             Future {

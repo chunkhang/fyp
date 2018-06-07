@@ -174,7 +174,7 @@ class SubjectController @Inject()(
                           // Update ical
                           val sequence_ = class_.sequence.get + 1
                           val biweeklyIcal = utils.biweeklyIcal(
-                            method= "Request",
+                            method= "REQUEST",
                             uid = new Uid(class_.uid.get),
                             sequence = sequence_,
                             ical = classIcal,

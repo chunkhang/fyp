@@ -9,17 +9,19 @@
   </div>
   <div class="row">
     <div class="col">
+      <!-- Calendar -->
       <div id="calendar"></div>
     </div>
   </div>
 
-  <!-- Event Modal -->
+  <!-- Event modal -->
   <div class="modal fade" id="event-modal" tabindex="-1">
     <div class="modal-dialog modal-notify modal-primary modal-dialog-centered">
       <div class="modal-content">
         <div class="modal-header">
           <p class="heading lead">Perform an action</p>
         </div>
+        <!-- Class information -->
         <div class="modal-body">
           <h5 class="text-center mb-3">
             <strong id="event-modal-subject" data-toggle="tooltip" data-placement="right" title="apple"></strong><br>
@@ -32,9 +34,24 @@
           </p>
         </div>
         <div class="modal-footer justify-content-center">
-          <span class="gone" id="event-modal-id"></span>
+          <!-- Cancel class button -->
           <button class="btn btn-secondary btn-sm" id="event-modal-cancel">Cancel Class</button>
+          <!-- Replace class button -->
           <button class="btn btn-primary btn-sm" id="event-modal-replace">Replace Class</button>
+          <!-- Loading spinner -->
+          <div class="preloader-wrapper small active gone" id="event-modal-spinner">
+            <div class="spinner-layer spinner-blue-only">
+              <div class="circle-clipper left">
+                <div class="circle"></div>
+              </div>
+              <div class="gap-patch">
+                <div class="circle"></div>
+              </div>
+              <div class="circle-clipper right">
+                <div class="circle"></div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>

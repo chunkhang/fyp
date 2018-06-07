@@ -94,3 +94,11 @@
     margin-right: 5px !important;
   }
 }
+
+.modal-footer {
+  min-height: 70px;
+  #event-modal-spinner {
+    width: 30px;
+    height: 30px;
+  }
+}
