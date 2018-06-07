@@ -49,13 +49,13 @@ class Mailer @Inject()(
       |
       |Below are the latest details for the class:
       |
-      |##########
+      |----------
       |
       |${event.getDescription().getValue()}
       |
-      |##########
+      |----------
       |
-      |Please open the attached ics file to update your personal calendar.
+      |Please download and open the attached ics file to update your calendar.
       |
       |Best regards,
       |Class Activity Management System
