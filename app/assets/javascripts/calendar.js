@@ -119,12 +119,31 @@ export function calendar() {
       eventModalDate.text(event.modalDate);
       eventModalTime.text(event.modalTime);
       eventModalVenue.text(event.modalVenue);
+      eventModal.data("classId", event.modalClassId);
+      eventModal.data("date", event.modalDate);
     }
   });
 
   // Cancel class
   eventModalCancelButton.click(function() {
-    alert("Cancel!");
+    var classId = eventModal.data("classId");
+    var payload = {
+      "date": eventModal.data("date")
+    };
+    $.ajax({
+      method: "POST",
+      url: `/classes/${classId}/cancel`,
+      contentType: "application/json",
+      dataType: "json",
+      data: JSON.stringify(payload),
+      timeout: 3000,
+      success: function(response) {
+        alert(response.message);
+      },
+      error: function() {
+        console.log("Something went wrong");
+      }
+    });
   });
 
   // Replace class

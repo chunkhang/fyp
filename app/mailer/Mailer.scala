@@ -43,10 +43,15 @@ class Mailer @Inject()(
   def sendIcs(
     subject: String,
     toList: Seq[String],
-    ics: ICalendar
+    ics: ICalendar,
+    cancel: Boolean = false,
+    cancelledDate: Option[String] = None
   ) = {
     val event = ics.getEvents().get(0)
-    val body = s"""
+    var body = ""
+    if (!cancel) {
+      // Added or update class
+      body = s"""
       |Dear students,
       |
       |Below are the latest details for the class:
@@ -61,7 +66,28 @@ class Mailer @Inject()(
       |
       |Best regards,
       |Class Activity Management System
-    """
+      """
+    } else {
+      // Cancelled class
+      body = s"""
+      |Dear students,
+      |
+      |The following class has been cancelled on this date:
+      |
+      |${cancelledDate.get}
+      |
+      |----------
+      |
+      |${event.getDescription().getValue()}
+      |
+      |----------
+      |
+      |Please download and open the attached ics file to update your calendar.
+      |
+      |Best regards,
+      |Class Activity Management System
+      """
+    }
     val file = new File(s"/tmp/CAMS-${utils.timestampNow()}.ics")
     Biweekly.write(ics).go(file)
     val attachments = Seq(

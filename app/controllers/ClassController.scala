@@ -368,6 +368,77 @@ class ClassController @Inject()(
     }
   }
 
+  def cancel(id: BSONObjectID) =
+    (userAction andThen ClassAction(id) andThen PermittedAction).async {
+      implicit request =>
+        request.body.asJson.map { json =>
+          (json \ "date").asOpt[String].map { eventModalDate =>
+            val date = utils.databaseDate(eventModalDate)
+            // Add exception date to class
+            val newExceptionDates =
+              request.classItem.exceptionDates.map { exceptionDates =>
+                Some(exceptionDates :+ date)
+              } getOrElse {
+                Some(List(date))
+              }
+            classRepo.update(id, request.classItem.copy(
+              exceptionDates = newExceptionDates
+            )).map { maybeClass =>
+              Logger.info(
+                s"Updated Class(${id}, " +
+                s"exceptionDates = ${newExceptionDates})"
+              )
+              val class_ = maybeClass.get
+              getVenueName(class_.venueId.get).map { venue =>
+                val classIcal = utils.classIcal(
+                  request.user,
+                  request.subjectItem,
+                  class_,
+                  venue
+                )
+                // Update ical
+                val sequence_ = class_.sequence.get + 1
+                val biweeklyIcal = utils.biweeklyIcal(
+                  method= "Request",
+                  uid = new Uid(class_.uid.get),
+                  sequence = sequence_,
+                  ical = classIcal,
+                  recurUntil = Some(request.subjectItem.endDate.get)
+                )
+                // Send ical
+                mailer.sendIcs(
+                  subject =
+                    s"Cancelled: ${request.subjectItem.title.get} " +
+                    s"(${class_.category})",
+                  toList = utils.studentEmails(class_.students),
+                  ics = biweeklyIcal,
+                  cancel = true,
+                  cancelledDate = Some(eventModalDate)
+                )
+                // Update ical sequence in database
+                classRepo.update(id, class_.copy(
+                  sequence = Some(sequence_)
+                )).map { _ =>
+                  Logger.info(
+                    s"Updated Class(${class_._id.get}, " +
+                    s"sequence = ${sequence_})"
+                  )
+                }
+              }
+              Ok(Json.obj("message" -> "OK"))
+            }
+          } getOrElse {
+            Future {
+              BadRequest("Missing parameter \"date\"")
+            }
+          }
+        } getOrElse {
+          Future {
+            BadRequest("Expecting json data")
+          }
+        }
+  }
+
   // Get saved classes from database
   def getClasses(email: String):
     Future[Option[ListMap[Subject, List[(Class, Option[String])]]]] = {

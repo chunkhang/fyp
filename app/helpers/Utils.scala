@@ -18,7 +18,8 @@ case class Ical(
   startTime: String,
   endTime: String,
   location: String,
-  description: String
+  description: String,
+  exceptionDates: Option[List[String]]
 )
 
 class Utils @Inject()(config: Configuration) {
@@ -119,7 +120,8 @@ class Utils @Inject()(config: Configuration) {
         |${venue}
         |
         |${user.name} (${user.email})
-      """.stripMargin.trim
+      """.stripMargin.trim,
+      exceptionDates = classItem.exceptionDates
     )
   }
 
@@ -158,6 +160,15 @@ class Utils @Inject()(config: Configuration) {
         new Recurrence.Builder(Frequency.WEEKLY).until(recurDateEnd, false)
         .build()
       event.setRecurrenceRule(recurrenceRule)
+      if (ical.exceptionDates.isDefined) {
+        val exceptionDates = new ExceptionDates()
+        ical.exceptionDates.get.foreach { exceptionDate =>
+          exceptionDates.getValues().add(
+            new ICalDate(simpleFormatter.parse(exceptionDate), false)
+          )
+        }
+        event.addExceptionDates(exceptionDates)
+      }
     }
     icalendar.addEvent(event)
     icalendar
@@ -180,6 +191,13 @@ class Utils @Inject()(config: Configuration) {
     val date = dateTime.split("T")(0)
     val jodaDate = DateTimeFormat.forPattern("yyyy-MM-dd").parseDateTime(date)
     jodaDate.toString(DateTimeFormat.forPattern("MMM d, yyyy (E)"))
+  }
+
+  // Format date for database
+  def databaseDate(date: String): String = {
+    val jodaDate =
+      DateTimeFormat.forPattern("MMM d, yyyy (E)").parseDateTime(date)
+    jodaDate.toString(DateTimeFormat.forPattern("yyyy-MM-dd"))
   }
 
 }
