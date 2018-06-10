@@ -13,6 +13,8 @@ GET     /classes/:id/edit         controllers.ClassController.edit(id: reactivem
 POST    /classes/:id              controllers.ClassController.update(id: reactivemongo.bson.BSONObjectID)
 + nocsrf
 POST    /classes/:id/cancel       controllers.ClassController.cancel(id: reactivemongo.bson.BSONObjectID)
++ nocsrf
+POST    /classes/:id/replace      controllers.ClassController.replace(id: reactivemongo.bson.BSONObjectID)
 
 # Subject
 GET     /subjects/:id/edit        controllers.SubjectController.edit(id: reactivemongo.bson.BSONObjectID)

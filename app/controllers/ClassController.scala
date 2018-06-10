@@ -442,6 +442,30 @@ class ClassController @Inject()(
         }
   }
 
+  def replace(id: BSONObjectID) =
+    (userAction andThen ClassAction(id) andThen PermittedAction).async {
+      implicit request =>
+        request.body.asJson.map { json =>
+          (json \ "date").asOpt[String].map { date =>
+            Logger.warn(date)
+            Future {
+              Ok(Json.obj(
+                "status" -> "success",
+                "message" -> "Found a slot for replacement"
+              ))
+            }
+          } getOrElse {
+            Future {
+              BadRequest("Missing parameter \"date\"")
+            }
+          }
+        } getOrElse {
+          Future {
+            BadRequest("Expecting json data")
+          }
+        }
+  }
+
   // Get saved classes from database
   def getClasses(email: String):
     Future[Option[ListMap[Subject, List[(Class, Option[String])]]]] = {

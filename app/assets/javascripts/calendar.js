@@ -153,7 +153,7 @@ export function calendar() {
           }, 1000);
         },
         error: function() {
-          console.log("Something went wrong");
+          toastr.error("Something went wrong");
         }
       });
     }, 1000);
@@ -161,7 +161,24 @@ export function calendar() {
 
   // Replace class
   eventModalReplaceButton.click(function() {
-    alert("Replace!");
+    var classId = eventModal.data("classId");
+    var payload = {
+      "date": eventModal.data("date")
+    };
+    $.ajax({
+      method: "POST",
+      url: `/classes/${classId}/replace`,
+      contentType: "application/json",
+      dataType: "json",
+      data: JSON.stringify(payload),
+      timeout: 3000,
+      success: function(response) {
+        toastr[response.status](response.message);
+      },
+      error: function() {
+        toastr.error("Something went wrong");
+      }
+    });
   });
 
 }
