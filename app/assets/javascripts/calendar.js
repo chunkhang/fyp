@@ -132,6 +132,7 @@ export function calendar() {
     eventModalCancelButton.addClass("gone");
     eventModalReplaceButton.addClass("gone");
     eventModalSpinner.removeClass("gone");
+    // Send request
     setTimeout(function() {
       $.ajax({
         method: "POST",
@@ -163,25 +164,50 @@ export function calendar() {
     eventModalBackButton.removeClass("gone");
     eventModalFindButton.removeClass("gone");
     eventModalForm.removeClass("gone");
+  });
 
-    // var classId = eventModal.data("classId");
-    // var payload = {
-    //   "date": eventModal.data("date")
-    // };
-    // $.ajax({
-    //   method: "POST",
-    //   url: `/classes/${classId}/replace`,
-    //   contentType: "application/json",
-    //   dataType: "json",
-    //   data: JSON.stringify(payload),
-    //   timeout: 3000,
-    //   success: function(response) {
-    //     toastr[response.status](response.message);
-    //   },
-    //   error: function() {
-    //     toastr.error("Something went wrong");
-    //   }
-    // });
+  // Find replacement
+  eventModalFindButton.click(function() {
+    // Validate from and to
+    var from = eventModalFrom[0].value;
+    var to = eventModalTo[0].value;
+    if (from != "" && to != "") {
+      eventModalFrom.removeClass("invalid");
+      eventModalTo.removeClass("invalid");
+      var classId = eventModal.data("classId");
+      var payload = {
+        "originalDate": eventModal.data("date"),
+        "startDate": from,
+        "endDate": to
+      };
+      eventModalBackButton.addClass("gone");
+      eventModalFindButton.addClass("gone");
+      eventModalSpinner.removeClass("gone");
+      // Send request
+      setTimeout(function() {
+        $.ajax({
+          method: "POST",
+          url: `/classes/${classId}/replace`,
+          contentType: "application/json",
+          dataType: "json",
+          data: JSON.stringify(payload),
+          timeout: 3000,
+          success: function(response) {
+            eventModalSpinner.addClass("gone");
+            toastr[response.status](response.message);
+            setTimeout(function() {
+              backToOriginal();
+            }, 1000);
+          },
+          error: function() {
+            toastr.error("Something went wrong");
+          }
+        });
+      }, 1000);
+    } else {
+      eventModalFrom.addClass("invalid");
+      eventModalTo.addClass("invalid");
+    }
   });
 
   // Back
@@ -189,16 +215,15 @@ export function calendar() {
     backToOriginal();
   });
 
+  // Revert event modal to original state
   function backToOriginal() {
-    // Reset title
     eventModalTitle.text(originalTitle);
-    // Show original buttons
     eventModalCancelButton.removeClass("gone");
     eventModalReplaceButton.removeClass("gone");
-    // Hide replacement buttons
     eventModalBackButton.addClass("gone");
     eventModalFindButton.addClass("gone");
-    // Hide form
+    eventModalFrom.removeClass("invalid");
+    eventModalTo.removeClass("invalid");
     eventModalForm.addClass("gone");
   }
 

@@ -31,7 +31,8 @@ export function forms() {
         closeOnSelect: false,
         closeOnClear: false,
         today: "",
-        clear: ""
+        clear: "",
+        container: "body"
       });
       var fromPicker = fromInput.pickadate("picker");
       var toInput = $("#event-modal-to").pickadate({
@@ -40,7 +41,8 @@ export function forms() {
         closeOnSelect: false,
         closeOnClear: false,
         today: "",
-        clear: ""
+        clear: "",
+        container: "body"
       });
       var toPicker = toInput.pickadate("picker");
       // Set minimum and maximum of pickers accordingly

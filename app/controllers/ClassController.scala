@@ -446,12 +446,9 @@ class ClassController @Inject()(
     (userAction andThen ClassAction(id) andThen PermittedAction).async {
       implicit request =>
         request.body.asJson.map { json =>
-          (json \ "originalDate").asOpt[String].map { eventModalOriginalDate =>
-            (json \ "startDate").asOpt[String].map { eventModalStartDate =>
-              (json \ "endDate").asOpt[String].map { eventModalEndDate =>
-                val originalDate = utils.databaseDate(eventModalOriginalDate)
-                val startDate = utils.databaseDate(eventModalStartDate)
-                val endDate = utils.databaseDate(eventModalEndDate)
+          (json \ "originalDate").asOpt[String].map { originalDate =>
+            (json \ "startDate").asOpt[String].map { startDate =>
+              (json \ "endDate").asOpt[String].map { endDate =>
                 // Find all free slots
                 getFreeSlots(
                   request.user._id.get,
