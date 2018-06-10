@@ -446,9 +446,14 @@ class ClassController @Inject()(
     (userAction andThen ClassAction(id) andThen PermittedAction).async {
       implicit request =>
         request.body.asJson.map { json =>
-          (json \ "date").asOpt[String].map { date =>
-            Logger.warn(date)
-            Future {
+          (json \ "date").asOpt[String].map { eventModalDate =>
+            val date = utils.databaseDate(eventModalDate)
+            // Find all free slots
+            getFreeSlots(
+              request.user._id.get,
+              "2018-06-01",
+              "2018-06-07"
+            ).map { slots =>
               Ok(Json.obj(
                 "status" -> "success",
                 "message" -> "Found a slot for replacement"
@@ -464,6 +469,30 @@ class ClassController @Inject()(
             BadRequest("Expecting json data")
           }
         }
+  }
+
+  // Get free slots from other cancelled classes
+  def getFreeSlots(
+    id: BSONObjectID,
+    start: String,
+    end: String
+  ): Future[List[(String, String, String)]] = {
+    classRepo.readAll().flatMap { allClasses =>
+      subjectRepo.findSubjectsByUserId(id).map { subjects =>
+        val subjectIds = subjects.map(_._id.get)
+        val classes = allClasses.filter { class_ =>
+          // Classes by all other lecturers
+          !subjectIds.contains(class_.subjectId) &&
+          // Cancelled classes
+          class_.exceptionDates.isDefined &&
+          class_.exceptionDates.get.length >= 1
+        }
+        classes.foreach { class_ =>
+          Logger.warn(s"${class_._id.get} ${class_.subjectId} ${class_.category} ${class_.group} ${class_.exceptionDates.get}")
+        }
+        List[(String, String, String)]()
+      }
+    }
   }
 
   // Get saved classes from database
