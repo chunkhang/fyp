@@ -62,26 +62,31 @@
 }
 
 .modal-body {
-  h5 {
-    line-height: 0.95;
-    #event-modal-subject {
-      font-size: 1.2rem;
-    }
-    #event-modal-class {
-      font-weight: inherit;
-    }
+  #event-modal-form {
+    
   }
-  p {
-    font-size: 1rem;
-    margin-bottom: 0;
-    line-height: 1.1;
-    #event-modal-date {
-      font-weight: bolder;
-      margin-bottom: 3px;
-      display: inline-block;
+  #event-modal-info {
+    h5 {
+      line-height: 0.95;
+      #event-modal-subject {
+        font-size: 1.2rem;
+      }
+      #event-modal-class {
+        font-weight: inherit;
+      }
     }
-    #event-modal-time, #event-modal-venue {
-      font-size: 0.85rem;
+    p {
+      font-size: 1rem;
+      margin-bottom: 0;
+      line-height: 1.1;
+      #event-modal-date {
+        font-weight: bolder;
+        margin-bottom: 3px;
+        display: inline-block;
+      }
+      #event-modal-time, #event-modal-venue {
+        font-size: 0.85rem;
+      }
     }
   }
 }

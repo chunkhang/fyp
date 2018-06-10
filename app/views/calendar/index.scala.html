@@ -23,15 +23,29 @@
         </div>
         <!-- Class information -->
         <div class="modal-body">
-          <h5 class="text-center mb-3">
-            <strong id="event-modal-subject" data-toggle="tooltip" data-placement="right" title="apple"></strong><br>
-            <small id="event-modal-class"></small>
-          </h5>
-          <p class="text-center">
-            <span id="event-modal-date"></span><br>
-            <span id="event-modal-time"></span><br>
-            <span id="event-modal-venue"></span>
-          </p>
+          <div id="event-modal-info">
+            <h5 class="text-center mb-3">
+              <strong id="event-modal-subject" data-toggle="tooltip" data-placement="right" title="apple"></strong><br>
+              <small id="event-modal-class"></small>
+            </h5>
+            <p class="text-center">
+              <span id="event-modal-date"></span><br>
+              <span id="event-modal-time"></span><br>
+              <span id="event-modal-venue"></span>
+            </p>
+          </div>
+          <div id="event-modal-form">
+            <form>
+              <div class="md-form form-group">
+                <input placeholder="Earliest date for replacement" type="text" id="event-modal-from" class="form-control datepicker">
+                <label for="event-modal-from">From</label>
+              </div>
+              <div class="md-form form-group">
+                <input placeholder="Latest date for replacement" type="text" id="event-modal-to" class="form-control datepicker">
+                <label for="event-modal-to">To</label>
+              </div>
+            </form>
+          </div>
         </div>
         <div class="modal-footer justify-content-center">
           <!-- Cancel class button -->

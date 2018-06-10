@@ -17,20 +17,66 @@ export function forms() {
 
   // Material datepicker
   var datePicker = $(".datepicker");
-  var startDate = $("#start-date");
-  var minimumDate = new Date(
-    parseInt(startDate.text().substring(0, 4)),
-    parseInt(startDate.text().substring(5, 7)) - 1,
-    parseInt(startDate.text().substring(8, 10)) + 1
-  );
-  datePicker.pickadate({
-    format: "yyyy-mm-dd",
-    min: minimumDate,
-    closeOnSelect: false,
-    closeOnClear: false,
-    today: "",
-    clear: ""
-  });
+  if ($("#calendar").length != 0) {
+    $("#event-modal-replace").click(function() {
+      var databaseDate = $("#event-modal").data("databaseDate");
+      var originalDate = new Date(
+        parseInt(databaseDate.substring(0, 4)),
+        parseInt(databaseDate.substring(5, 7)) - 1,
+        parseInt(databaseDate.substring(8, 10)) + 1
+      );
+      var fromInput = $("#event-modal-from").pickadate({
+        format: "yyyy-mm-dd",
+        min: originalDate,
+        closeOnSelect: false,
+        closeOnClear: false,
+        today: "",
+        clear: ""
+      });
+      var fromPicker = fromInput.pickadate("picker");
+      var toInput = $("#event-modal-to").pickadate({
+        format: "yyyy-mm-dd",
+        min: originalDate,
+        closeOnSelect: false,
+        closeOnClear: false,
+        today: "",
+        clear: ""
+      });
+      var toPicker = toInput.pickadate("picker");
+      // Set minimum and maximum of pickers accordingly
+      fromPicker.on("set", function(event) {
+        if (event.select) {
+          toPicker.set("min", fromPicker.get("select"));
+        }
+      });
+      toPicker.on("set", function(event) {
+        if (event.select) {
+          fromPicker.set("max", toPicker.get("select"));
+        }
+      });
+      // Clear pickers
+      fromPicker.clear();
+      toPicker.clear();
+      fromPicker.set("min", originalDate);
+      toPicker.set("min", originalDate);
+      fromPicker.set("max", false);
+    });
+  } else {
+    var startDate = $("#start-date");
+    var minimumDate = new Date(
+      parseInt(startDate.text().substring(0, 4)),
+      parseInt(startDate.text().substring(5, 7)) - 1,
+      parseInt(startDate.text().substring(8, 10)) + 1
+    );
+    datePicker.pickadate({
+      format: "yyyy-mm-dd",
+      min: minimumDate,
+      closeOnSelect: false,
+      closeOnClear: false,
+      today: "",
+      clear: ""
+    });
+  }
 
   // Material autocomplete
   var autocomplete = $("#venue");

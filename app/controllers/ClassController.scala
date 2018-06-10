@@ -446,22 +446,45 @@ class ClassController @Inject()(
     (userAction andThen ClassAction(id) andThen PermittedAction).async {
       implicit request =>
         request.body.asJson.map { json =>
-          (json \ "date").asOpt[String].map { eventModalDate =>
-            val date = utils.databaseDate(eventModalDate)
-            // Find all free slots
-            getFreeSlots(
-              request.user._id.get,
-              "2018-06-01",
-              "2018-06-07"
-            ).map { slots =>
-              Ok(Json.obj(
-                "status" -> "success",
-                "message" -> "Found a slot for replacement"
-              ))
+          (json \ "originalDate").asOpt[String].map { eventModalOriginalDate =>
+            (json \ "startDate").asOpt[String].map { eventModalStartDate =>
+              (json \ "endDate").asOpt[String].map { eventModalEndDate =>
+                val originalDate = utils.databaseDate(eventModalOriginalDate)
+                val startDate = utils.databaseDate(eventModalStartDate)
+                val endDate = utils.databaseDate(eventModalEndDate)
+                // Find all free slots
+                getFreeSlots(
+                  request.user._id.get,
+                  startDate,
+                  endDate
+                ).map { slots =>
+                  println("slots")
+                  println(slots)
+                  if (!slots.isEmpty) {
+                    Ok(Json.obj(
+                      "status" -> "success",
+                      "message" -> "Found a slot for replacement"
+                    ))
+                  } else {
+                    Ok(Json.obj(
+                      "status" -> "success",
+                      "message" -> "No free slot available"
+                    ))
+                  }
+                }
+              } getOrElse {
+                Future {
+                  BadRequest("Missing parameter \"endDate\"")
+                }
+              }
+            } getOrElse {
+              Future {
+                BadRequest("Missing parameter \"startDate\"")
+              }
             }
           } getOrElse {
             Future {
-              BadRequest("Missing parameter \"date\"")
+              BadRequest("Missing parameter \"originalDate\"")
             }
           }
         } getOrElse {
@@ -476,21 +499,26 @@ class ClassController @Inject()(
     id: BSONObjectID,
     start: String,
     end: String
-  ): Future[List[(String, String, String)]] = {
+  ): Future[List[(Class, List[String])]] = {
     classRepo.readAll().flatMap { allClasses =>
       subjectRepo.findSubjectsByUserId(id).map { subjects =>
         val subjectIds = subjects.map(_._id.get)
         val classes = allClasses.filter { class_ =>
           // Classes by all other lecturers
           !subjectIds.contains(class_.subjectId) &&
-          // Cancelled classes
+          // Classes with cancelled dates
           class_.exceptionDates.isDefined &&
           class_.exceptionDates.get.length >= 1
         }
-        classes.foreach { class_ =>
-          Logger.warn(s"${class_._id.get} ${class_.subjectId} ${class_.category} ${class_.group} ${class_.exceptionDates.get}")
-        }
-        List[(String, String, String)]()
+        // Get class with valid dates
+        val validClasses: List[(Class, List[String])] = classes.map { class_ =>
+          val exceptionDates = class_.exceptionDates.get
+          val validDates = exceptionDates.filter { date =>
+            utils.dateInRange(date, start, end)
+          }
+          (class_, validDates)
+        } filter(!_._2.isEmpty)
+        validClasses
       }
     }
   }

@@ -200,4 +200,17 @@ class Utils @Inject()(config: Configuration) {
     jodaDate.toString(DateTimeFormat.forPattern("yyyy-MM-dd"))
   }
 
+  // Check if given date is within range
+  def dateInRange(date: String, start: String, end: String): Boolean = {
+    val parser = DateTimeFormat.forPattern("yyyy-MM-dd")
+    val jodaDate = parser.parseDateTime(date)
+    val jodaStart = parser.parseDateTime(start)
+    val jodaEnd = parser.parseDateTime(end)
+    if (jodaDate >= jodaStart && jodaDate <= jodaEnd) {
+      true
+    } else {
+      false
+    }
+  }
+
 }

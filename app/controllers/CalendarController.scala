@@ -37,7 +37,8 @@ class CalendarController @Inject()(
     modalDate: String,
     modalTime: String,
     modalVenue: String,
-    modalClassId: String
+    modalClassId: String,
+    modalDatabaseDate: String
   )
 
   implicit val eventWrites: Writes[Event] = (
@@ -50,7 +51,8 @@ class CalendarController @Inject()(
     (JsPath \ "modalDate").write[String] and
     (JsPath \ "modalTime").write[String] and
     (JsPath \ "modalVenue").write[String] and
-    (JsPath \ "modalClassId").write[String]
+    (JsPath \ "modalClassId").write[String] and
+    (JsPath \ "modalDatabaseDate").write[String]
   )(unlift(Event.unapply))
 
   def index = userAction { implicit request =>
@@ -102,7 +104,8 @@ class CalendarController @Inject()(
                   s"${data.classItem.startTime.get} - " +
                   s"${data.classItem.endTime.get}",
                 modalVenue = data.venue,
-                modalClassId = data.classItem._id.get.stringify
+                modalClassId = data.classItem._id.get.stringify,
+                modalDatabaseDate = data.start
               )
             }
             // Filter events based on queried date range

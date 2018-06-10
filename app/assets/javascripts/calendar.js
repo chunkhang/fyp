@@ -122,6 +122,7 @@ export function calendar() {
       eventModalVenue.text(event.modalVenue);
       eventModal.data("classId", event.modalClassId);
       eventModal.data("date", event.modalDate);
+      eventModal.data("databaseDate", event.modalDatabaseDate);
       eventModalCancelButton.removeClass("gone");
       eventModalReplaceButton.removeClass("gone");
     }
@@ -161,24 +162,26 @@ export function calendar() {
 
   // Replace class
   eventModalReplaceButton.click(function() {
-    var classId = eventModal.data("classId");
-    var payload = {
-      "date": eventModal.data("date")
-    };
-    $.ajax({
-      method: "POST",
-      url: `/classes/${classId}/replace`,
-      contentType: "application/json",
-      dataType: "json",
-      data: JSON.stringify(payload),
-      timeout: 3000,
-      success: function(response) {
-        toastr[response.status](response.message);
-      },
-      error: function() {
-        toastr.error("Something went wrong");
-      }
-    });
+    // Show form
+
+    // var classId = eventModal.data("classId");
+    // var payload = {
+    //   "date": eventModal.data("date")
+    // };
+    // $.ajax({
+    //   method: "POST",
+    //   url: `/classes/${classId}/replace`,
+    //   contentType: "application/json",
+    //   dataType: "json",
+    //   data: JSON.stringify(payload),
+    //   timeout: 3000,
+    //   success: function(response) {
+    //     toastr[response.status](response.message);
+    //   },
+    //   error: function() {
+    //     toastr.error("Something went wrong");
+    //   }
+    // });
   });
 
 }
