@@ -102,7 +102,7 @@ export function calendar() {
       }
     },
     eventAfterRender: function(event, element) {
-      if (!moment(event.start).isSameOrBefore(moment())) {
+      if (!moment(event.end).isSameOrBefore(moment())) {
         // Enable event modal
         element.attr("data-toggle", "modal");
         element.attr("data-target", "#event-modal");
