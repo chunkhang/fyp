@@ -28,6 +28,7 @@ export function calendar() {
   };
   var lastView = "";
   var eventModal = $("#event-modal");
+  var eventModalTitle = $("#event-modal-title");
   var eventModalSubject = $("#event-modal-subject");
   var eventModalClass = $("#event-modal-class");
   var eventModalDate = $("#event-modal-date");
@@ -35,19 +36,13 @@ export function calendar() {
   var eventModalVenue = $("#event-modal-venue");
   var eventModalCancelButton = $("#event-modal-cancel");
   var eventModalReplaceButton = $("#event-modal-replace");
+  var eventModalBackButton = $("#event-modal-back");
+  var eventModalFindButton = $("#event-modal-find");
   var eventModalSpinner = $("#event-modal-spinner");
-
-  // Disable scrolling when event modal is showing
-  eventModal.on("show.bs.modal", function() {
-    $("html").css({
-      overflow: "hidden"
-    });
-  });
-  eventModal.on("hide.bs.modal", function() {
-    $("html").css({
-      "overflow": "auto"
-    });
-  });
+  var eventModalForm = $("#event-modal-form");
+  var eventModalFrom = $("#event-modal-from");
+  var eventModalTo = $("#event-modal-to");
+  var originalTitle = eventModalTitle.text();
 
   // Initialize tooltip
   $("#event-modal-subject").tooltip();
@@ -162,7 +157,12 @@ export function calendar() {
 
   // Replace class
   eventModalReplaceButton.click(function() {
-    // Show form
+    eventModalTitle.text("Replace class");
+    eventModalCancelButton.addClass("gone");
+    eventModalReplaceButton.addClass("gone");
+    eventModalBackButton.removeClass("gone");
+    eventModalFindButton.removeClass("gone");
+    eventModalForm.removeClass("gone");
 
     // var classId = eventModal.data("classId");
     // var payload = {
@@ -182,6 +182,38 @@ export function calendar() {
     //     toastr.error("Something went wrong");
     //   }
     // });
+  });
+
+  // Back
+  eventModalBackButton.click(function() {
+    backToOriginal();
+  });
+
+  function backToOriginal() {
+    // Reset title
+    eventModalTitle.text(originalTitle);
+    // Show original buttons
+    eventModalCancelButton.removeClass("gone");
+    eventModalReplaceButton.removeClass("gone");
+    // Hide replacement buttons
+    eventModalBackButton.addClass("gone");
+    eventModalFindButton.addClass("gone");
+    // Hide form
+    eventModalForm.addClass("gone");
+  }
+
+  eventModal.on("show.bs.modal", function() {
+    // Disable scrolling
+    $("html").css({
+      overflow: "hidden"
+    });
+    backToOriginal();
+  });
+  eventModal.on("hide.bs.modal", function() {
+    // Enable scrolling
+    $("html").css({
+      "overflow": "auto"
+    });
   });
 
 }

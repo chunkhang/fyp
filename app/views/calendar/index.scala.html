@@ -19,7 +19,7 @@
     <div class="modal-dialog modal-notify modal-primary modal-dialog-centered">
       <div class="modal-content">
         <div class="modal-header">
-          <p class="heading lead">Perform an action</p>
+          <p class="heading lead" id="event-modal-title">Perform an action</p>
         </div>
         <!-- Class information -->
         <div class="modal-body">
@@ -34,14 +34,14 @@
               <span id="event-modal-venue"></span>
             </p>
           </div>
-          <div id="event-modal-form">
+          <div id="event-modal-form" class="gone">
             <form>
               <div class="md-form form-group">
-                <input placeholder="Earliest date for replacement" type="text" id="event-modal-from" class="form-control datepicker">
+                <input placeholder="Earliest date" type="text" id="event-modal-from" class="form-control datepicker">
                 <label for="event-modal-from">From</label>
               </div>
               <div class="md-form form-group">
-                <input placeholder="Latest date for replacement" type="text" id="event-modal-to" class="form-control datepicker">
+                <input placeholder="Latest date" type="text" id="event-modal-to" class="form-control datepicker">
                 <label for="event-modal-to">To</label>
               </div>
             </form>
@@ -52,6 +52,10 @@
           <button class="btn btn-secondary btn-sm" id="event-modal-cancel">Cancel Class</button>
           <!-- Replace class button -->
           <button class="btn btn-primary btn-sm" id="event-modal-replace">Replace Class</button>
+          <!-- Back button -->
+          <button class="btn btn-danger btn-sm gone" id="event-modal-back">Back</button>
+          <!-- Find replacement button -->
+          <button class="btn btn-primary btn-sm gone" id="event-modal-find">Find Replacement</button>
           <!-- Loading spinner -->
           <div class="preloader-wrapper small active gone" id="event-modal-spinner">
             <div class="spinner-layer spinner-blue-only">
