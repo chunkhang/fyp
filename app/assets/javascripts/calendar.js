@@ -39,8 +39,22 @@ export function calendar() {
   var eventModalBackButton = $("#event-modal-back");
   var eventModalConfirmCancellationButton = $("#event-modal-confirm-cancel");
   var eventModalFindReplacementButton = $("#event-modal-find");
+  var eventModalConfirmReplacementButton =
+    $("#event-modal-confirm-replacement");
   var eventModalSpinner = $("#event-modal-spinner");
   var eventModalForm = $("#event-modal-form");
+  var eventModalInfo = $("#event-modal-info");
+  var eventModalReplacement = $("#event-modal-replacement");
+  var eventModalReplacementMessage = $("#event-modal-replacement-message");
+  var eventModalReplacementInfo = $("#event-modal-replacement-info");
+  var eventModalReplacementDate = $("#event-modal-replacement-date");
+  var eventModalReplacementTime = $("#event-modal-replacement-time");
+  var eventModalReplacementVenue = $("#event-modal-replacement-venue");
+  var eventModalReplacementBar = $("#event-modal-replacement-bar");
+  var eventModalReplacementPercentage =
+    $("#event-modal-replacement-percentage");
+  var eventModalReplacementStudents =
+    $("#event-modal-replacement-students");
   var eventModalFrom = $("#event-modal-from");
   var eventModalTo = $("#event-modal-to");
   var originalTitle = eventModalTitle.text();
@@ -158,13 +172,18 @@ export function calendar() {
         success: function(response) {
           calendar.fullCalendar("refetchEvents");
           eventModalSpinner.addClass("gone");
-          toastr[response.status](response.message);
+          if (response.status == "success") {
+            toastr.success("Class cancelled");
+          }
           setTimeout(function() {
             eventModal.click();
           }, 1000);
         },
         error: function() {
           toastr.error("Something went wrong");
+          setTimeout(function() {
+            eventModal.click();
+          }, 1000);
         }
       });
     }, 1000);
@@ -177,7 +196,9 @@ export function calendar() {
     eventModalReplaceButton.addClass("gone");
     eventModalBackButton.removeClass("gone");
     eventModalFindReplacementButton.removeClass("gone");
+    eventModalInfo.addClass("gone");
     eventModalForm.removeClass("gone");
+    eventModalReplacement.removeClass("gone");
   });
 
   // Find replacement
@@ -197,6 +218,7 @@ export function calendar() {
       eventModalBackButton.addClass("gone");
       eventModalFindReplacementButton.addClass("gone");
       eventModalSpinner.removeClass("gone");
+      eventModalForm.find("input").attr("disabled", "disabled");
       // Send request
       setTimeout(function() {
         $.ajax({
@@ -208,13 +230,28 @@ export function calendar() {
           timeout: 3000,
           success: function(response) {
             eventModalSpinner.addClass("gone");
-            toastr[response.status](response.message);
-            setTimeout(function() {
-              backToOriginal();
-            }, 1000);
+            eventModalBackButton.removeClass("gone");
+            if (response.status == "success") {
+              eventModalConfirmReplacementButton.removeClass("gone");
+              eventModalReplacementInfo.removeClass("gone");
+              eventModalReplacementDate.text(response.date);
+              eventModalReplacementTime.text(response.time);
+              eventModalReplacementVenue.text(response.venue);
+              eventModalReplacementBar.removeClass("gone");
+              var percentage = Math.round(
+                (response.availableStudents / response.allStudents) * 100
+              );
+              eventModalReplacementPercentage.css({"width": `${percentage}%`});
+              eventModalReplacementStudents.text(
+                `${response.availableStudents} / ${response.allStudents} ` +
+                "students available"
+              );
+            } else {
+              eventModalReplacementMessage.text("No replacement slot found");
+            }
           },
           error: function() {
-            toastr.error("Something went wrong");
+            eventModalReplacementMessage.text("Something went wrong");
           }
         });
       }, 1000);
@@ -222,6 +259,14 @@ export function calendar() {
       eventModalFrom.addClass("invalid");
       eventModalTo.addClass("invalid");
     }
+  });
+
+  // Confirm replacement
+  eventModalConfirmReplacementButton.click(function() {
+    alert("Replace!");
+    setTimeout(function() {
+      eventModal.click();
+    }, 1000);
   });
 
   // Back
@@ -237,9 +282,17 @@ export function calendar() {
     eventModalBackButton.addClass("gone");
     eventModalConfirmCancellationButton.addClass("gone");
     eventModalFindReplacementButton.addClass("gone");
+    eventModalConfirmReplacementButton.addClass("gone");
     eventModalFrom.removeClass("invalid");
     eventModalTo.removeClass("invalid");
     eventModalForm.addClass("gone");
+    eventModalForm.find("input").removeAttr("disabled");
+    eventModalInfo.removeClass("gone");
+    eventModalReplacement.addClass("gone");
+    eventModalReplacementMessage.text("");
+    eventModalReplacementInfo.addClass("gone");
+    eventModalReplacementBar.addClass("gone");
+    eventModalReplacementStudents.text("");
     eventModalDate.css({"text-decoration": "none"});
     eventModalTime.css({"text-decoration": "none"});
     eventModalVenue.css({"text-decoration": "none"});

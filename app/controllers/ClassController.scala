@@ -426,8 +426,7 @@ class ClassController @Inject()(
                 }
               }
               Ok(Json.obj(
-                "status" -> "success",
-                "message" -> "Class cancelled"
+                "status" -> "success"
               ))
             }
           } getOrElse {
@@ -459,26 +458,33 @@ class ClassController @Inject()(
                 ).flatMap { slots =>
                   if (!slots.isEmpty) {
                     // Get best slot based on students' availability
-                    getBestSlot(request.classItem, slots).map { maybeSlot =>
-                      maybeSlot match {
-                        case Some(slot) =>
-                          val (date, class_, available, all) = slot
-                          Ok(Json.obj(
-                            "status" -> "success",
-                            "message" -> "Found a slot for replacement",
-                            "date" -> date,
-                            "start" -> class_.startTime.get,
-                            "end" -> class_.endTime.get,
-                            "classId" -> class_._id.get.stringify,
-                            "availableStudents" -> available,
-                            "allStudents" -> all
-                          ))
-                        case None =>
-                          Ok(Json.obj(
-                            "status" -> "error",
-                            "message" -> "No free slot available"
-                          ))
-                      }
+                    getBestSlot(request.classItem, slots).flatMap {
+                      maybeSlot =>
+                        maybeSlot match {
+                          case Some(slot) =>
+                            val (date, class_, available, all) = slot
+                            val time =
+                              s"${class_.startTime.get} - " +
+                              s"${class_.endTime.get}"
+                            getVenueName(class_.venueId.get).map { venue =>
+                              Ok(Json.obj(
+                                "status" -> "success",
+                                "date" -> utils.eventModalDate(date),
+                                "time" -> time,
+                                "venue" -> venue,
+                                "availableStudents" -> available,
+                                "allStudents" -> all,
+                                "databaseDate" -> date,
+                                "classId" -> class_._id.get.stringify,
+                              ))
+                            }
+                          case None =>
+                            Future {
+                              Ok(Json.obj(
+                                "status" -> "fail",
+                              ))
+                            }
+                        }
                     }
                   } else {
                     Future {

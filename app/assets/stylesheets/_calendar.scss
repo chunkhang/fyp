@@ -62,13 +62,11 @@
 }
 
 .modal-body {
-  // display: flex;
-  // justify-content: space-evenly;
-  // align-items: center;
-  #event-modal-form {
-    margin-top: 10px;
-  }
-  #event-modal-info {
+  display: flex;
+  justify-content: space-evenly;
+  align-items: center;
+  height: 180px;
+  #event-modal-info, #event-modal-replacement {
     h5 {
       line-height: 0.95;
       #event-modal-subject {
@@ -82,14 +80,31 @@
       font-size: 1rem;
       margin-bottom: 0;
       line-height: 1.1;
-      #event-modal-date {
+      .event-date {
         font-weight: bolder;
         margin-bottom: 3px;
         display: inline-block;
       }
-      #event-modal-time, #event-modal-venue {
+      .event-time, .event-venue {
         font-size: 0.85rem;
       }
+    }
+  }
+  #event-modal-replacement {
+    min-width: 50%;
+    #event-modal-replacement-bar {
+      margin-top: 12px;
+      margin-bottom: 7px;
+      margin-left: auto;
+      margin-right: auto;
+      width: 75%;
+      height: 7px;
+      #event-modal-replacement-percentage {
+        height: 7px;
+      }
+    }
+    #event-modal-replacement-students {
+      font-size: 0.8rem;
     }
   }
 }

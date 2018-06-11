@@ -21,19 +21,20 @@
         <div class="modal-header">
           <p class="heading lead" id="event-modal-title">Manage class</p>
         </div>
-        <!-- Class information -->
         <div class="modal-body">
+          <!-- Class information -->
           <div id="event-modal-info">
             <h5 class="text-center mb-3">
               <strong id="event-modal-subject" data-toggle="tooltip" data-placement="right" title="apple"></strong><br>
               <small id="event-modal-class"></small>
             </h5>
             <p class="text-center">
-              <span id="event-modal-date"></span><br>
-              <span id="event-modal-time"></span><br>
-              <span id="event-modal-venue"></span>
+              <span id="event-modal-date" class="event-date"></span><br>
+              <span id="event-modal-time" class="event-time"></span><br>
+              <span id="event-modal-venue" class="event-venue"></span>
             </p>
           </div>
+          <!-- Replacement form -->
           <div id="event-modal-form" class="gone">
             <form>
               <div class="md-form form-group">
@@ -45,6 +46,19 @@
                 <label for="event-modal-to">To</label>
               </div>
             </form>
+          </div>
+          <!-- Replacement information -->
+          <div id="event-modal-replacement" class="gone">
+            <p class="text-center" id="event-modal-replacement-message"></p>
+            <p class="text-center gone" id="event-modal-replacement-info">
+              <span id="event-modal-replacement-date" class="event-date"></span><br>
+              <span id="event-modal-replacement-time" class="event-time"></span><br>
+              <span id="event-modal-replacement-venue" class="event-venue"></span><br>
+            </p>
+            <div class="progress gone" id="event-modal-replacement-bar">
+              <div class="progress-bar" id="event-modal-replacement-percentage"></div>
+            </div>
+            <p class="text-center" id="event-modal-replacement-students"></p>
           </div>
         </div>
         <div class="modal-footer justify-content-center">
@@ -58,6 +72,8 @@
           <button class="btn btn-primary btn-sm gone" id="event-modal-confirm-cancel">Confirm Cancellation</button>
           <!-- Find replacement button -->
           <button class="btn btn-primary btn-sm gone" id="event-modal-find">Find Replacement</button>
+          <!-- Confirm replacement button -->
+          <button class="btn btn-primary btn-sm gone" id="event-modal-confirm-replacement">Confirm Replacement</button>
           <!-- Loading spinner -->
           <div class="preloader-wrapper small active gone" id="event-modal-spinner">
             <div class="spinner-layer spinner-blue-only">
