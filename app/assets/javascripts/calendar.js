@@ -97,7 +97,8 @@ export function calendar() {
       }
     },
     eventAfterRender: function(event, element) {
-      if (!moment(event.end).isSameOrBefore(moment())) {
+      var eventAlreadyPast = event.end.isSameOrBefore(moment());
+      if (!eventAlreadyPast) {
         // Enable event modal
         element.attr("data-toggle", "modal");
         element.attr("data-target", "#event-modal");

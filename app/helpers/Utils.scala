@@ -213,4 +213,9 @@ class Utils @Inject()(config: Configuration) {
     }
   }
 
+  // Append Asia/Kuala_Lumpur timezone to date
+  def appendTimezone(date: String): String = {
+    date + "+08:00"
+  }
+
 }

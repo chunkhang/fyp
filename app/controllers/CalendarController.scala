@@ -92,8 +92,8 @@ class CalendarController @Inject()(
               var (data, eventTitle) = tuple
               Event(
                 title = eventTitle,
-                start = data.start,
-                end = data.end,
+                start = utils.appendTimezone(data.start),
+                end = utils.appendTimezone(data.end),
                 modalSubjectCode = data.subjectItem.code,
                 modalSubjectName = data.subjectItem.title.get,
                 modalClass =

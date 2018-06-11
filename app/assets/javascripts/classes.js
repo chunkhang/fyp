@@ -82,7 +82,6 @@ export function classes() {
       // Opening class
       activateItem($(this));
       var studentList = $(studentLists.filter(`[data-parent="${class_}"]`));
-      console.log(studentList);
       studentList.removeClass("gone");
       currentClass = class_;
     } else {
