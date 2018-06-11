@@ -252,6 +252,8 @@ export function calendar() {
           },
           error: function() {
             eventModalReplacementMessage.text("Something went wrong");
+            eventModalBackButton.removeClass("gone");
+            eventModalSpinner.addClass("gone");
           }
         });
       }, 1000);

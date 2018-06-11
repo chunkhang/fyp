@@ -579,7 +579,10 @@ class ClassController @Inject()(
             // Find all other classes attended by student
             val otherClasses = classes.filter { class_ =>
               class_.students.contains(student)
-            } filter (_._id.get != classItem._id.get)
+            } filter { class_ =>
+              class_._id.get != classItem._id.get &&
+              class_.day.isDefined
+            }
             // Find all classes that are the same day as replacement slot
             val sameDayClasses = otherClasses.filter { class_ =>
               val getSubject = subjectRepo.read(class_.subjectId).map(_.get)
