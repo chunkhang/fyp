@@ -196,6 +196,7 @@ export function calendar() {
           success: function(response) {
             eventModalSpinner.addClass("gone");
             toastr[response.status](response.message);
+            console.log(response.stuff);
             setTimeout(function() {
               backToOriginal();
             }, 1000);
@@ -230,16 +231,12 @@ export function calendar() {
 
   eventModal.on("show.bs.modal", function() {
     // Disable scrolling
-    $("html").css({
-      overflow: "hidden"
-    });
+    $("html").addClass("scroll-lock");
     backToOriginal();
   });
   eventModal.on("hide.bs.modal", function() {
     // Enable scrolling
-    $("html").css({
-      "overflow": "auto"
-    });
+    $("html").removeClass("scroll-lock");
   });
 
 }

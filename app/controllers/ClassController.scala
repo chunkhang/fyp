@@ -450,23 +450,43 @@ class ClassController @Inject()(
             (json \ "startDate").asOpt[String].map { startDate =>
               (json \ "endDate").asOpt[String].map { endDate =>
                 // Find all free slots
-                getFreeSlots(
+                findFreeSlots(
                   request.user._id.get,
+                  request.classItem,
+                  originalDate,
                   startDate,
                   endDate
-                ).map { slots =>
-                  println("slots")
-                  println(slots)
+                ).flatMap { slots =>
                   if (!slots.isEmpty) {
-                    Ok(Json.obj(
-                      "status" -> "success",
-                      "message" -> "Found a slot for replacement"
-                    ))
+                    // Get best slot based on students' availability
+                    getBestSlot(request.classItem, slots).map { maybeSlot =>
+                      maybeSlot match {
+                        case Some(slot) =>
+                          val (date, class_, available, all) = slot
+                          Ok(Json.obj(
+                            "status" -> "success",
+                            "message" -> "Found a slot for replacement",
+                            "date" -> date,
+                            "start" -> class_.startTime.get,
+                            "end" -> class_.endTime.get,
+                            "classId" -> class_._id.get.stringify,
+                            "availableStudents" -> available,
+                            "allStudents" -> all
+                          ))
+                        case None =>
+                          Ok(Json.obj(
+                            "status" -> "error",
+                            "message" -> "No free slot available"
+                          ))
+                      }
+                    }
                   } else {
-                    Ok(Json.obj(
-                      "status" -> "success",
-                      "message" -> "No free slot available"
-                    ))
+                    Future {
+                      Ok(Json.obj(
+                        "status" -> "error",
+                        "message" -> "No free slot available"
+                      ))
+                    }
                   }
                 }
               } getOrElse {
@@ -491,14 +511,16 @@ class ClassController @Inject()(
         }
   }
 
-  // Get free slots from other cancelled classes
-  def getFreeSlots(
-    id: BSONObjectID,
-    start: String,
-    end: String
-  ): Future[List[(Class, List[String])]] = {
+  // Find free slots for replacement class
+  def findFreeSlots(
+    userId: BSONObjectID,
+    classItem: Class,
+    cancelDate: String,
+    startDate: String,
+    endDate: String
+  ): Future[List[(String, Class, Int)]] = {
     classRepo.readAll().flatMap { allClasses =>
-      subjectRepo.findSubjectsByUserId(id).map { subjects =>
+      subjectRepo.findSubjectsByUserId(userId).map { subjects =>
         val subjectIds = subjects.map(_._id.get)
         val classes = allClasses.filter { class_ =>
           // Classes by all other lecturers
@@ -507,18 +529,93 @@ class ClassController @Inject()(
           class_.exceptionDates.isDefined &&
           class_.exceptionDates.get.length >= 1
         }
-        // Get class with valid dates
-        val validClasses: List[(Class, List[String])] = classes.map { class_ =>
+        // Find all free days for replacement
+        var freeDays = ListBuffer[(String, Class)]()
+        classes.foreach { class_ =>
           val exceptionDates = class_.exceptionDates.get
           val validDates = exceptionDates.filter { date =>
-            utils.dateInRange(date, start, end)
+            utils.dateInRange(date, startDate, endDate)
           }
-          (class_, validDates)
-        } filter(!_._2.isEmpty)
-        validClasses
+          validDates.foreach { date =>
+            val freeDay = (date, class_)
+            freeDays += freeDay
+          }
+        }
+        // Only need days with time slots that are long enough
+        val classDuration = utils.duration(
+          classItem.startTime.get,
+          classItem.endTime.get
+        )
+        val freeSlots = freeDays.map { tuple =>
+          val (date, class_) = tuple
+          val slotDuration = utils.duration(
+            class_.startTime.get,
+            class_.endTime.get
+          )
+          (date, class_, slotDuration)
+        } filter (_._3 >= classDuration)
+        freeSlots.toList
       }
     }
   }
+
+  // Get best slot with most free students
+  def getBestSlot(
+    classItem: Class,
+    slots: List[(String, Class, Int)]
+  ): Future[Option[(String, Class, Int, Int)]] = {
+    classRepo.readAll().map { classes =>
+      val availableStudents: List[Int] = slots.map { slot =>
+        val replacementDate = slot._1
+        val replacementClass = slot._2
+        val studentAvailability: List[Boolean] = classItem.students.map {
+          student =>
+            // Find all other classes attended by student
+            val otherClasses = classes.filter { class_ =>
+              class_.students.contains(student)
+            } filter (_._id.get != classItem._id.get)
+            // Find all classes that are the same day as replacement slot
+            val sameDayClasses = otherClasses.filter { class_ =>
+              val getSubject = subjectRepo.read(class_.subjectId).map(_.get)
+              val subject = Await.result(getSubject, 5.seconds)
+              val classDates = utils.weeklyDates(
+                utils.firstDate(subject.semester, class_.day.get),
+                subject.endDate.get
+              )
+              classDates.contains(replacementDate)
+            }
+            // Check for time clashes
+            val clashedClasses = sameDayClasses.filter { class_ =>
+              utils.clash(
+                replacementClass.startTime.get,
+                replacementClass.endTime.get,
+                class_.startTime.get,
+                class_.endTime.get
+              )
+            }
+            clashedClasses.length == 0
+        }
+        // How many students are free for this slot
+        studentAvailability.count(_ == true)
+      }
+      val sortedSlots = (slots zip availableStudents).filter { tuple =>
+        // Filter slots without counts
+        tuple._2 != 0
+      } sortBy { tuple =>
+        // Sort descendingly according to available students
+        -tuple._2
+      }
+      if (!sortedSlots.isEmpty) {
+        val (bestSlot, freeStudents) = sortedSlots(0)
+        val (bestDate, bestClass, _) = bestSlot
+        val allStudents = classItem.students.length
+        Some((bestDate, bestClass, freeStudents, allStudents))
+      } else {
+        None
+      }
+    }
+  }
+
 
   // Get saved classes from database
   def getClasses(email: String):

@@ -202,10 +202,10 @@ class Utils @Inject()(config: Configuration) {
 
   // Check if given date is within range
   def dateInRange(date: String, start: String, end: String): Boolean = {
-    val parser = DateTimeFormat.forPattern("yyyy-MM-dd")
-    val jodaDate = parser.parseDateTime(date)
-    val jodaStart = parser.parseDateTime(start)
-    val jodaEnd = parser.parseDateTime(end)
+    val formatter = DateTimeFormat.forPattern("yyyy-MM-dd")
+    val jodaDate = formatter.parseDateTime(date)
+    val jodaStart = formatter.parseDateTime(start)
+    val jodaEnd = formatter.parseDateTime(end)
     if (jodaDate >= jodaStart && jodaDate <= jodaEnd) {
       true
     } else {
@@ -216,6 +216,46 @@ class Utils @Inject()(config: Configuration) {
   // Append Asia/Kuala_Lumpur timezone to date
   def appendTimezone(date: String): String = {
     date + "+08:00"
+  }
+
+  // Calculate duration in minutes given start and end times
+  def duration(start: String, end: String): Int = {
+    val formatter = DateTimeFormat.forPattern("hh:mmaa");
+    val jodaStart = formatter.parseDateTime(start)
+    val jodaEnd = formatter.parseDateTime(end)
+    (jodaStart to jodaEnd).duration.getStandardMinutes.toInt
+  }
+
+  // Check if both classes clash in time
+  def clash(
+    start1: String,
+    end1: String,
+    start2: String,
+    end2: String
+  ): Boolean = {
+    val formatter = DateTimeFormat.forPattern("hh:mmaa");
+    val jodaStart1 = formatter.parseDateTime(start1)
+    val jodaEnd1 = formatter.parseDateTime(end1)
+    val jodaStart2 = formatter.parseDateTime(start2)
+    val jodaEnd2 = formatter.parseDateTime(end2)
+    if (start1 < start2) {
+      // Class 1 is before class 2
+      if (start2 >= end1) {
+        false
+      } else {
+        true
+      }
+    } else if (start1 > start2) {
+      // Class 1 is after class 2
+      if (start1 >= end2) {
+        false
+      } else {
+        true
+      }
+    } else  {
+      // Class 1 starts the same time as class 2
+      true
+    }
   }
 
 }
