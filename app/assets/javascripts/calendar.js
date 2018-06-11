@@ -37,7 +37,8 @@ export function calendar() {
   var eventModalCancelButton = $("#event-modal-cancel");
   var eventModalReplaceButton = $("#event-modal-replace");
   var eventModalBackButton = $("#event-modal-back");
-  var eventModalFindButton = $("#event-modal-find");
+  var eventModalConfirmCancellationButton = $("#event-modal-confirm-cancel");
+  var eventModalFindReplacementButton = $("#event-modal-find");
   var eventModalSpinner = $("#event-modal-spinner");
   var eventModalForm = $("#event-modal-form");
   var eventModalFrom = $("#event-modal-from");
@@ -126,12 +127,24 @@ export function calendar() {
 
   // Cancel class
   eventModalCancelButton.click(function() {
+    eventModalTitle.text("Cancel Class");
+    eventModalCancelButton.addClass("gone");
+    eventModalReplaceButton.addClass("gone");
+    eventModalBackButton.removeClass("gone");
+    eventModalConfirmCancellationButton.removeClass("gone");
+    eventModalDate.css({"text-decoration": "line-through"});
+    eventModalTime.css({"text-decoration": "line-through"});
+    eventModalVenue.css({"text-decoration": "line-through"});
+  });
+
+  // Confirm cancellation
+  eventModalConfirmCancellationButton.click(function() {
     var classId = eventModal.data("classId");
     var payload = {
       "date": eventModal.data("date")
     };
-    eventModalCancelButton.addClass("gone");
-    eventModalReplaceButton.addClass("gone");
+    eventModalBackButton.addClass("gone");
+    eventModalConfirmCancellationButton.addClass("gone");
     eventModalSpinner.removeClass("gone");
     // Send request
     setTimeout(function() {
@@ -163,12 +176,12 @@ export function calendar() {
     eventModalCancelButton.addClass("gone");
     eventModalReplaceButton.addClass("gone");
     eventModalBackButton.removeClass("gone");
-    eventModalFindButton.removeClass("gone");
+    eventModalFindReplacementButton.removeClass("gone");
     eventModalForm.removeClass("gone");
   });
 
   // Find replacement
-  eventModalFindButton.click(function() {
+  eventModalFindReplacementButton.click(function() {
     // Validate from and to
     var from = eventModalFrom[0].value;
     var to = eventModalTo[0].value;
@@ -182,7 +195,7 @@ export function calendar() {
         "endDate": to
       };
       eventModalBackButton.addClass("gone");
-      eventModalFindButton.addClass("gone");
+      eventModalFindReplacementButton.addClass("gone");
       eventModalSpinner.removeClass("gone");
       // Send request
       setTimeout(function() {
@@ -196,7 +209,6 @@ export function calendar() {
           success: function(response) {
             eventModalSpinner.addClass("gone");
             toastr[response.status](response.message);
-            console.log(response.stuff);
             setTimeout(function() {
               backToOriginal();
             }, 1000);
@@ -223,10 +235,14 @@ export function calendar() {
     eventModalCancelButton.removeClass("gone");
     eventModalReplaceButton.removeClass("gone");
     eventModalBackButton.addClass("gone");
-    eventModalFindButton.addClass("gone");
+    eventModalConfirmCancellationButton.addClass("gone");
+    eventModalFindReplacementButton.addClass("gone");
     eventModalFrom.removeClass("invalid");
     eventModalTo.removeClass("invalid");
     eventModalForm.addClass("gone");
+    eventModalDate.css({"text-decoration": "none"});
+    eventModalTime.css({"text-decoration": "none"});
+    eventModalVenue.css({"text-decoration": "none"});
   }
 
   eventModal.on("show.bs.modal", function() {
