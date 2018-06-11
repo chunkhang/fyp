@@ -552,7 +552,7 @@ class ClassController @Inject()(
           classItem.startTime.get,
           classItem.endTime.get
         )
-        val freeSlots = freeDays.map { tuple =>
+        val slots = freeDays.map { tuple =>
           val (date, class_) = tuple
           val slotDuration = utils.duration(
             class_.startTime.get,
@@ -560,7 +560,27 @@ class ClassController @Inject()(
           )
           (date, class_, slotDuration)
         } filter (_._3 >= classDuration)
-        freeSlots.toList
+        // Slots cannot clash with lecturer's classes
+        val lecturerClasses = allClasses.filter { class_ =>
+          subjectIds.contains(class_.subjectId) &&
+          class_.day.isDefined
+        }
+        val freeSlots = slots.toList.filter { slot =>
+          val clashes = lecturerClasses.map { class_ =>
+            if (class_.day.get != slot._2.day.get) {
+              false
+            } else {
+              utils.clash(
+                class_.startTime.get,
+                class_.endTime.get,
+                slot._2.startTime.get,
+                slot._2.endTime.get
+              )
+            }
+          }
+          !clashes.contains(true)
+        }
+        freeSlots
       }
     }
   }
