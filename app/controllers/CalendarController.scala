@@ -16,6 +16,7 @@ class CalendarController @Inject()(
   userAction: UserAction,
   classController: ClassController,
   subjectRepo: SubjectRepository,
+  taskRepo: TaskRepository,
   utils: Utils
 )(
   implicit ec: ExecutionContext
@@ -45,6 +46,14 @@ class CalendarController @Inject()(
     modalReplacement: Boolean
   )
 
+  case class TaskEvent(
+    title: String,
+    start: String,
+    modalScore: Int,
+    modalDescription: String,
+    modalEnd: String
+  )
+
   implicit val eventWrites: Writes[Event] = (
     (JsPath \ "title").write[String] and
     (JsPath \ "start").write[String] and
@@ -59,6 +68,14 @@ class CalendarController @Inject()(
     (JsPath \ "modalDatabaseDate").write[String] and
     (JsPath \ "modalReplacement").write[Boolean]
   )(unlift(Event.unapply))
+
+  implicit val taskEventWrites: Writes[TaskEvent] = (
+    (JsPath \ "title").write[String] and
+    (JsPath \ "start").write[String] and
+    (JsPath \ "modalScore").write[Int] and
+    (JsPath \ "modalDescription").write[String] and
+    (JsPath \ "modalEnd").write[String]
+  )(unlift(TaskEvent.unapply))
 
   def index = userAction.async { implicit request =>
     subjectRepo.findSubjectsByUserId(request.user._id.get).map { allSubjects =>
@@ -146,6 +163,38 @@ class CalendarController @Inject()(
           case None =>
             Ok(Json.toJson(events))
         }
+      }
+  }
+
+  def tasks(view: String, start: String, end: String) = userAction.async {
+    implicit request =>
+      var events = ListBuffer[TaskEvent]()
+      // Find subjects under lecturer
+      subjectRepo.findSubjectsByUserId(request.user._id.get).flatMap {
+        subjects =>
+          // Find tasks under those subjects
+          val subjectIds = subjects.filter { subject =>
+            // Only subjects with details
+            subject.title.isDefined
+          } map(_._id.get)
+          taskRepo.readAll().map { allTasks =>
+            val tasks = allTasks.filter { task =>
+              subjectIds.contains(task.subjectId)
+            }
+            tasks.foreach { task =>
+              // Create events
+              events += TaskEvent(
+                title = task.title,
+                start = task.dueDate,
+                modalScore = task.score,
+                modalDescription = task.description,
+                modalEnd = utils.appendTimezone(
+                  utils.momentTime(task.dueDate, "06:00PM")
+                )
+              )
+            }
+            Ok(Json.toJson(events))
+          }
       }
   }
 

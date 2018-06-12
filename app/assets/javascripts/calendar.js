@@ -26,6 +26,29 @@ export function calendar() {
       }
     },
   };
+  var taskSources = {
+    month: {
+      url: "/calendar/month/tasks",
+      type: "GET",
+      error: function() {
+        console.log("Failed to fetch calendar month tasks");
+      }
+    },
+    agendaWeek: {
+      url: "/calendar/week/tasks",
+      type: "GET",
+      error: function() {
+        console.log("Failed to fetch calendar week tasks");
+      }
+    },
+    listWeek: {
+      url: "/calendar/list/tasks",
+      type: "GET",
+      error: function() {
+        console.log("Failed to fetch calendar list tasks");
+      }
+    },
+  };
   var lastView = "";
   var eventModal = $("#event-modal");
   var eventModalTitle = $("#event-modal-title");
@@ -69,7 +92,10 @@ export function calendar() {
     eventSources: [
       sources.month,
       sources.agendaWeek,
-      sources.listWeek
+      sources.listWeek,
+      taskSources.month,
+      taskSources.agendaWeek,
+      taskSources.listWeek
     ],
     header: {
       left: "month,agendaWeek,listWeek",
@@ -109,23 +135,27 @@ export function calendar() {
         // Change event source
         calendar.fullCalendar("removeEventSources");
         calendar.fullCalendar("addEventSource", sources[view.name]);
+        calendar.fullCalendar("addEventSource", taskSources[view.name]);
         lastView = view.name;
       }
     },
     eventDataTransform: function(eventData) {
       var event = eventData;
       // Visually distinguish replacements
-      if (event.modalReplacement) {
+      if ("modalReplacement" in event && event.modalReplacement) {
         event.backgroundColor = "#3f9b68";
       }
       return event;
     },
     eventAfterRender: function(event, element) {
-      var eventAlreadyPast = event.end.isSameOrBefore(moment());
+      var end = event.end == null ? moment(event.modalEnd) : event.end;
+      var eventAlreadyPast = end.isSameOrBefore(moment());
       if (!eventAlreadyPast) {
-        // Enable event modal
-        element.attr("data-toggle", "modal");
-        element.attr("data-target", "#event-modal");
+        if (event.end != null) {
+          // Enable event modal
+          element.attr("data-toggle", "modal");
+          element.attr("data-target", "#event-modal");
+        }
       } else {
         // Blur past events
         element.css("opacity", "0.5");

@@ -5,6 +5,7 @@ GET     /login                          controllers.PageController.login
 # Calendar
 GET     /calendar                       controllers.CalendarController.index
 GET     /calendar/:view/events          controllers.CalendarController.events(view: String, start: String, end: String)
+GET     /calendar/:view/tasks           controllers.CalendarController.tasks(view: String, start: String, end: String)
 
 # Class
 GET     /classes                        controllers.ClassController.index

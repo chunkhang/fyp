@@ -217,6 +217,7 @@ class SubjectController @Inject()(
             (json \ "score").asOpt[Int].map { score_ =>
               (json \ "dueDate").asOpt[String].map { dueDate_ =>
                 (json \ "description").asOpt[String].map { description_ =>
+                  // Create task in database
                   taskRepo.create(Task(
                     title = title_,
                     score = score_,

@@ -47,7 +47,6 @@ class Utils @Inject()(config: Configuration) {
     dateTime.toString(outputFormatter)
   }
 
-
   // Convert to moment time string
   def momentTime(date: String, time: String): String = {
      date + "T" + twentyFourHour(time) + ":00"
