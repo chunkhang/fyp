@@ -14,6 +14,8 @@ case class Task(
   score: Int,
   dueDate: String,
   description: String,
+  uid: String,
+  sequence: Int,
   subjectId: BSONObjectID
 ) extends Entity
 

@@ -213,16 +213,20 @@ class SubjectController @Inject()(
     (userAction andThen SubjectAction(id) andThen PermittedAction).async {
       implicit request =>
         request.body.asJson.map { json =>
-          (json \ "title").asOpt[String].map { title =>
-            (json \ "score").asOpt[Int].map { score =>
-              (json \ "dueDate").asOpt[String].map { dueDate =>
-                (json \ "description").asOpt[String].map { description =>
-                  println(id)
-                  println(title)
-                  println(score)
-                  println(dueDate)
-                  println(description)
-                  Future {
+          (json \ "title").asOpt[String].map { title_ =>
+            (json \ "score").asOpt[Int].map { score_ =>
+              (json \ "dueDate").asOpt[String].map { dueDate_ =>
+                (json \ "description").asOpt[String].map { description_ =>
+                  taskRepo.create(Task(
+                    title = title_,
+                    score = score_,
+                    dueDate = dueDate_,
+                    description = description_,
+                    uid = Uid.random().getValue(),
+                    sequence = 0,
+                    subjectId = id
+                  )).map { _ =>
+                    Logger.info(s"Created Task(${id})")
                     Ok(Json.obj("status" -> "success"))
                   }
                 } getOrElse {
