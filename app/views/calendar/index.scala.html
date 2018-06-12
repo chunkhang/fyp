@@ -8,7 +8,7 @@
     <div class="col" id="calendar-header">
         <h1>Calendar</h1>
         <!-- Add task button -->
-        <button class="btn btn-primary btn-sm" data-toggle="modal" data-target="#add-task-modal" @if(subjects.isEmpty){disabled}>Add Task</button>
+        <button class="btn btn-primary btn-sm" id="add-task-button" data-toggle="modal" data-target="#add-task-modal" @if(subjects.isEmpty){disabled}>Add Task</button>
     </div>
   </div>
   <div class="row">
@@ -119,11 +119,11 @@
                 <label for="add-task-subject">Subject</label>
               </div>
               <div class="md-form form-group">
-                <input placeholder="Task title" type="text" id="add-task-title" class="form-control">
+                <input placeholder="Task title" type="text" id="add-task-title" class="form-control clearable">
                 <label for="add-task-title">Title</label>
               </div>
               <div class="md-form form-group">
-                <input placeholder="Task score" type="number" id="add-task-score" class="form-control" min="1" max="100">
+                <input placeholder="Task score" type="number" id="add-task-score" class="form-control clearable" min="1" max="100">
                 <label for="add-task-score">Score</label>
               </div>
               <div class="md-form form-group">
@@ -131,7 +131,7 @@
                 <label for="add-task-date">Due Date</label>
               </div>
               <div class="md-form form-group">
-                <input placeholder="Task description" type="text" id="add-task-description" class="form-control">
+                <textarea placeholder="Task description" type="text" id="add-task-description" class="md-textarea form-control clearable" rows="3"></textarea>
                 <label for="add-task-description">Description</label>
               </div>
             </form>

@@ -18,6 +18,20 @@ export function forms() {
   // Material datepicker
   var datePicker = $(".datepicker");
   if ($("#calendar").length != 0) {
+    // Add task
+    var addInput = $("#add-task-date").pickadate({
+      format: "yyyy-mm-dd",
+      min: new Date(),
+      closeOnSelect: false,
+      closeOnClear: false,
+      today: "",
+      clear: "",
+      container: "body"
+    });
+    $("#add-task-button").click(function() {
+      addInput.pickadate("picker").clear();
+    });
+    // Replacement
     $("#event-modal-replace").click(function() {
       var databaseDate = $("#event-modal").data("databaseDate");
       var originalDate = new Date(

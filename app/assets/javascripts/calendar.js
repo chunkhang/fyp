@@ -366,10 +366,19 @@ export function calendar() {
     $("html").removeClass("scroll-lock");
   });
 
+  var addTaskButton = $("#add-task-button");
   var addTaskModal = $("#add-task-modal");
   var addTaskCancelButton = $("#add-task-cancel");
   var addTaskConfirmButton = $("#add-task-confirm");
   var addTaskSpinner = $("#add-task-spinner");
+  var addTaskDescription = $("#add-task-description");
+
+  // Add task button
+  addTaskButton.click(function() {
+    // Clear form fields
+    addTaskModal.find(".clearable").val("");
+    addTaskDescription.click();
+  });
 
   // Cancel add task
   addTaskCancelButton.click(function() {
