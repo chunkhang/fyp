@@ -8,6 +8,7 @@ import play.api.data._
 import play.api.data.Forms._
 import play.api.data.validation.Constraints._
 import play.api.Logger
+import play.api.libs.json.Json
 import reactivemongo.bson.BSONObjectID
 import biweekly.property._
 import models._
@@ -25,6 +26,7 @@ class SubjectController @Inject()(
   userRepo: UserRepository,
   subjectRepo: SubjectRepository,
   classRepo: ClassRepository,
+  taskRepo: TaskRepository,
   classController: ClassController,
   utils: Utils,
   mailer: Mailer
@@ -205,6 +207,30 @@ class SubjectController @Inject()(
             }
           }
         )
+  }
+
+  def createTask(id: BSONObjectID) =
+    (userAction andThen SubjectAction(id) andThen PermittedAction).async {
+      implicit request =>
+        Future {
+          Ok(Json.obj("status" -> "success"))
+        }
+  }
+
+  def updateTask(id: BSONObjectID) =
+    (userAction andThen SubjectAction(id) andThen PermittedAction).async {
+      implicit request =>
+        Future {
+          Ok(Json.obj("status" -> "success"))
+        }
+  }
+
+  def deleteTask(id: BSONObjectID) =
+    (userAction andThen SubjectAction(id) andThen PermittedAction).async {
+      implicit request =>
+        Future {
+          Ok(Json.obj("status" -> "success"))
+        }
   }
 
   // Get subject and its classes given subject it

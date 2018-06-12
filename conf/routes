@@ -1,34 +1,37 @@
 # Page
-GET     /                         controllers.PageController.index
-GET     /login                    controllers.PageController.login
+GET     /                               controllers.PageController.index
+GET     /login                          controllers.PageController.login
 
 # Calendar
-GET     /calendar                 controllers.CalendarController.index
-GET     /calendar/:view/events    controllers.CalendarController.events(view: String, start: String, end: String)
+GET     /calendar                       controllers.CalendarController.index
+GET     /calendar/:view/events          controllers.CalendarController.events(view: String, start: String, end: String)
 
 # Class
-GET     /classes                  controllers.ClassController.index
-GET     /classes/fetch            controllers.ClassController.fetch
-GET     /classes/:id/edit         controllers.ClassController.edit(id: reactivemongo.bson.BSONObjectID)
-POST    /classes/:id              controllers.ClassController.update(id: reactivemongo.bson.BSONObjectID)
+GET     /classes                        controllers.ClassController.index
+GET     /classes/fetch                  controllers.ClassController.fetch
+GET     /classes/:id/edit               controllers.ClassController.edit(id: reactivemongo.bson.BSONObjectID)
+POST    /classes/:id                    controllers.ClassController.update(id: reactivemongo.bson.BSONObjectID)
 + nocsrf
-POST    /classes/:id/cancel       controllers.ClassController.cancel(id: reactivemongo.bson.BSONObjectID)
+POST    /classes/:id/cancel             controllers.ClassController.cancel(id: reactivemongo.bson.BSONObjectID)
 + nocsrf
-POST    /classes/:id/find         controllers.ClassController.find(id: reactivemongo.bson.BSONObjectID)
+POST    /classes/:id/find               controllers.ClassController.find(id: reactivemongo.bson.BSONObjectID)
 + nocsrf
-POST    /classes/:id/replace      controllers.ClassController.replace(id: reactivemongo.bson.BSONObjectID)
+POST    /classes/:id/replace            controllers.ClassController.replace(id: reactivemongo.bson.BSONObjectID)
 
 # Subject
-GET     /subjects/:id/edit        controllers.SubjectController.edit(id: reactivemongo.bson.BSONObjectID)
-POST    /subjects/:id             controllers.SubjectController.update(id: reactivemongo.bson.BSONObjectID)
+GET     /subjects/:id/edit              controllers.SubjectController.edit(id: reactivemongo.bson.BSONObjectID)
+POST    /subjects/:id                   controllers.SubjectController.update(id: reactivemongo.bson.BSONObjectID)
+POST    /subjects/:id/tasks             controllers.SubjectController.createTask(id: reactivemongo.bson.BSONObjectID)
+POST    /subjects/:id/tasks/update      controllers.SubjectController.updateTask(id: reactivemongo.bson.BSONObjectID)
+POST    /subjects/:id/tasks/delete      controllers.SubjectController.deleteTask(id: reactivemongo.bson.BSONObjectID)
 
 # Lecturer
-GET     /lecturers                controllers.LecturerController.index
+GET     /lecturers                      controllers.LecturerController.index
 
 # Authentication
-GET     /auth/logon               controllers.AuthenticationController.logon
-GET     /auth/authenticate        controllers.AuthenticationController.authenticate
-GET     /auth/logout              controllers.AuthenticationController.logout
+GET     /auth/logon                     controllers.AuthenticationController.logon
+GET     /auth/authenticate              controllers.AuthenticationController.authenticate
+GET     /auth/logout                    controllers.AuthenticationController.logout
 
 # Assets
-GET     /assets/*file             controllers.Assets.versioned(path="/public", file: Asset)
+GET     /assets/*file                   controllers.Assets.versioned(path="/public", file: Asset)

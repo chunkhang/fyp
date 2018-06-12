@@ -9,7 +9,6 @@ class LecturerController @Inject()(
   cc: ControllerComponents,
   userAction: UserAction,
   userRepo: UserRepository
-
 )(
   implicit ec: ExecutionContext
 ) extends AbstractController(cc) {
