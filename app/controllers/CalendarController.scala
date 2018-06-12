@@ -182,9 +182,24 @@ class CalendarController @Inject()(
               subjectIds.contains(task.subjectId)
             }
             tasks.foreach { task =>
+              val getSubject = subjectRepo.read(task.subjectId).map {
+                maybeSubject => maybeSubject.get
+              }
+              val subject = Await.result(getSubject, 5.seconds)
+              var taskTitle = ""
+              view match {
+                case "month" =>
+                  taskTitle = s"${subject.code} ${task.title}"
+                case "week" =>
+                  taskTitle = s"${subject.code} ${task.title}"
+                case "list" =>
+                  taskTitle =
+                    s"${subject.code} | ${subject.title.get} | ${task.title}"
+                case _ =>
+              }
               // Create events
               events += TaskEvent(
-                title = task.title,
+                title = taskTitle,
                 start = task.dueDate,
                 modalScore = task.score,
                 modalDescription = task.description,

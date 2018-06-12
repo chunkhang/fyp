@@ -122,11 +122,12 @@ export function calendar() {
       agendaWeek: {
         columnHeaderFormat: "ddd, D/M",
         slotLabelFormat: "hh:mmA",
-        allDayText: "All Day"
+        allDayText: "Tasks Due"
       },
       listWeek: {
         listDayAltFormat: "MMM D, YYYY",
-        noEventsMessage: "Nothing to display"
+        noEventsMessage: "Nothing to display",
+        allDayText: "Task Due"
       }
     },
     slotEventOverlap: false,
@@ -141,9 +142,12 @@ export function calendar() {
     },
     eventDataTransform: function(eventData) {
       var event = eventData;
-      // Visually distinguish replacements
       if ("modalReplacement" in event && event.modalReplacement) {
+        // Green replacements
         event.backgroundColor = "#3f9b68";
+      } else if ("modalScore" in event) {
+        // Red tasks
+        event.backgroundColor = "#9b3f72";
       }
       return event;
     },
@@ -163,19 +167,21 @@ export function calendar() {
       }
     },
     eventClick: function(event) {
-      // Populate event modal
-      eventModalSubject.text(event.modalSubjectCode);
-      eventModalSubject.attr("data-original-title", event.modalSubjectName);
-      eventModalClass.text(event.modalClass);
-      eventModalDate.text(event.modalDate);
-      eventModalTime.text(event.modalTime);
-      eventModalVenue.text(event.modalVenue);
-      eventModal.data("classId", event.modalClassId);
-      eventModal.data("date", event.modalDate);
-      eventModal.data("databaseDate", event.modalDatabaseDate);
-      eventModalCancelButton.removeClass("gone");
-      eventModalReplaceButton.removeClass("gone");
-      eventModal.data("replacement", event.modalReplacement);
+      if (event.end != null) {
+        // Populate event modal
+        eventModalSubject.text(event.modalSubjectCode);
+        eventModalSubject.attr("data-original-title", event.modalSubjectName);
+        eventModalClass.text(event.modalClass);
+        eventModalDate.text(event.modalDate);
+        eventModalTime.text(event.modalTime);
+        eventModalVenue.text(event.modalVenue);
+        eventModal.data("classId", event.modalClassId);
+        eventModal.data("date", event.modalDate);
+        eventModal.data("databaseDate", event.modalDatabaseDate);
+        eventModalCancelButton.removeClass("gone");
+        eventModalReplaceButton.removeClass("gone");
+        eventModal.data("replacement", event.modalReplacement);
+      }
     }
   });
 
