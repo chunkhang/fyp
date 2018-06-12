@@ -441,7 +441,7 @@ class ClassController @Inject()(
         }
   }
 
-  def replace(id: BSONObjectID) =
+  def find(id: BSONObjectID) =
     (userAction andThen ClassAction(id) andThen PermittedAction).async {
       implicit request =>
         request.body.asJson.map { json =>
@@ -509,6 +509,22 @@ class ClassController @Inject()(
             Future {
               BadRequest("Missing parameter \"originalDate\"")
             }
+          }
+        } getOrElse {
+          Future {
+            BadRequest("Expecting json data")
+          }
+        }
+  }
+
+  def replace(id: BSONObjectID) =
+    (userAction andThen ClassAction(id) andThen PermittedAction).async {
+      implicit request =>
+        request.body.asJson.map { json =>
+          Future {
+            Ok(Json.obj(
+              "status" -> "success"
+            ))
           }
         } getOrElse {
           Future {

@@ -180,6 +180,7 @@ export function calendar() {
           }, 1000);
         },
         error: function() {
+          eventModalSpinner.addClass("gone");
           toastr.error("Something went wrong");
           setTimeout(function() {
             eventModal.click();
@@ -223,7 +224,7 @@ export function calendar() {
       setTimeout(function() {
         $.ajax({
           method: "POST",
-          url: `/classes/${classId}/replace`,
+          url: `/classes/${classId}/find`,
           contentType: "application/json",
           dataType: "json",
           data: JSON.stringify(payload),
@@ -265,9 +266,40 @@ export function calendar() {
 
   // Confirm replacement
   eventModalConfirmReplacementButton.click(function() {
-    alert("Replace!");
+    var classId = eventModal.data("classId");
+    var payload = {
+      "date": eventModal.data("date")
+    };
+    eventModalBackButton.addClass("gone");
+    eventModalConfirmReplacementButton.addClass("gone");
+    eventModalSpinner.removeClass("gone");
+    // Send request
     setTimeout(function() {
-      eventModal.click();
+      $.ajax({
+        method: "POST",
+        url: `/classes/${classId}/replace`,
+        contentType: "application/json",
+        dataType: "json",
+        data: JSON.stringify(payload),
+        timeout: 3000,
+        success: function(response) {
+          calendar.fullCalendar("refetchEvents");
+          eventModalSpinner.addClass("gone");
+          if (response.status == "success") {
+            toastr.success("Class replaced");
+          }
+          setTimeout(function() {
+            eventModal.click();
+          }, 1000);
+        },
+        error: function() {
+          eventModalSpinner.addClass("gone");
+          toastr.error("Something went wrong");
+          setTimeout(function() {
+            eventModal.click();
+          }, 1000);
+        }
+      });
     }, 1000);
   });
 
