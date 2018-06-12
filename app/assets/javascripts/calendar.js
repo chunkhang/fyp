@@ -420,35 +420,35 @@ export function calendar() {
       addTaskCancelButton.addClass("gone");
       addTaskConfirmButton.addClass("gone");
       addTaskSpinner.removeClass("gone");
+      // Send request
+      setTimeout(function() {
+        $.ajax({
+          method: "POST",
+          url: `/subjects/${subjectId}/tasks`,
+          contentType: "application/json",
+          dataType: "json",
+          data: JSON.stringify(payload),
+          timeout: 3000,
+          success: function(response) {
+            calendar.fullCalendar("refetchEvents");
+            addTaskSpinner.addClass("gone");
+            if (response.status == "success") {
+              toastr.success("Task added");
+            }
+            setTimeout(function() {
+              addTaskModal.click();
+            }, 1000);
+          },
+          error: function() {
+            addTaskSpinner.addClass("gone");
+            toastr.error("Something went wrong");
+            setTimeout(function() {
+              addTaskModal.click();
+            }, 1000);
+          }
+        });
+      }, 1000);
     }
-    // // Send request
-    // setTimeout(function() {
-    //   $.ajax({
-    //     method: "POST",
-    //     url: `/classes/${subjectId}/cancel`,
-    //     contentType: "application/json",
-    //     dataType: "json",
-    //     data: JSON.stringify(payload),
-    //     timeout: 3000,
-    //     success: function(response) {
-    //       calendar.fullCalendar("refetchEvents");
-    //       eventModalSpinner.addClass("gone");
-    //       if (response.status == "success") {
-    //         toastr.success("Class cancelled");
-    //       }
-    //       setTimeout(function() {
-    //         eventModal.click();
-    //       }, 1000);
-    //     },
-    //     error: function() {
-    //       eventModalSpinner.addClass("gone");
-    //       toastr.error("Something went wrong");
-    //       setTimeout(function() {
-    //         eventModal.click();
-    //       }, 1000);
-    //     }
-    //   });
-    // }, 1000);
   });
 
   // Cancel add task
@@ -459,6 +459,8 @@ export function calendar() {
   addTaskModal.on("show.bs.modal", function() {
     // Disable scrolling
     $("html").addClass("scroll-lock");
+    addTaskCancelButton.removeClass("gone");
+    addTaskConfirmButton.removeClass("gone");
   });
   addTaskModal.on("hide.bs.modal", function() {
     // Enable scrolling

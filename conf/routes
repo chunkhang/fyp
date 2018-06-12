@@ -21,8 +21,11 @@ POST    /classes/:id/replace            controllers.ClassController.replace(id: 
 # Subject
 GET     /subjects/:id/edit              controllers.SubjectController.edit(id: reactivemongo.bson.BSONObjectID)
 POST    /subjects/:id                   controllers.SubjectController.update(id: reactivemongo.bson.BSONObjectID)
++ nocsrf
 POST    /subjects/:id/tasks             controllers.SubjectController.createTask(id: reactivemongo.bson.BSONObjectID)
++ nocsrf
 POST    /subjects/:id/tasks/update      controllers.SubjectController.updateTask(id: reactivemongo.bson.BSONObjectID)
++ nocsrf
 POST    /subjects/:id/tasks/delete      controllers.SubjectController.deleteTask(id: reactivemongo.bson.BSONObjectID)
 
 # Lecturer

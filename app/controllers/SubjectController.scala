@@ -212,8 +212,43 @@ class SubjectController @Inject()(
   def createTask(id: BSONObjectID) =
     (userAction andThen SubjectAction(id) andThen PermittedAction).async {
       implicit request =>
-        Future {
-          Ok(Json.obj("status" -> "success"))
+        request.body.asJson.map { json =>
+          (json \ "title").asOpt[String].map { title =>
+            (json \ "score").asOpt[Int].map { score =>
+              (json \ "dueDate").asOpt[String].map { dueDate =>
+                (json \ "description").asOpt[String].map { description =>
+                  println(id)
+                  println(title)
+                  println(score)
+                  println(dueDate)
+                  println(description)
+                  Future {
+                    Ok(Json.obj("status" -> "success"))
+                  }
+                } getOrElse {
+                  Future {
+                    BadRequest("Missing parameter \"description\"")
+                  }
+                }
+              } getOrElse {
+                Future {
+                  BadRequest("Missing parameter \"dueDate\"")
+                }
+              }
+            } getOrElse {
+              Future {
+                BadRequest("Missing parameter \"score\"")
+              }
+            }
+          } getOrElse {
+            Future {
+              BadRequest("Missing parameter \"title\"")
+            }
+          }
+        } getOrElse {
+          Future {
+            BadRequest("Expecting json data")
+          }
         }
   }
 
