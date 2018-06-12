@@ -287,7 +287,7 @@ class ClassController @Inject()(
                         )
                         // Send ical
                         mailer.sendIcs(
-                          subject = "Updated" + emailSubject,
+                          subject = "Updated Class" + emailSubject,
                           toList = utils.studentEmails(class_.students),
                           ics = biweeklyIcal
                         )
@@ -308,7 +308,7 @@ class ClassController @Inject()(
                         }
                         // Send ical
                         mailer.sendIcs(
-                          subject = "Added" + emailSubject,
+                          subject = "Added Class" + emailSubject,
                           toList = utils.studentEmails(class_.students),
                           ics = biweeklyIcal
                         )
@@ -405,7 +405,7 @@ class ClassController @Inject()(
                 // Send ical
                 mailer.sendIcs(
                   subject =
-                    s"Cancelled: ${request.subjectItem.title.get} " +
+                    s"Cancelled Class: ${request.subjectItem.title.get} " +
                     s"(${class_.category})",
                   toList = utils.studentEmails(class_.students),
                   ics = biweeklyIcal,
@@ -549,7 +549,7 @@ class ClassController @Inject()(
                           // Send ical
                           mailer.sendIcs(
                             subject =
-                              s"Replaced: ${request.subjectItem.title.get} " +
+                              s"Replaced Class: ${request.subjectItem.title.get} " +
                               s"(${class_.category})",
                             toList =
                               utils.studentEmails(class_.students),
