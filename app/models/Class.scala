@@ -20,9 +20,18 @@ case class Class(
   uid: Option[String] = None,
   sequence: Option[Int] = None,
   exceptionDates: Option[List[String]] = None,
+  replacements: Option[List[Replacement]] = None,
   venueId: Option[BSONObjectID] = None,
   subjectId: BSONObjectID
 ) extends Entity
+
+case class Replacement(
+  cancelDate: String,
+  replaceDate: String,
+  startTime: String,
+  endTime: String,
+  venueId: String
+)
 
 class ClassRepository @Inject()(
   implicit ec: ExecutionContext,
@@ -31,6 +40,7 @@ class ClassRepository @Inject()(
 ) extends Repository[Class] {
 
   val collectionName = "classes"
+  implicit val replacementFormat = Json.format[Replacement]
   implicit val documentFormat = Json.format[Class]
 
   def findClassesBySubjectId(subjectId: BSONObjectID): Future[List[Class]] = {

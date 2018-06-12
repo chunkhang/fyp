@@ -239,6 +239,9 @@ export function calendar() {
               eventModalReplacementTime.text(response.time);
               eventModalReplacementVenue.text(response.venue);
               eventModalReplacementBar.removeClass("gone");
+              eventModal.data("replacementDate", response.date);
+              eventModal.data("replacementTime", response.time);
+              eventModal.data("replacementVenue", response.venue);
               var percentage = Math.round(
                 (response.availableStudents / response.allStudents) * 100
               );
@@ -268,7 +271,10 @@ export function calendar() {
   eventModalConfirmReplacementButton.click(function() {
     var classId = eventModal.data("classId");
     var payload = {
-      "date": eventModal.data("date")
+      "cancelledDate": eventModal.data("date"),
+      "replacementDate": eventModal.data("replacementDate"),
+      "time": eventModal.data("replacementTime"),
+      "venue": eventModal.data("replacementVenue")
     };
     eventModalBackButton.addClass("gone");
     eventModalConfirmReplacementButton.addClass("gone");

@@ -473,9 +473,7 @@ class ClassController @Inject()(
                                 "time" -> time,
                                 "venue" -> venue,
                                 "availableStudents" -> available,
-                                "allStudents" -> all,
-                                "databaseDate" -> date,
-                                "classId" -> class_._id.get.stringify,
+                                "allStudents" -> all
                               ))
                             }
                           case None =>
@@ -521,10 +519,36 @@ class ClassController @Inject()(
     (userAction andThen ClassAction(id) andThen PermittedAction).async {
       implicit request =>
         request.body.asJson.map { json =>
-          Future {
-            Ok(Json.obj(
-              "status" -> "success"
-            ))
+          (json \ "cancelledDate").asOpt[String].map { cancelledDate =>
+            (json \ "replacementDate").asOpt[String].map { replacementDate =>
+              (json \ "time").asOpt[String].map { time =>
+                (json \ "venue").asOpt[String].map { venue =>
+                  println(cancelledDate)
+                  println(replacementDate)
+                  println(time)
+                  println(venue)
+                  getVenueId(venue).map { venueId_ =>
+                    Ok(Json.obj("status" -> "success"))
+                  }
+                } getOrElse {
+                  Future {
+                    BadRequest("Missing parameter \"venue\"")
+                  }
+                }
+              } getOrElse {
+                Future {
+                  BadRequest("Missing parameter \"time\"")
+                }
+              }
+            } getOrElse {
+              Future {
+                BadRequest("Missing parameter \"replacementDate\"")
+              }
+            }
+          } getOrElse {
+            Future {
+              BadRequest("Missing parameter \"cancelledDate\"")
+            }
           }
         } getOrElse {
           Future {
