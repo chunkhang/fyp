@@ -33,7 +33,7 @@ class Utils @Inject()(config: Configuration) {
 
   // Convert from 12-hour to 24-hour format
   def twentyFourHour(time: String): String = {
-    val inputFormatter = DateTimeFormat.forPattern("hh:mmaa");
+    val inputFormatter = DateTimeFormat.forPattern("hh:mmaa")
     val outputFormatter = DateTimeFormat.forPattern("HH:mm")
     val dateTime = inputFormatter.parseDateTime(time)
     dateTime.toString(outputFormatter)
@@ -42,7 +42,7 @@ class Utils @Inject()(config: Configuration) {
   // Convert from 24-hour to 12-hour format
   def twelveHour(time: String): String = {
     val inputFormatter = DateTimeFormat.forPattern("HH:mm")
-    val outputFormatter = DateTimeFormat.forPattern("hh:mmaa");
+    val outputFormatter = DateTimeFormat.forPattern("hh:mmaa")
     val dateTime = inputFormatter.parseDateTime(time)
     dateTime.toString(outputFormatter)
   }
@@ -219,6 +219,43 @@ class Utils @Inject()(config: Configuration) {
     icalendar
   }
 
+  // Create biweekly ical for task
+  def biweeklyTaskIcal(
+    uid: String,
+    sequence: Int,
+    task: Task,
+    subject: Subject,
+    user: User
+  ): ICalendar = {
+    val icalendar = new ICalendar()
+    icalendar.setMethod("PUBLISH")
+    val event = new VEvent()
+    event.setUid(new Uid(uid))
+    event.setOrganizer(config.get[String]("play.mailer.user"))
+    event.setSequence(sequence)
+    event.setSummary(s"${subject.code} ${task.title}")
+    val formatter = new SimpleDateFormat("yyyy-MM-dd")
+    val dateStart =  new DateStart(formatter.parse(task.dueDate), false)
+    event.setDateStart(dateStart)
+    val description =
+      if (task.description.isEmpty) "(No description)" else task.description
+    event.setDescription(
+      s"""
+        |${subject.title.get} (${subject.code})
+        |
+        |${task.title}
+        |Score: ${task.score}%
+        |Due: ${task.dueDate}
+        |
+        |${description}
+        |
+        |${user.name} (${user.email})
+      """.stripMargin.trim,
+    )
+    icalendar.addEvent(event)
+    icalendar
+  }
+
   // Biweekly event
   def biweeklyEvent(
     maybeUid: Option[Uid],
@@ -226,7 +263,7 @@ class Utils @Inject()(config: Configuration) {
     ical: Ical,
     recurUntil: Option[String]
   ): VEvent = {
-    val event = new VEvent();
+    val event = new VEvent()
     maybeUid match {
       case Some(uid) =>
         event.setUid(uid)
@@ -316,7 +353,7 @@ class Utils @Inject()(config: Configuration) {
 
   // Calculate duration in minutes given start and end times
   def duration(start: String, end: String): Int = {
-    val formatter = DateTimeFormat.forPattern("hh:mmaa");
+    val formatter = DateTimeFormat.forPattern("hh:mmaa")
     val jodaStart = formatter.parseDateTime(start)
     val jodaEnd = formatter.parseDateTime(end)
     (jodaStart to jodaEnd).duration.getStandardMinutes.toInt
@@ -329,7 +366,7 @@ class Utils @Inject()(config: Configuration) {
     start2: String,
     end2: String
   ): Boolean = {
-    val formatter = DateTimeFormat.forPattern("hh:mmaa");
+    val formatter = DateTimeFormat.forPattern("hh:mmaa")
     val jodaStart1 = formatter.parseDateTime(start1)
     val jodaEnd1 = formatter.parseDateTime(end1)
     val jodaStart2 = formatter.parseDateTime(start2)

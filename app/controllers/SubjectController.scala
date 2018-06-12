@@ -3,6 +3,7 @@ package controllers
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future, Await}
 import scala.concurrent.duration._
+import scala.collection.mutable.ListBuffer
 import play.api.mvc._
 import play.api.data._
 import play.api.data.Forms._
@@ -218,17 +219,38 @@ class SubjectController @Inject()(
               (json \ "dueDate").asOpt[String].map { dueDate_ =>
                 (json \ "description").asOpt[String].map { description_ =>
                   // Create task in database
-                  taskRepo.create(Task(
+                  val task = Task(
                     title = title_,
                     score = score_,
                     dueDate = dueDate_,
-                    description = description_,
+                    description = description_.trim,
                     uid = Uid.random().getValue(),
                     sequence = 0,
                     subjectId = id
-                  )).map { _ =>
+                  )
+                  taskRepo.create(task).flatMap { _ =>
                     Logger.info(s"Created Task(${id})")
-                    Ok(Json.obj("status" -> "success"))
+                    // Create ical
+                    val biweeklyTaskIcal = utils.biweeklyTaskIcal(
+                      task.uid,
+                      task.sequence,
+                      task,
+                      request.subjectItem,
+                      request.user
+                    )
+                    // Find all students for subject
+                    getAllStudents(id).map { students =>
+                      // Send ical
+                      mailer.sendIcs(
+                        subject =
+                          s"Added Task: ${request.subjectItem.title.get} " +
+                          s" ${task.title}",
+                          toList = utils.studentEmails(students),
+                          ics = biweeklyTaskIcal,
+                          isTask = true
+                      )
+                      Ok(Json.obj("status" -> "success"))
+                    }
                   }
                 } getOrElse {
                   Future {
@@ -281,6 +303,19 @@ class SubjectController @Inject()(
       classRepo.findClassesBySubjectId(subjectId).map { classes =>
         (subject, classes)
       }
+    }
+  }
+
+  // Get all students under subject
+  def getAllStudents(id: BSONObjectID): Future[List[String]] = {
+    getSubjectWithClasses(id).map { tuple =>
+      val (subject, classes) = tuple
+      var studentLists = ListBuffer[List[String]]()
+      classes.foreach { class_ =>
+        studentLists += class_.students
+      }
+      val students = studentLists.toList.distinct.fold(List[String]())(_ ++ _)
+      students
     }
   }
 
