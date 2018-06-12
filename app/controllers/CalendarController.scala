@@ -74,36 +74,21 @@ class CalendarController @Inject()(
             view match {
               case "month" =>
                 eventTitles = eventData.map { data =>
-                  var title =
-                    s"${data.subjectItem.code} " +
-                    s"${data.classItem.category(0)}${data.classItem.group}"
-                  if (data.replacement) {
-                    title += " [ R ]"
-                  }
-                  title
+                  s"${data.subjectItem.code} " +
+                  s"${data.classItem.category(0)}${data.classItem.group}"
                 }
               case "week" =>
                 eventTitles = eventData.map { data =>
-                  var title =
-                    s"${data.subjectItem.code}\n" +
-                    s"${data.classItem.category} " +
-                    s"Group ${data.classItem.group}"
-                  if (data.replacement) {
-                    title += "\n[ Replacement ]"
-                  }
-                  title
+                  s"${data.subjectItem.code}\n" +
+                  s"${data.classItem.category} " +
+                  s"Group ${data.classItem.group}"
                 }
               case "list" =>
                 eventTitles = eventData.map { data =>
-                  var title =
-                    s"${data.subjectItem.code} | " +
-                    s"${data.subjectItem.title.get} | " +
-                    s"${data.classItem.category} " +
-                    s"Group ${data.classItem.group}"
-                  if (data.replacement) {
-                    title += " | Replacement"
-                  }
-                  title
+                  s"${data.subjectItem.code} | " +
+                  s"${data.subjectItem.title.get} | " +
+                  s"${data.classItem.category} " +
+                  s"Group ${data.classItem.group}"
                 }
               case _ =>
             }
