@@ -280,7 +280,6 @@ class ClassController @Inject()(
                         // Update ical
                         sequence_ = class_.sequence.get + 1
                         biweeklyIcal = utils.biweeklyIcal(
-                          method= "REQUEST",
                           uid = new Uid(uid_),
                           sequence = sequence_,
                           ical = classIcal,
@@ -296,7 +295,6 @@ class ClassController @Inject()(
                         // Add ical
                         val uid_ = Uid.random()
                         biweeklyIcal = utils.biweeklyIcal(
-                          method= "PUBLISH",
                           uid = uid_,
                           sequence = sequence_,
                           ical = classIcal,
@@ -399,7 +397,6 @@ class ClassController @Inject()(
                 // Update ical
                 val sequence_ = class_.sequence.get + 1
                 val biweeklyIcal = utils.biweeklyIcal(
-                  method= "REQUEST",
                   uid = new Uid(class_.uid.get),
                   sequence = sequence_,
                   ical = classIcal,
@@ -523,12 +520,51 @@ class ClassController @Inject()(
             (json \ "replacementDate").asOpt[String].map { replacementDate =>
               (json \ "time").asOpt[String].map { time =>
                 (json \ "venue").asOpt[String].map { venue =>
-                  println(cancelledDate)
-                  println(replacementDate)
-                  println(time)
-                  println(venue)
-                  getVenueId(venue).map { venueId_ =>
-                    Ok(Json.obj("status" -> "success"))
+                  val cancelDate = utils.databaseDate(cancelledDate)
+                  val replaceDate = utils.databaseDate(replacementDate)
+                  val (startTime, endTime) = utils.databaseTimes(time)
+                  getVenueId(venue).flatMap { venueId =>
+                    // Cancel original class
+                    addExceptionDate(id, cancelDate).flatMap { _ =>
+                      // Add replacement class
+                      addReplacementClass(
+                        id,
+                        cancelDate,
+                        replaceDate,
+                        startTime,
+                        endTime,
+                        venueId
+                      ).flatMap { class_ =>
+                        // Create ical
+                        createReplacementIcal(
+                          request.user,
+                          request.subjectItem,
+                          class_,
+                          cancelDate,
+                          replaceDate,
+                          startTime,
+                          endTime,
+                          venue
+                        ).map { ical =>
+                          // Send ical
+                          mailer.sendIcs(
+                            subject =
+                              s"Replaced: ${request.subjectItem.title.get} " +
+                              s"(${class_.category})",
+                            toList =
+                              utils.studentEmails(class_.students),
+                            ics = ical,
+                            cancel = true,
+                            replace = true
+                          )
+                        }
+                        Future {
+                          Ok(Json.obj(
+                            "status" -> "success"
+                          ))
+                        }
+                      }
+                    }
                   }
                 } getOrElse {
                   Future {
@@ -555,6 +591,110 @@ class ClassController @Inject()(
             BadRequest("Expecting json data")
           }
         }
+  }
+
+  // Append exception date to class
+  def addExceptionDate(id: BSONObjectID, date: String): Future[Unit] = {
+    classRepo.read(id).flatMap { maybeClass =>
+      val class_ = maybeClass.get
+      val newExceptionDates = class_.exceptionDates.map { exceptionDates =>
+        Some(exceptionDates :+ date)
+      } getOrElse {
+        Some(List(date))
+      }
+      classRepo.update(id, class_.copy(
+        exceptionDates = newExceptionDates
+      )).map { maybeNewClass =>
+        Logger.info(
+          s"Updated Class(${id}, " +
+          s"exceptionDates = ${maybeNewClass.get.exceptionDates.get})"
+        )
+      }
+    }
+  }
+
+  // Add replacement class to class
+  def addReplacementClass(
+    id: BSONObjectID,
+    classCancelDate: String,
+    classReplaceDate: String,
+    classStartTime: String,
+    classEndTime: String,
+    classVenueId: BSONObjectID
+  ): Future[Class] = {
+    classRepo.read(id).flatMap { maybeClass =>
+      val class_ = maybeClass.get
+      val replacement = Replacement(
+        cancelDate = classCancelDate,
+        replaceDate = classReplaceDate,
+        startTime = classStartTime,
+        endTime = classEndTime,
+        venueId = classVenueId
+      )
+      val newReplacements = class_.replacements.map { replacements =>
+        Some(replacements :+ replacement)
+      } getOrElse {
+        Some(List(replacement))
+      }
+      classRepo.update(id, class_.copy(
+        replacements = newReplacements
+      )).map { maybeNewClass =>
+        Logger.info(
+          s"Updated Class(${id}, " +
+          s"replacements = ${maybeNewClass.get.replacements.get})"
+        )
+        maybeNewClass.get
+      }
+    }
+  }
+
+  // Create replacement ical
+  def createReplacementIcal(
+    user: User,
+    subjectItem: Subject,
+    classItem: Class,
+    cancelDate: String,
+    replaceDate: String,
+    startTime: String,
+    endTime: String,
+    venue: String
+  ): Future[ICalendar] = {
+    getVenueName(classItem.venueId.get).flatMap { cancelVenue =>
+      val cancellationIcal = utils.classIcal(
+        user,
+        subjectItem,
+        classItem,
+        cancelVenue
+      )
+      val replacementIcal = utils.replacementIcal(
+        user,
+        subjectItem,
+        classItem,
+        cancelDate,
+        replaceDate,
+        startTime,
+        endTime,
+        cancelVenue,
+        venue
+      )
+      val sequence_ = classItem.sequence.get + 1
+      val biweeklyIcal = utils.biweeklyReplacementIcal(
+        uid = new Uid(classItem.uid.get),
+        sequence = sequence_,
+        cancelIcal = cancellationIcal,
+        replaceIcal = replacementIcal,
+        recurUntil = Some(subjectItem.endDate.get)
+      )
+      classRepo.update(classItem._id.get, classItem.copy(
+        sequence = Some(sequence_)
+      )).map { _ =>
+        Logger.info(
+          s"Updated Class(${classItem._id.get}, " +
+          s"sequence = ${sequence_})"
+        )
+        biweeklyIcal
+      }
+    }
   }
 
   // Find free slots for replacement class

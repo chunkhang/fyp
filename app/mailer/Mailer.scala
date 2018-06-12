@@ -45,9 +45,10 @@ class Mailer @Inject()(
     toList: Seq[String],
     ics: ICalendar,
     cancel: Boolean = false,
+    replace: Boolean = false,
     cancelledDate: Option[String] = None
   ) = {
-    val event = ics.getEvents().get(0)
+    var event = ics.getEvents().get(0)
     var body = ""
     if (!cancel) {
       // Added or update class
@@ -68,25 +69,47 @@ class Mailer @Inject()(
       |Class Activity Management System
       """
     } else {
-      // Cancelled class
-      body = s"""
-      |Dear students,
-      |
-      |The following class has been cancelled on this date:
-      |
-      |${cancelledDate.get}
-      |
-      |----------
-      |
-      |${event.getDescription().getValue()}
-      |
-      |----------
-      |
-      |Please download and open the attached ics file to update your calendar.
-      |
-      |Best regards,
-      |Class Activity Management System
-      """
+      if (!replace) {
+        // Cancelled class
+        body = s"""
+        |Dear students,
+        |
+        |The following class has been cancelled on this date:
+        |
+        |${cancelledDate.get}
+        |
+        |----------
+        |
+        |${event.getDescription().getValue()}
+        |
+        |----------
+        |
+        |Please download and open the attached ics file to update your calendar.
+        |
+        |Best regards,
+        |Class Activity Management System
+        """
+      } else {
+        // Replaced class
+        event = ics.getEvents().get(1)
+        body = s"""
+        |Dear students,
+        |
+        |The following class has been replaced:
+        |
+        |----------
+        |
+        |${event.getDescription().getValue()}
+        |
+        |----------
+        |
+        |Please download and open the attached ics file to update your calendar.
+        |
+        |Best regards,
+        |Class Activity Management System
+        """
+
+      }
     }
     val file = new File(s"/tmp/CAMS-${utils.timestampNow()}.ics")
     Biweekly.write(ics).go(file)

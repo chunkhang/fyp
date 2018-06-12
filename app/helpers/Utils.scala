@@ -125,18 +125,106 @@ class Utils @Inject()(config: Configuration) {
     )
   }
 
+  // Generate ical object for replacement class containing event details
+  def replacementIcal(
+    user: User,
+    subjectItem: Subject,
+    classItem: Class,
+    originalDate: String,
+    replacementDate: String,
+    replacementStartTime: String,
+    replacementEndTime: String,
+    originalVenue: String,
+    replacementVenue: String
+  ): Ical = {
+    Ical(
+      summary =
+        s"${subjectItem.title.get} (${classItem.category}) [Replacement]",
+      date = replacementDate,
+      startTime = replacementStartTime,
+      endTime = replacementEndTime,
+      location = replacementVenue,
+      description = s"""
+        |Replacement Details:
+        |
+        |${eventModalDate(replacementDate)}
+        |${replacementStartTime} - ${replacementEndTime}
+        |${replacementVenue}
+        |
+        |Original Details:
+        |
+        |${subjectItem.title.get} (${subjectItem.code})
+        |${classItem.category} (Group ${classItem.group})
+        |
+        |${eventModalDate(originalDate)}
+        |${classItem.startTime.get} - ${classItem.endTime.get}
+        |${originalVenue}
+        |
+        |${user.name} (${user.email})
+      """.stripMargin.trim,
+      exceptionDates = classItem.exceptionDates
+    )
+  }
+
   // Create biweekly ical event from ical object
   def biweeklyIcal(
-    method: String,
     uid: Uid,
     sequence: Int,
     ical: Ical,
     recurUntil: Option[String] = None
   ): ICalendar = {
     val icalendar = new ICalendar()
-    icalendar.setMethod(method)
-    val event = new VEvent()
-    event.setUid(uid)
+    icalendar.setMethod("PUBLISH")
+    icalendar.addEvent(biweeklyEvent(
+      Some(uid),
+      sequence,
+      ical,
+      recurUntil
+    ))
+    icalendar
+  }
+
+  // Create biweekly ical for replacement
+  def biweeklyReplacementIcal(
+    uid: Uid,
+    sequence: Int,
+    cancelIcal: Ical,
+    replaceIcal: Ical,
+    recurUntil: Option[String] = None
+  ): ICalendar = {
+    val icalendar = new ICalendar()
+    icalendar.setMethod("PUBLISH")
+    // Cancel event
+    icalendar.addEvent(biweeklyEvent(
+      Some(uid),
+      sequence,
+      cancelIcal,
+      recurUntil
+    ))
+    // Replacement event
+    icalendar.addEvent(biweeklyEvent(
+      None,
+      sequence,
+      replaceIcal,
+      None
+    ))
+    icalendar
+  }
+
+  // Biweekly event
+  def biweeklyEvent(
+    maybeUid: Option[Uid],
+    sequence: Int,
+    ical: Ical,
+    recurUntil: Option[String]
+  ): VEvent = {
+    val event = new VEvent();
+    maybeUid match {
+      case Some(uid) =>
+        event.setUid(uid)
+      case None =>
+        event.setUid(Uid.random())
+    }
     event.setOrganizer(config.get[String]("play.mailer.user"))
     event.setSequence(sequence)
     event.setSummary(ical.summary)
@@ -163,15 +251,15 @@ class Utils @Inject()(config: Configuration) {
       if (ical.exceptionDates.isDefined) {
         val exceptionDates = new ExceptionDates()
         ical.exceptionDates.get.foreach { exceptionDate =>
+          val exceptionDateTime = s"${exceptionDate} ${ical.startTime}"
           exceptionDates.getValues().add(
-            new ICalDate(simpleFormatter.parse(exceptionDate), false)
+            new ICalDate(formatter.parse(exceptionDateTime), true)
           )
         }
         event.addExceptionDates(exceptionDates)
       }
     }
-    icalendar.addEvent(event)
-    icalendar
+    event
   }
 
   // Convert student list to list of student emails
@@ -256,6 +344,12 @@ class Utils @Inject()(config: Configuration) {
       // Class 1 starts the same time as class 2
       true
     }
+  }
+
+  // Return database time strings for start and end
+  def databaseTimes(time: String): (String, String) = {
+    def times = time.split("-").map(_.trim)
+    (times(0), times(1))
   }
 
 }

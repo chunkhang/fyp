@@ -30,7 +30,7 @@ case class Replacement(
   replaceDate: String,
   startTime: String,
   endTime: String,
-  venueId: String
+  venueId: BSONObjectID
 )
 
 class ClassRepository @Inject()(
