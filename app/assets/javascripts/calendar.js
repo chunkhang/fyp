@@ -366,4 +366,23 @@ export function calendar() {
     $("html").removeClass("scroll-lock");
   });
 
+  var addTaskModal = $("#add-task-modal");
+  var addTaskCancelButton = $("#add-task-cancel");
+  var addTaskConfirmButton = $("#add-task-confirm");
+  var addTaskSpinner = $("#add-task-spinner");
+
+  // Cancel add task
+  addTaskCancelButton.click(function() {
+    addTaskModal.click();
+  });
+
+  addTaskModal.on("show.bs.modal", function() {
+    // Disable scrolling
+    $("html").addClass("scroll-lock");
+  });
+  addTaskModal.on("hide.bs.modal", function() {
+    // Enable scrolling
+    $("html").removeClass("scroll-lock");
+  });
+
 }

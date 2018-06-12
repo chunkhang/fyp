@@ -15,6 +15,7 @@ class CalendarController @Inject()(
   cc: ControllerComponents,
   userAction: UserAction,
   classController: ClassController,
+  subjectRepo: SubjectRepository,
   utils: Utils
 )(
   implicit ec: ExecutionContext
@@ -59,8 +60,21 @@ class CalendarController @Inject()(
     (JsPath \ "modalReplacement").write[Boolean]
   )(unlift(Event.unapply))
 
-  def index = userAction { implicit request =>
-    Ok(views.html.calendar.index())
+  def index = userAction.async { implicit request =>
+    subjectRepo.findSubjectsByUserId(request.user._id.get).map { allSubjects =>
+      val subjects = allSubjects.filter { subject =>
+        // Only need subjects that have details
+        subject.title.isDefined
+      } sortWith (
+        // Sort ascendingly by subject code
+        _.code < _.code
+      )
+      if (!subjects.isEmpty) {
+        Ok(views.html.calendar.index(Some(subjects)))
+      } else {
+        Ok(views.html.calendar.index(None))
+      }
+    }
   }
 
   def events(view: String, start: String, end: String) = userAction.async {
