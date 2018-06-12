@@ -58,6 +58,7 @@ export function calendar() {
   var eventModalFrom = $("#event-modal-from");
   var eventModalTo = $("#event-modal-to");
   var originalTitle = eventModalTitle.text();
+  var eventModalFooter = $("#event-modal-footer");
 
   // Initialize tooltip
   $("#event-modal-subject").tooltip();
@@ -110,6 +111,14 @@ export function calendar() {
         calendar.fullCalendar("addEventSource", sources[view.name]);
         lastView = view.name;
       }
+    },
+    eventDataTransform: function(eventData) {
+      var event = eventData;
+      // Visually distinguish replacements
+      if (event.modalReplacement) {
+        event.backgroundColor = "#3f9b68";
+      }
+      return event;
     },
     eventAfterRender: function(event, element) {
       var eventAlreadyPast = event.end.isSameOrBefore(moment());
@@ -337,6 +346,7 @@ export function calendar() {
     eventModalDate.css({"text-decoration": "none"});
     eventModalTime.css({"text-decoration": "none"});
     eventModalVenue.css({"text-decoration": "none"});
+    eventModalFooter.removeClass("gone");
   }
 
   eventModal.on("show.bs.modal", function() {
@@ -348,6 +358,7 @@ export function calendar() {
       eventModalTitle.text("View replacement class");
       eventModalCancelButton.addClass("gone");
       eventModalReplaceButton.addClass("gone");
+      eventModalFooter.addClass("gone");
     }
   });
   eventModal.on("hide.bs.modal", function() {
