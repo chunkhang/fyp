@@ -244,7 +244,7 @@ class SubjectController @Inject()(
                       mailer.sendIcs(
                         subject =
                           s"Added Task: ${request.subjectItem.title.get} " +
-                          s" ${task.title}",
+                          s"${task.title}",
                           toList = utils.studentEmails(students),
                           ics = biweeklyTaskIcal,
                           isTask = true
@@ -290,8 +290,46 @@ class SubjectController @Inject()(
   def deleteTask(id: BSONObjectID) =
     (userAction andThen SubjectAction(id) andThen PermittedAction).async {
       implicit request =>
-        Future {
-          Ok(Json.obj("status" -> "success"))
+        request.body.asJson.map { json =>
+          (json \ "taskId").asOpt[String].map { maybeTaskId =>
+            // Delete task from database
+            val taskId = BSONObjectID.parse(maybeTaskId).get
+            taskRepo.delete(taskId).flatMap { maybeTask =>
+              Logger.info(s"Deleted Task(${taskId})")
+              val task = maybeTask.get
+              // Update ical
+              val biweeklyTaskIcal = utils.biweeklyTaskIcal(
+                task.uid,
+                task.sequence + 1,
+                task,
+                request.subjectItem,
+                request.user,
+                delete = true
+              )
+              // Find all students for subject
+              getAllStudents(id).map { students =>
+                // Send ical
+                mailer.sendIcs(
+                  subject =
+                    s"Deleted Task: ${request.subjectItem.title.get} " +
+                    s"${task.title}",
+                    toList = utils.studentEmails(students),
+                    ics = biweeklyTaskIcal,
+                    isTask = true,
+                    delete = true
+                )
+              Ok(Json.obj("status" -> "success"))
+              }
+            }
+          } getOrElse {
+            Future {
+              BadRequest("Missing parameter \"taskId\"")
+            }
+          }
+        } getOrElse {
+          Future {
+            BadRequest("Expecting json data")
+          }
         }
   }
 

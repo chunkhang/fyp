@@ -225,7 +225,8 @@ class Utils @Inject()(config: Configuration) {
     sequence: Int,
     task: Task,
     subject: Subject,
-    user: User
+    user: User,
+    delete: Boolean = false
   ): ICalendar = {
     val icalendar = new ICalendar()
     icalendar.setMethod("PUBLISH")
@@ -252,6 +253,9 @@ class Utils @Inject()(config: Configuration) {
         |${user.name} (${user.email})
       """.stripMargin.trim,
     )
+    if (delete) {
+      event.setStatus(Status.cancelled())
+    }
     icalendar.addEvent(event)
     icalendar
   }

@@ -50,6 +50,7 @@ class CalendarController @Inject()(
     title: String,
     start: String,
     modalEnd: String,
+    modalTask: String,
     modalSubject: String,
     modalTitle: String,
     modalScore: Int,
@@ -76,6 +77,7 @@ class CalendarController @Inject()(
     (JsPath \ "title").write[String] and
     (JsPath \ "start").write[String] and
     (JsPath \ "modalEnd").write[String] and
+    (JsPath \ "modalTask").write[String] and
     (JsPath \ "modalSubject").write[String] and
     (JsPath \ "modalTitle").write[String] and
     (JsPath \ "modalScore").write[Int] and
@@ -210,6 +212,7 @@ class CalendarController @Inject()(
                 modalEnd = utils.appendTimezone(
                   utils.momentTime(task.dueDate, "06:00PM")
                 ),
+                modalTask = task._id.get.stringify,
                 modalSubject = subject.code,
                 modalTitle = task.title,
                 modalScore = task.score,

@@ -47,6 +47,7 @@ class Mailer @Inject()(
     cancel: Boolean = false,
     replace: Boolean = false,
     isTask: Boolean = false,
+    delete: Boolean = false,
     cancelledDate: Option[String] = None
   ) = {
     var event = ics.getEvents().get(0)
@@ -115,23 +116,43 @@ class Mailer @Inject()(
         }
       }
     } else {
-      // Added task
-      body = s"""
-      |Dear students,
-      |
-      |The following task has been added:
-      |
-      |----------
-      |
-      |${event.getDescription().getValue()}
-      |
-      |----------
-      |
-      |${sentence}
-      |
-      |Best regards,
-      |Class Activity Management System
-      """
+      if (!delete) {
+        // Added task
+        body = s"""
+        |Dear students,
+        |
+        |The following task has been added:
+        |
+        |----------
+        |
+        |${event.getDescription().getValue()}
+        |
+        |----------
+        |
+        |${sentence}
+        |
+        |Best regards,
+        |Class Activity Management System
+        """
+      } else {
+        // Deleted task
+        body = s"""
+        |Dear students,
+        |
+        |The following task has been deleted:
+        |
+        |----------
+        |
+        |${event.getDescription().getValue()}
+        |
+        |----------
+        |
+        |${sentence}
+        |
+        |Best regards,
+        |Class Activity Management System
+        """
+      }
     }
     val file = new File(s"/tmp/CAMS-${utils.timestampNow()}.ics")
     Biweekly.write(ics).go(file)

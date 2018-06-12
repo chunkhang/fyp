@@ -186,6 +186,7 @@ export function calendar() {
         eventModalReplaceButton.removeClass("gone");
         eventModal.data("replacement", event.modalReplacement);
       } else {
+        addTaskModal.data("modalTask", event.modalTask);
         addTaskModal.data("modalSubject", event.modalSubject);
         addTaskModal.data("modalTitle", event.modalTitle);
         addTaskModal.data("modalDate", event.modalDate);
@@ -504,6 +505,50 @@ export function calendar() {
   // Cancel add task
   addTaskCancelButton.click(function() {
     addTaskModal.click();
+  });
+
+  // Edit task
+  addTaskEditButton.click(function() {
+
+  });
+
+  // Delete task
+  addTaskDeleteButton.click(function() {
+    addTaskDeleteButton.addClass("gone");
+    addTaskEditButton.addClass("gone");
+    addTaskSpinner.removeClass("gone");
+    var subjectId = addTaskSubject.val();
+    var payload = {
+      "taskId": addTaskModal.data("modalTask")
+    };
+    // Send request
+    setTimeout(function() {
+      $.ajax({
+        method: "POST",
+        url: `/subjects/${subjectId}/tasks/delete`,
+        contentType: "application/json",
+        dataType: "json",
+        data: JSON.stringify(payload),
+        timeout: 3000,
+        success: function(response) {
+          calendar.fullCalendar("refetchEvents");
+          addTaskSpinner.addClass("gone");
+          if (response.status == "success") {
+            toastr.success("Task deleted");
+          }
+          setTimeout(function() {
+            addTaskModal.click();
+          }, 1000);
+        },
+        error: function() {
+          addTaskSpinner.addClass("gone");
+          toastr.error("Something went wrong");
+          setTimeout(function() {
+            addTaskModal.click();
+          }, 1000);
+        }
+      });
+    }, 1000);
   });
 
   addTaskModal.on("show.bs.modal", function(event) {
