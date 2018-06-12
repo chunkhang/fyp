@@ -136,6 +136,7 @@ export function calendar() {
       eventModal.data("databaseDate", event.modalDatabaseDate);
       eventModalCancelButton.removeClass("gone");
       eventModalReplaceButton.removeClass("gone");
+      eventModal.data("replacement", event.modalReplacement);
     }
   });
 
@@ -342,6 +343,12 @@ export function calendar() {
     // Disable scrolling
     $("html").addClass("scroll-lock");
     backToOriginal();
+    // Replacement events
+    if (eventModal.data("replacement")) {
+      eventModalTitle.text("View replacement class");
+      eventModalCancelButton.addClass("gone");
+      eventModalReplaceButton.addClass("gone");
+    }
   });
   eventModal.on("hide.bs.modal", function() {
     // Enable scrolling

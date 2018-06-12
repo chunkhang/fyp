@@ -39,6 +39,15 @@ class Utils @Inject()(config: Configuration) {
     dateTime.toString(outputFormatter)
   }
 
+  // Convert from 24-hour to 12-hour format
+  def twelveHour(time: String): String = {
+    val inputFormatter = DateTimeFormat.forPattern("HH:mm")
+    val outputFormatter = DateTimeFormat.forPattern("hh:mmaa");
+    val dateTime = inputFormatter.parseDateTime(time)
+    dateTime.toString(outputFormatter)
+  }
+
+
   // Convert to moment time string
   def momentTime(date: String, time: String): String = {
      date + "T" + twentyFourHour(time) + ":00"
@@ -348,8 +357,13 @@ class Utils @Inject()(config: Configuration) {
 
   // Return database time strings for start and end
   def databaseTimes(time: String): (String, String) = {
-    def times = time.split("-").map(_.trim)
+    val times = time.split("-").map(_.trim)
     (times(0), times(1))
+  }
+
+  // Convert moment time to database time
+  def unmomentTime(time: String): String = {
+    twelveHour(time.split("T")(1).substring(0, 5))
   }
 
 }
