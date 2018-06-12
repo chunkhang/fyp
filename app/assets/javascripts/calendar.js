@@ -371,13 +371,84 @@ export function calendar() {
   var addTaskCancelButton = $("#add-task-cancel");
   var addTaskConfirmButton = $("#add-task-confirm");
   var addTaskSpinner = $("#add-task-spinner");
+  var addTaskSubject = $("#add-task-subject");
+  var addTaskTitle = $("#add-task-title");
+  var addTaskScore = $("#add-task-score");
+  var addTaskDate = $("#add-task-date");
   var addTaskDescription = $("#add-task-description");
 
   // Add task button
   addTaskButton.click(function() {
     // Clear form fields
     addTaskModal.find(".clearable").val("");
-    addTaskDescription.click();
+    addTaskModal.find("input").removeClass("invalid");
+  });
+
+  // Confirm add task
+  addTaskConfirmButton.click(function() {
+    addTaskModal.find("input").removeClass("invalid");
+    // Validate input
+    var validInput = true;
+    var subjectId = addTaskSubject.val();
+    var title = addTaskTitle.val();
+    var score = addTaskScore.val();
+    var dueDate = addTaskDate.val();
+    var description = addTaskDescription.val();
+    if (title.length == 0 || title.length > 20) {
+      addTaskTitle.addClass("invalid");
+      validInput = false;
+    }
+    if (isNaN(parseInt(score)) || parseInt(score) < 1 || parseInt(score) > 100) {
+      addTaskScore.addClass("invalid");
+      validInput = false;
+    }
+    if (dueDate == "") {
+      addTaskDate.addClass("invalid");
+      validInput = false;
+    }
+    if (description.length > 0 && description.length > 120) {
+      addTaskDescription.addClass("invalid");
+      validInput = false;
+    }
+    if (validInput) {
+      var payload = {
+        "title": title,
+        "score": parseInt(score),
+        "dueDate": dueDate,
+        "description": description
+      };
+      addTaskCancelButton.addClass("gone");
+      addTaskConfirmButton.addClass("gone");
+      addTaskSpinner.removeClass("gone");
+    }
+    // // Send request
+    // setTimeout(function() {
+    //   $.ajax({
+    //     method: "POST",
+    //     url: `/classes/${subjectId}/cancel`,
+    //     contentType: "application/json",
+    //     dataType: "json",
+    //     data: JSON.stringify(payload),
+    //     timeout: 3000,
+    //     success: function(response) {
+    //       calendar.fullCalendar("refetchEvents");
+    //       eventModalSpinner.addClass("gone");
+    //       if (response.status == "success") {
+    //         toastr.success("Class cancelled");
+    //       }
+    //       setTimeout(function() {
+    //         eventModal.click();
+    //       }, 1000);
+    //     },
+    //     error: function() {
+    //       eventModalSpinner.addClass("gone");
+    //       toastr.error("Something went wrong");
+    //       setTimeout(function() {
+    //         eventModal.click();
+    //       }, 1000);
+    //     }
+    //   });
+    // }, 1000);
   });
 
   // Cancel add task
