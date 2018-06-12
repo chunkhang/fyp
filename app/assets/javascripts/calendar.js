@@ -509,7 +509,42 @@ export function calendar() {
 
   // Edit task
   addTaskEditButton.click(function() {
-
+    var subjectId = addTaskSubject.val();
+    if (validateTaskInput()) {
+      var payload = getTaskPayload();
+      payload.taskId = addTaskModal.data("modalTask");
+      addTaskDeleteButton.addClass("gone");
+      addTaskEditButton.addClass("gone");
+      addTaskSpinner.removeClass("gone");
+      // Send request
+      setTimeout(function() {
+        $.ajax({
+          method: "POST",
+          url: `/subjects/${subjectId}/tasks/update`,
+          contentType: "application/json",
+          dataType: "json",
+          data: JSON.stringify(payload),
+          timeout: 3000,
+          success: function(response) {
+            calendar.fullCalendar("refetchEvents");
+            addTaskSpinner.addClass("gone");
+            if (response.status == "success") {
+              toastr.success("Task edited");
+            }
+            setTimeout(function() {
+              addTaskModal.click();
+            }, 1000);
+          },
+          error: function() {
+            addTaskSpinner.addClass("gone");
+            toastr.error("Something went wrong");
+            setTimeout(function() {
+              addTaskModal.click();
+            }, 1000);
+          }
+        });
+      }, 1000);
+    }
   });
 
   // Delete task
@@ -554,6 +589,7 @@ export function calendar() {
   addTaskModal.on("show.bs.modal", function(event) {
     // Disable scrolling
     $("html").addClass("scroll-lock");
+    addTaskModal.find("input").removeClass("invalid");
     if (event.relatedTarget.id == "add-task-button") {
       addTaskModalTitle.text("Add task");
       addTaskCancelButton.removeClass("gone");

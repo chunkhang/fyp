@@ -60,7 +60,7 @@ class Mailer @Inject()(
         body = s"""
         |Dear students,
         |
-        |The following class has been added:
+        |Below are the details to the class:
         |
         |----------
         |
@@ -117,11 +117,11 @@ class Mailer @Inject()(
       }
     } else {
       if (!delete) {
-        // Added task
+        // Added or updated task
         body = s"""
         |Dear students,
         |
-        |The following task has been added:
+        |Below are the details to the task:
         |
         |----------
         |

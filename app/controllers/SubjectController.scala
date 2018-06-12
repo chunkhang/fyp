@@ -219,7 +219,9 @@ class SubjectController @Inject()(
               (json \ "dueDate").asOpt[String].map { dueDate_ =>
                 (json \ "description").asOpt[String].map { description_ =>
                   // Create task in database
+                  val taskId = BSONObjectID.generate
                   val task = Task(
+                    _id = Option(taskId),
                     title = title_,
                     score = score_,
                     dueDate = dueDate_,
@@ -229,7 +231,7 @@ class SubjectController @Inject()(
                     subjectId = id
                   )
                   taskRepo.create(task).flatMap { _ =>
-                    Logger.info(s"Created Task(${id})")
+                    Logger.info(s"Created Task(${taskId})")
                     // Create ical
                     val biweeklyTaskIcal = utils.biweeklyTaskIcal(
                       task.uid,
@@ -282,8 +284,80 @@ class SubjectController @Inject()(
   def updateTask(id: BSONObjectID) =
     (userAction andThen SubjectAction(id) andThen PermittedAction).async {
       implicit request =>
-        Future {
-          Ok(Json.obj("status" -> "success"))
+        request.body.asJson.map { json =>
+          (json \ "taskId").asOpt[String].map { maybeTaskId =>
+            (json \ "title").asOpt[String].map { title_ =>
+              (json \ "score").asOpt[Int].map { score_ =>
+                (json \ "dueDate").asOpt[String].map { dueDate_ =>
+                  (json \ "description").asOpt[String].map { description_ =>
+                    // Update task in database
+                    val taskId = BSONObjectID.parse(maybeTaskId).get
+                    taskRepo.read(taskId).flatMap { maybeTask =>
+                      val task = maybeTask.get
+                      val newTask = task.copy(
+                        title = title_,
+                        score = score_,
+                        dueDate = dueDate_,
+                        description = description_.trim,
+                        sequence = task.sequence + 1,
+                        subjectId = id
+                      )
+                      taskRepo.update(taskId, newTask).flatMap { _ =>
+                        Logger.info(s"Updated Task(${taskId})")
+                        // Create ical
+                        val biweeklyTaskIcal = utils.biweeklyTaskIcal(
+                          newTask.uid,
+                          newTask.sequence,
+                          newTask,
+                          request.subjectItem,
+                          request.user
+                        )
+                        // Find all students for subject
+                        getAllStudents(id).map { students =>
+                          // Send ical
+                          val subjectTitle =
+                            request.subjectItem.title.get
+                          mailer.sendIcs(
+                            subject =
+                              s"Updated Task: ${subjectTitle} "+
+                              s"${task.title}",
+                              toList = utils.studentEmails(students),
+                              ics = biweeklyTaskIcal,
+                              isTask = true
+                          )
+                          Ok(Json.obj("status" -> "success"))
+                        }
+                      }
+                    }
+                  } getOrElse {
+                    Future {
+                      BadRequest("Missing parameter \"description\"")
+                    }
+                  }
+                } getOrElse {
+                  Future {
+                    BadRequest("Missing parameter \"dueDate\"")
+                  }
+                }
+              } getOrElse {
+                Future {
+                  BadRequest("Missing parameter \"score\"")
+                }
+              }
+            } getOrElse {
+              Future {
+                BadRequest("Missing parameter \"title\"")
+              }
+            }
+          } getOrElse {
+            Future {
+              BadRequest("Missing parameter \"taskId\"")
+            }
+          }
+        } getOrElse {
+          Future {
+            BadRequest("Expecting json data")
+          }
         }
   }
 
