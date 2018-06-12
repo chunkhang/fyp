@@ -102,7 +102,7 @@
     <div class="modal-dialog modal-notify modal-primary modal-dialog-centered">
       <div class="modal-content">
         <div class="modal-header">
-          <p class="heading lead">Add task</p>
+          <p class="heading lead" id="add-task-modal-title">Add task</p>
         </div>
         <div class="modal-body" id="add-task-body">
           <!-- Form -->
@@ -112,7 +112,7 @@
                 <select class="mdb-select" id="add-task-subject">
                   @if(subjects.isDefined) {
                     @for(subject <- subjects.get) {
-                      <option value="@subject._id.get.stringify">@subject.code | @subject.title.get </option>
+                      <option value="@subject._id.get.stringify">@subject.code: @subject.title.get </option>
                     }
                   }
                 </select>
@@ -140,8 +140,12 @@
         <div class="modal-footer justify-content-center">
           <!-- Cancel button -->
           <button class="btn btn-danger btn-sm" id="add-task-cancel">Cancel</button>
-          <!-- Confirm button -->
+          <!-- Confirm add button -->
           <button class="btn btn-primary btn-sm" id="add-task-confirm">Confirm</button>
+          <!-- Delete button -->
+          <button class="btn btn-danger btn-sm gone" id="add-task-delete">Delete</button>
+          <!-- Confirm edit button -->
+          <button class="btn btn-primary btn-sm gone" id="add-task-edit">Edit</button>
           <!-- Loading spinner -->
           <div class="preloader-wrapper small active gone" id="add-task-spinner">
             <div class="spinner-layer spinner-blue-only">

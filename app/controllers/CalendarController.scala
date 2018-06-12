@@ -49,9 +49,12 @@ class CalendarController @Inject()(
   case class TaskEvent(
     title: String,
     start: String,
+    modalEnd: String,
+    modalSubject: String,
+    modalTitle: String,
     modalScore: Int,
-    modalDescription: String,
-    modalEnd: String
+    modalDate: String,
+    modalDescription: String
   )
 
   implicit val eventWrites: Writes[Event] = (
@@ -72,9 +75,12 @@ class CalendarController @Inject()(
   implicit val taskEventWrites: Writes[TaskEvent] = (
     (JsPath \ "title").write[String] and
     (JsPath \ "start").write[String] and
+    (JsPath \ "modalEnd").write[String] and
+    (JsPath \ "modalSubject").write[String] and
+    (JsPath \ "modalTitle").write[String] and
     (JsPath \ "modalScore").write[Int] and
-    (JsPath \ "modalDescription").write[String] and
-    (JsPath \ "modalEnd").write[String]
+    (JsPath \ "modalDate").write[String] and
+    (JsPath \ "modalDescription").write[String]
   )(unlift(TaskEvent.unapply))
 
   def index = userAction.async { implicit request =>
@@ -201,11 +207,14 @@ class CalendarController @Inject()(
               events += TaskEvent(
                 title = taskTitle,
                 start = task.dueDate,
-                modalScore = task.score,
-                modalDescription = task.description,
                 modalEnd = utils.appendTimezone(
                   utils.momentTime(task.dueDate, "06:00PM")
-                )
+                ),
+                modalSubject = subject.code,
+                modalTitle = task.title,
+                modalScore = task.score,
+                modalDate = task.dueDate,
+                modalDescription = task.description
               )
             }
             Ok(Json.toJson(events))

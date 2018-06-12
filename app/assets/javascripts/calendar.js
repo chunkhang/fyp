@@ -122,12 +122,12 @@ export function calendar() {
       agendaWeek: {
         columnHeaderFormat: "ddd, D/M",
         slotLabelFormat: "hh:mmA",
-        allDayText: "Tasks Due"
+        allDayText: "Tasks"
       },
       listWeek: {
         listDayAltFormat: "MMM D, YYYY",
         noEventsMessage: "Nothing to display",
-        allDayText: "Task Due"
+        allDayText: "Task"
       }
     },
     slotEventOverlap: false,
@@ -159,6 +159,10 @@ export function calendar() {
           // Enable event modal
           element.attr("data-toggle", "modal");
           element.attr("data-target", "#event-modal");
+        } else {
+          // Enable add task modal
+          element.attr("data-toggle", "modal");
+          element.attr("data-target", "#add-task-modal");
         }
       } else {
         // Blur past events
@@ -181,6 +185,12 @@ export function calendar() {
         eventModalCancelButton.removeClass("gone");
         eventModalReplaceButton.removeClass("gone");
         eventModal.data("replacement", event.modalReplacement);
+      } else {
+        addTaskModal.data("modalSubject", event.modalSubject);
+        addTaskModal.data("modalTitle", event.modalTitle);
+        addTaskModal.data("modalDate", event.modalDate);
+        addTaskModal.data("modalScore", event.modalScore);
+        addTaskModal.data("modalDescription", event.modalDescription);
       }
     }
   });
@@ -402,10 +412,12 @@ export function calendar() {
     $("html").removeClass("scroll-lock");
   });
 
-  var addTaskButton = $("#add-task-button");
   var addTaskModal = $("#add-task-modal");
+  var addTaskModalTitle = $("#add-task-modal-title");
   var addTaskCancelButton = $("#add-task-cancel");
   var addTaskConfirmButton = $("#add-task-confirm");
+  var addTaskDeleteButton = $("#add-task-delete");
+  var addTaskEditButton = $("#add-task-edit");
   var addTaskSpinner = $("#add-task-spinner");
   var addTaskSubject = $("#add-task-subject");
   var addTaskTitle = $("#add-task-title");
@@ -413,19 +425,10 @@ export function calendar() {
   var addTaskDate = $("#add-task-date");
   var addTaskDescription = $("#add-task-description");
 
-  // Add task button
-  addTaskButton.click(function() {
-    // Clear form fields
-    addTaskModal.find(".clearable").val("");
+  // Validate task input
+  function validateTaskInput() {
     addTaskModal.find("input").removeClass("invalid");
-  });
-
-  // Confirm add task
-  addTaskConfirmButton.click(function() {
-    addTaskModal.find("input").removeClass("invalid");
-    // Validate input
     var validInput = true;
-    var subjectId = addTaskSubject.val();
     var title = addTaskTitle.val();
     var score = addTaskScore.val();
     var dueDate = addTaskDate.val();
@@ -446,13 +449,24 @@ export function calendar() {
       addTaskDescription.addClass("invalid");
       validInput = false;
     }
-    if (validInput) {
-      var payload = {
-        "title": title,
-        "score": parseInt(score),
-        "dueDate": dueDate,
-        "description": description
-      };
+    return validInput;
+  }
+
+  // Task payload
+  function getTaskPayload() {
+    return {
+        "title": addTaskTitle.val(),
+        "score": parseInt(addTaskScore.val()),
+        "dueDate": addTaskDate.val(),
+        "description": addTaskDescription.val()
+    };
+  }
+
+  // Confirm add task
+  addTaskConfirmButton.click(function() {
+    var subjectId = addTaskSubject.val();
+    if (validateTaskInput()) {
+      var payload = getTaskPayload();
       addTaskCancelButton.addClass("gone");
       addTaskConfirmButton.addClass("gone");
       addTaskSpinner.removeClass("gone");
@@ -492,11 +506,35 @@ export function calendar() {
     addTaskModal.click();
   });
 
-  addTaskModal.on("show.bs.modal", function() {
+  addTaskModal.on("show.bs.modal", function(event) {
     // Disable scrolling
     $("html").addClass("scroll-lock");
-    addTaskCancelButton.removeClass("gone");
-    addTaskConfirmButton.removeClass("gone");
+    if (event.relatedTarget.id == "add-task-button") {
+      addTaskModalTitle.text("Add task");
+      addTaskCancelButton.removeClass("gone");
+      addTaskConfirmButton.removeClass("gone");
+      addTaskDeleteButton.addClass("gone");
+      addTaskEditButton.addClass("gone");
+      // Clear form fields
+      addTaskModal.find(".clearable").val("");
+      addTaskModal.find("input").removeClass("invalid");
+    } else {
+      addTaskModalTitle.text("View task");
+      addTaskCancelButton.addClass("gone");
+      addTaskConfirmButton.addClass("gone");
+      addTaskDeleteButton.removeClass("gone");
+      addTaskEditButton.removeClass("gone");
+      // Fill form fields
+      $(`.select-dropdown li:contains(${addTaskModal.data("modalSubject")})`)
+        .trigger("click");
+      addTaskTitle.val(addTaskModal.data("modalTitle"));
+      addTaskScore.val(addTaskModal.data("modalScore"));
+      addTaskDate.pickadate("picker").set(
+        "select",
+        addTaskModal.data("modalDate")
+      );
+      addTaskDescription.val(addTaskModal.data("modalDescription"));
+    }
   });
   addTaskModal.on("hide.bs.modal", function() {
     // Enable scrolling
