@@ -310,7 +310,8 @@ export function calendar() {
                 if (index == 0) {
                     $($("li.page-item").get(0))
                       .addClass("disabled");
-                } else if (index >= totalReplacements - 1) {
+                }
+                if (index >= totalReplacements - 1) {
                     $($("li.page-item").get(totalReplacements + 1))
                       .addClass("disabled");
                 }
