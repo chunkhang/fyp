@@ -450,6 +450,7 @@ export function calendar() {
     eventModalReplacementContent.addClass("gone");
     eventModalReplacementMessage.text("");
     eventModalReplacementStudents.text("");
+    eventModalReplacementPagination.children("ul").empty();
     eventModalDate.css({"text-decoration": "none"});
     eventModalTime.css({"text-decoration": "none"});
     eventModalVenue.css({"text-decoration": "none"});
