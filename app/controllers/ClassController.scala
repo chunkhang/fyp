@@ -774,7 +774,32 @@ class ClassController @Inject()(
           }
           !clashes.contains(true)
         }
-        freeSlots
+        // Slots cannot be taken already
+        val allReplacementLists: List[Option[List[Replacement]]] =
+          allClasses.map { class_ =>
+            class_.replacements
+          }
+        val allReplacements: List[Replacement] =
+          allReplacementLists.flatten.flatten
+        println("---")
+        allReplacements.foreach(println)
+        println("---")
+        freeSlots.foreach(println)
+        println("---")
+        val goodSlots = freeSlots.filter { slot =>
+          val (date, class_, _) = slot
+          val takenReplacements = allReplacements.filter { replacement =>
+            // Check if slot details are similiar to replacement details
+            date == replacement.replaceDate &&
+            class_.startTime.get == replacement.startTime &&
+            class_.endTime.get == replacement.endTime &&
+            class_.venueId.get == replacement.venueId &&
+            class_.exceptionDates.isDefined &&
+            class_.exceptionDates.get.contains(replacement.replaceDate)
+          }
+          takenReplacements.length == 0
+        }
+        goodSlots
       }
     }
   }
