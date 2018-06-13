@@ -31,7 +31,7 @@ class CalendarController @Inject()(
     replacement: Boolean = false
   )
 
-  case class Event(
+  case class JsonEvent(
     title: String,
     start: String,
     end: String,
@@ -45,8 +45,9 @@ class CalendarController @Inject()(
     modalDatabaseDate: String,
     modalReplacement: Boolean
   )
+  implicit val eventWriter = Json.writes[JsonEvent]
 
-  case class TaskEvent(
+  case class JsonTask(
     title: String,
     start: String,
     modalEnd: String,
@@ -57,33 +58,7 @@ class CalendarController @Inject()(
     modalDate: String,
     modalDescription: String
   )
-
-  implicit val eventWrites: Writes[Event] = (
-    (JsPath \ "title").write[String] and
-    (JsPath \ "start").write[String] and
-    (JsPath \ "end").write[String] and
-    (JsPath \ "modalSubjectCode").write[String] and
-    (JsPath \ "modalSubjectName").write[String] and
-    (JsPath \ "modalClass").write[String] and
-    (JsPath \ "modalDate").write[String] and
-    (JsPath \ "modalTime").write[String] and
-    (JsPath \ "modalVenue").write[String] and
-    (JsPath \ "modalClassId").write[String] and
-    (JsPath \ "modalDatabaseDate").write[String] and
-    (JsPath \ "modalReplacement").write[Boolean]
-  )(unlift(Event.unapply))
-
-  implicit val taskEventWrites: Writes[TaskEvent] = (
-    (JsPath \ "title").write[String] and
-    (JsPath \ "start").write[String] and
-    (JsPath \ "modalEnd").write[String] and
-    (JsPath \ "modalTask").write[String] and
-    (JsPath \ "modalSubject").write[String] and
-    (JsPath \ "modalTitle").write[String] and
-    (JsPath \ "modalScore").write[Int] and
-    (JsPath \ "modalDate").write[String] and
-    (JsPath \ "modalDescription").write[String]
-  )(unlift(TaskEvent.unapply))
+  implicit val taskWriter = Json.writes[JsonTask]
 
   def index = userAction.async { implicit request =>
     subjectRepo.findSubjectsByUserId(request.user._id.get).map { allSubjects =>
@@ -106,7 +81,7 @@ class CalendarController @Inject()(
     implicit request =>
       val email = request.user.email
       getEventData(email).map { maybeEventData =>
-        var events = List[Event]()
+        var events = List[JsonEvent]()
         maybeEventData match {
           case Some(eventData) =>
             var eventTitles = List[String]()
@@ -143,7 +118,7 @@ class CalendarController @Inject()(
                   s"${utils.unmomentTime(data.start)} - " +
                   s"${utils.unmomentTime(data.end)}",
               }
-              Event(
+              JsonEvent(
                 title = eventTitle,
                 start = utils.appendTimezone(data.start),
                 end = utils.appendTimezone(data.end),
@@ -176,7 +151,7 @@ class CalendarController @Inject()(
 
   def tasks(view: String, start: String, end: String) = userAction.async {
     implicit request =>
-      var events = ListBuffer[TaskEvent]()
+      var events = ListBuffer[JsonTask]()
       // Find subjects under lecturer
       subjectRepo.findSubjectsByUserId(request.user._id.get).flatMap {
         subjects =>
@@ -206,7 +181,7 @@ class CalendarController @Inject()(
                 case _ =>
               }
               // Create events
-              events += TaskEvent(
+              events += JsonTask(
                 title = taskTitle,
                 start = task.dueDate,
                 modalEnd = utils.appendTimezone(

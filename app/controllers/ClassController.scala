@@ -46,6 +46,14 @@ class ClassController @Inject()(
   implicit val classReader = Json.reads[JsonClass]
   implicit val subjectReader = Json.reads[JsonSubject]
 
+  case class JsonReplacement(
+    date: String,
+    time: String,
+    venue: String,
+    availableStudents: Int
+  )
+  implicit val replacementWriter = Json.writes[JsonReplacement]
+
   class ClassRequest[A](
     val classItem: Class,
     val subjectItem: Subject,
@@ -454,31 +462,36 @@ class ClassController @Inject()(
                   endDate
                 ).flatMap { slots =>
                   if (!slots.isEmpty) {
-                    // Get best slot based on students' availability
-                    getBestSlot(request.classItem, slots).flatMap {
-                      maybeSlot =>
-                        maybeSlot match {
-                          case Some(slot) =>
-                            val (date, class_, available, all) = slot
-                            val time =
-                              s"${class_.startTime.get} - " +
-                              s"${class_.endTime.get}"
-                            getVenueName(class_.venueId.get).map { venue =>
-                              Ok(Json.obj(
-                                "status" -> "success",
-                                "date" -> utils.eventModalDate(date),
-                                "time" -> time,
-                                "venue" -> venue,
-                                "availableStudents" -> available,
-                                "allStudents" -> all
-                              ))
+                    // Get good slots based on students' availability
+                    getGoodSlots(request.classItem, slots).map {
+                      maybeTuple =>
+                        maybeTuple match {
+                          case Some(tuple) =>
+                            val (slots, all) = tuple
+                            val replacements = slots.map { slot =>
+                              val (date, class_, available) = slot
+                              val getVenue =
+                                getVenueName(class_.venueId.get).map {
+                                  venue => venue
+                                }
+                              JsonReplacement(
+                                date = utils.eventModalDate(date),
+                                time =
+                                  s"${class_.startTime.get} - " +
+                                  s"${class_.endTime.get}",
+                                venue = Await.result(getVenue, 5.seconds),
+                                availableStudents = available
+                              )
                             }
+                            Ok(Json.obj(
+                              "status" -> "success",
+                              "allStudents" -> all,
+                              "replacements" -> replacements
+                            ))
                           case None =>
-                            Future {
-                              Ok(Json.obj(
-                                "status" -> "fail",
-                              ))
-                            }
+                            Ok(Json.obj(
+                              "status" -> "fail",
+                            ))
                         }
                     }
                   } else {
@@ -549,7 +562,8 @@ class ClassController @Inject()(
                           // Send ical
                           mailer.sendIcs(
                             subject =
-                              s"Replaced Class: ${request.subjectItem.title.get} " +
+                              s"Replaced Class: " +
+                              s"${request.subjectItem.title.get} " +
                               s"(${class_.category})",
                             toList =
                               utils.studentEmails(class_.students),
@@ -765,11 +779,11 @@ class ClassController @Inject()(
     }
   }
 
-  // Get best slot with most free students
-  def getBestSlot(
+  // Get sorted slots with free students
+  def getGoodSlots(
     classItem: Class,
     slots: List[(String, Class, Int)]
-  ): Future[Option[(String, Class, Int, Int)]] = {
+  ): Future[Option[(List[(String, Class, Int)], Int)]] = {
     classRepo.readAll().map { classes =>
       val availableStudents: List[Int] = slots.map { slot =>
         val replacementDate = slot._1
@@ -815,10 +829,15 @@ class ClassController @Inject()(
         -tuple._2
       }
       if (!sortedSlots.isEmpty) {
-        val (bestSlot, freeStudents) = sortedSlots(0)
-        val (bestDate, bestClass, _) = bestSlot
+        val goodDates = sortedSlots.map(_._1).map(_._1)
+        val goodClasses = sortedSlots.map(_._1).map(_._2)
+        val freeStudents = sortedSlots.map(_._2)
+        val goodSlots = (goodDates zip goodClasses zip freeStudents).map {
+          case ((a, b), c) =>
+            (a, b, c)
+        }
         val allStudents = classItem.students.length
-        Some((bestDate, bestClass, freeStudents, allStudents))
+        Some((goodSlots, allStudents))
       } else {
         None
       }

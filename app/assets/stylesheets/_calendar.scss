@@ -115,6 +115,13 @@
       font-size: 0.8rem;
     }
   }
+  #event-modal-replacement-pagination {
+    margin-top: 10px;
+    margin-bottom: -15px;
+    .pagination {
+      margin-bottom: 0;
+    }
+  }
 }
 
 .modal-header, .modal-footer {

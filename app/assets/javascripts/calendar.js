@@ -68,16 +68,17 @@ export function calendar() {
   var eventModalForm = $("#event-modal-form");
   var eventModalInfo = $("#event-modal-info");
   var eventModalReplacement = $("#event-modal-replacement");
+  var eventModalReplacementContent = $("#event-modal-replacement-content");
   var eventModalReplacementMessage = $("#event-modal-replacement-message");
-  var eventModalReplacementInfo = $("#event-modal-replacement-info");
   var eventModalReplacementDate = $("#event-modal-replacement-date");
   var eventModalReplacementTime = $("#event-modal-replacement-time");
   var eventModalReplacementVenue = $("#event-modal-replacement-venue");
-  var eventModalReplacementBar = $("#event-modal-replacement-bar");
   var eventModalReplacementPercentage =
     $("#event-modal-replacement-percentage");
   var eventModalReplacementStudents =
     $("#event-modal-replacement-students");
+  var eventModalReplacementPagination =
+    $("#event-modal-replacement-pagination");
   var eventModalFrom = $("#event-modal-from");
   var eventModalTo = $("#event-modal-to");
   var originalTitle = eventModalTitle.text();
@@ -257,6 +258,7 @@ export function calendar() {
     eventModalInfo.addClass("gone");
     eventModalForm.removeClass("gone");
     eventModalReplacement.removeClass("gone");
+    eventModalReplacement.addClass("invisible");
   });
 
   // Find replacement
@@ -276,6 +278,7 @@ export function calendar() {
       eventModalBackButton.addClass("gone");
       eventModalFindReplacementButton.addClass("gone");
       eventModalSpinner.removeClass("gone");
+      eventModalReplacement.removeClass("invisible");
       eventModalForm.find("input").attr("disabled", "disabled");
       // Send request
       setTimeout(function() {
@@ -291,22 +294,34 @@ export function calendar() {
             eventModalBackButton.removeClass("gone");
             if (response.status == "success") {
               eventModalConfirmReplacementButton.removeClass("gone");
-              eventModalReplacementInfo.removeClass("gone");
-              eventModalReplacementDate.text(response.date);
-              eventModalReplacementTime.text(response.time);
-              eventModalReplacementVenue.text(response.venue);
-              eventModalReplacementBar.removeClass("gone");
-              eventModal.data("replacementDate", response.date);
-              eventModal.data("replacementTime", response.time);
-              eventModal.data("replacementVenue", response.venue);
-              var percentage = Math.round(
-                (response.availableStudents / response.allStudents) * 100
-              );
-              eventModalReplacementPercentage.css({"width": `${percentage}%`});
-              eventModalReplacementStudents.text(
-                `${response.availableStudents} / ${response.allStudents} ` +
-                "students available"
-              );
+              eventModalReplacementContent.removeClass("gone");
+              var totalReplacements = response.replacements.length;
+              createPagination(totalReplacements);
+              var currentIndex = 0;
+              $("a.page-link").click(function(event) {
+                $("li.page-item").removeClass("disabled");
+                $("li.page-item").removeClass("active");
+                var index = $(event.target).parent().index() - 1;
+                if (event.target.id == "pagination-previous") {
+                  index = currentIndex - 1;
+                } else if (event.target.id == "pagination-next") {
+                  index = currentIndex + 1;
+                }
+                if (index == 0) {
+                    $($("li.page-item").get(0))
+                      .addClass("disabled");
+                } else if (index >= totalReplacements - 1) {
+                    $($("li.page-item").get(totalReplacements + 1))
+                      .addClass("disabled");
+                }
+                $($("li.page-item").get(index + 1)).addClass("active");
+                showReplacement(
+                  response.replacements[index],
+                  response.allStudents
+                );
+                currentIndex = index;
+              });
+              showReplacement(response.replacements[0], response.allStudents);
             } else {
               eventModalReplacementMessage.text("No replacement slot found");
             }
@@ -323,6 +338,51 @@ export function calendar() {
       eventModalTo.addClass("invalid");
     }
   });
+
+  // Create pagination buttons
+  function createPagination(size) {
+    var previousButton = `
+      <li class="page-item disabled">
+        <a class="page-link waves-effect" id="pagination-previous">&laquo;</a>
+      </li>
+    `;
+    var nextButton = `
+      <li class="page-item ${size == 1 ? "disabled" : ""}">
+        <a class="page-link waves-effect" id="pagination-next">&raquo;</a>
+      </li>
+    `;
+    eventModalReplacementPagination.children("ul")
+      .append(previousButton);
+    for (var i = 0; i < size; i++) {
+      var pageButton = `
+        <li class="page-item ${i == 0 ? "active" : ""}">
+          <a class="page-link waves-effect">${i + 1}</a>
+        </li>
+      `;
+      eventModalReplacementPagination.children("ul")
+        .append(pageButton);
+    }
+    eventModalReplacementPagination.children("ul")
+      .append(nextButton);
+  }
+
+  // Show replacement item
+  function showReplacement(replacement, allStudents) {
+    eventModalReplacementDate.text(replacement.date);
+    eventModalReplacementTime.text(replacement.time);
+    eventModalReplacementVenue.text(replacement.venue);
+    eventModal.data("replacementDate", replacement.date);
+    eventModal.data("replacementTime", replacement.time);
+    eventModal.data("replacementVenue", replacement.venue);
+    var percentage = Math.round(
+      (replacement.availableStudents / allStudents) * 100
+    );
+    eventModalReplacementPercentage.css({"width": `${percentage}%`});
+    eventModalReplacementStudents.text(
+      `${replacement.availableStudents} / ${allStudents} ` +
+      "students available"
+    );
+  }
 
   // Confirm replacement
   eventModalConfirmReplacementButton.click(function() {
@@ -386,9 +446,9 @@ export function calendar() {
     eventModalForm.find("input").removeAttr("disabled");
     eventModalInfo.removeClass("gone");
     eventModalReplacement.addClass("gone");
+    eventModalReplacement.addClass("invisible");
+    eventModalReplacementContent.addClass("gone");
     eventModalReplacementMessage.text("");
-    eventModalReplacementInfo.addClass("gone");
-    eventModalReplacementBar.addClass("gone");
     eventModalReplacementStudents.text("");
     eventModalDate.css({"text-decoration": "none"});
     eventModalTime.css({"text-decoration": "none"});
