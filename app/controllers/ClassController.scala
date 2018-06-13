@@ -781,11 +781,6 @@ class ClassController @Inject()(
           }
         val allReplacements: List[Replacement] =
           allReplacementLists.flatten.flatten
-        println("---")
-        allReplacements.foreach(println)
-        println("---")
-        freeSlots.foreach(println)
-        println("---")
         val goodSlots = freeSlots.filter { slot =>
           val (date, class_, _) = slot
           val takenReplacements = allReplacements.filter { replacement =>
