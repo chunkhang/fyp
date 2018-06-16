@@ -140,6 +140,7 @@ export function calendar() {
         calendar.fullCalendar("addEventSource", taskSources[view.name]);
         lastView = view.name;
       }
+      getWorkload(view.name);
     },
     eventDataTransform: function(eventData) {
       var event = eventData;
@@ -684,77 +685,90 @@ export function calendar() {
     $("html").removeClass("scroll-lock");
   });
 
-  $.ajax({
-    method: "GET",
-    url: `/calendar/workload`,
-    dataType: "json",
-    timeout: 3000,
-    success: function(response) {
-      var totalStudents = response.totalStudents;
-      var allWorkload = response.workload;
-      var dayNumbers = $(".fc-day-number");
-      var todayDate = moment.utc().add(8, "hours").format("YYYY-MM-DD");
-      var todayMoment = moment(todayDate);
-      // Initialize poppers
-      dayNumbers.each(function() {
-        // Only for dates today onwards
-        var date = $($(this).parent()).attr("data-date");
-        var dayMoment = moment(date);
-        if (dayMoment.isSameOrAfter(todayMoment)) {
-          var workload = allWorkload.filter(load =>
-            load.taskDate == date
-          );
-          var popoverContent = `
-            <p>No tasks from other lecturers to show</p>
-          `;
-          if (workload.length >= 1) {
-            popoverContent = "";
-            $.each(workload, function(index, item) {
-              var percentage = Math.round(
-                (item.students / totalStudents) * 100
-              );
-              popoverContent += `
-                <p class="workload-task text-center">
-                  ${item.taskTitle} (${item.taskScore}%)
-                </p>
-                <p class="workload-subject text-center">
-                  ${item.subjectTitle}
-                </p>
-                <p class="workload-lecturer text-center">
-                  ${item.lecturerName}
-                </p>
-                <div class="progress workload-progress">
-                  <div class="progress-bar bg-danger"
-                    style="width: ${percentage}%"></div>
-                </div>
-                <p class="workload-students text-center">
-                  ${item.students} / ${totalStudents} students
-                </p>
-                ${index == workload.length - 1 ? "" : "<hr>"}
-              `;
+  // Get workload and create poppers
+  function getWorkload(view) {
+    $.ajax({
+      method: "GET",
+      url: `/calendar/workload`,
+      dataType: "json",
+      timeout: 3000,
+      success: function(response) {
+        var totalStudents = response.totalStudents;
+        var allWorkload = response.workload;
+        var todayDate = moment.utc().add(8, "hours").format("YYYY-MM-DD");
+        var todayMoment = moment(todayDate);
+        // Initialize poppers
+        var days;
+        if (view == "month") {
+          days = $(".fc-day-number");
+        } else if (view == "agendaWeek") {
+          days = $(".fc-day-header > span");
+        } else if (view == "listWeek") {
+          days = $(".fc-list-heading-alt");
+        }
+        days.each(function() {
+          // Only for dates today onwards
+          var date = $($(this).parent()).attr("data-date");
+          if (view == "listWeek") {
+            date = $($(this).parent().parent()).attr("data-date");
+          }
+          var dayMoment = moment(date);
+          if (dayMoment.isSameOrAfter(todayMoment)) {
+            var workload = allWorkload.filter(load =>
+              load.taskDate == date
+            );
+            var popoverContent = `
+              <p>No tasks from other lecturers to show</p>
+            `;
+            if (workload.length >= 1) {
+              popoverContent = "";
+              $.each(workload, function(index, item) {
+                var percentage = Math.round(
+                  (item.students / totalStudents) * 100
+                );
+                popoverContent += `
+                  <p class="workload-task text-center">
+                    ${item.taskTitle} (${item.taskScore}%)
+                  </p>
+                  <p class="workload-subject text-center">
+                    ${item.subjectTitle}
+                  </p>
+                  <p class="workload-lecturer text-center">
+                    ${item.lecturerName}
+                  </p>
+                  <div class="progress workload-progress">
+                    <div class="progress-bar bg-danger"
+                      style="width: ${percentage}%"></div>
+                  </div>
+                  <p class="workload-students text-center">
+                    ${item.students} / ${totalStudents} students
+                  </p>
+                  ${index == workload.length - 1 ? "" : "<hr>"}
+                `;
+              });
+            }
+            $(this).attr("data-toggle", "popover");
+            $(this).popover({
+              trigger: "hover",
+              placement: "bottom",
+              html: true,
+              title: "Student Workload",
+              content: popoverContent
+            });
+            // Set pointer cursor
+            $(this).hover(function(event) {
+              if (event.type == "mouseenter") {
+                $(event.target).css("cursor", "pointer");
+              } else {
+                $(event.target).css("cursor", "default");
+              }
             });
           }
-          $(this).attr("data-toggle", "popover");
-          $(this).popover({
-            trigger: "hover",
-            placement: "bottom",
-            html: true,
-            title: "Student Workload",
-            content: popoverContent
-          });
-          // Set pointer cursor
-          $(this).hover(function(event) {
-            if (event.type == "mouseenter") {
-              $(event.target).css("cursor", "pointer");
-            } else {
-              $(event.target).css("cursor", "default");
-            }
-          });
-        }
-      });
-    },
-    error: function() {
-      console.log("Failed to fetch calendar workload");
-    }
-  });
+        });
+      },
+      error: function() {
+        console.log("Failed to fetch calendar workload");
+      }
+    });
+  }
 }
