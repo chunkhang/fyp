@@ -132,6 +132,7 @@ export function calendar() {
       }
     },
     slotEventOverlap: false,
+    dayPopoverFormat: "MMM D, YYYY",
     viewRender: function(view) {
       if (view.name != lastView) {
         // Change event source
