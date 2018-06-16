@@ -406,4 +406,12 @@ class Utils @Inject()(config: Configuration) {
     twelveHour(time.split("T")(1).substring(0, 5))
   }
 
+  // Get list of distinct students given list of classes
+  def subjectStudents(classes: List[Class]) = {
+    val students = classes.foldLeft(List[String]()) { (list, class_) =>
+      list ++ class_.students
+    }.distinct
+    students
+  }
+
 }

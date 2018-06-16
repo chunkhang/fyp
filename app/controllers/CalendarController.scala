@@ -15,7 +15,9 @@ class CalendarController @Inject()(
   cc: ControllerComponents,
   userAction: UserAction,
   classController: ClassController,
+  userRepo: UserRepository,
   subjectRepo: SubjectRepository,
+  classRepo: ClassRepository,
   taskRepo: TaskRepository,
   utils: Utils
 )(
@@ -59,6 +61,18 @@ class CalendarController @Inject()(
     modalDescription: String
   )
   implicit val taskWriter = Json.writes[JsonTask]
+
+  case class JsonWorkload(
+    taskTitle: String,
+    taskScore: Int,
+    taskDate: String,
+    subjectCode: String,
+    subjectTitle: String,
+    lecturerName: String,
+    lecturerEmail: String,
+    students: Int
+  )
+  implicit val workloadWriter = Json.writes[JsonWorkload]
 
   def index = userAction.async { implicit request =>
     subjectRepo.findSubjectsByUserId(request.user._id.get).map { allSubjects =>
@@ -201,8 +215,74 @@ class CalendarController @Inject()(
   }
 
   def workload = userAction.async { implicit request =>
-    Future {
-      Ok(Json.obj("status" -> "success"))
+    // Get all subjects under other lecturers
+    subjectRepo.readAll().flatMap { allSubjects =>
+      val subjects = allSubjects.filter { subject =>
+        subject.userId != request.user._id.get &&
+        subject.title.isDefined
+      }
+      val subjectIds = subjects.map(_._id.get)
+      // Get all tasks under them
+      taskRepo.readAll().flatMap { allTasks =>
+        val tasks = allTasks.filter { task =>
+          subjectIds.contains(task.subjectId)
+        }
+        val taskTuples: List[(Task, Subject, User)]  = tasks.map { task =>
+          val taskSubject = allSubjects.filter { subject =>
+            task.subjectId == subject._id.get
+          } (0)
+          val getLecturer = userRepo.read(taskSubject.userId).map {
+            maybeUser =>
+              maybeUser.get
+          }
+          val taskLecturer = Await.result(getLecturer, 5.seconds)
+          (task, taskSubject, taskLecturer)
+        }
+        // Get all the lecturer's classes
+        val mySubjects = allSubjects.filter { subject =>
+          subject.userId == request.user._id.get &&
+          subject.title.isDefined
+        }
+        val mySubjectIds = mySubjects.map(_._id.get)
+        Future.traverse(mySubjectIds) { subjectId =>
+          classRepo.findClassesBySubjectId(subjectId).map { classes =>
+            classes
+          }
+        }.flatMap { classLists =>
+          val myClasses = classLists.flatten
+          // Get all the lecturer's students
+          val myStudents = utils.subjectStudents(myClasses)
+          // How many lecturer's students are involved with each task
+          Future.traverse(taskTuples) { tuple =>
+            val (task, subject, lecturer) = tuple
+            classRepo.findClassesBySubjectId(subject._id.get).map { classes =>
+              val subjectStudents = utils.subjectStudents(classes)
+              val taskStudents = myStudents intersect subjectStudents
+              taskStudents
+            }
+          }.map { taskStudentsList =>
+            val workload = (taskTuples zip taskStudentsList).map  { tuple =>
+              val ((task, subject, lecturer), taskStudents) = tuple
+              JsonWorkload(
+                taskTitle = task.title,
+                taskScore = task.score,
+                taskDate = task.dueDate,
+                subjectCode = subject.code,
+                subjectTitle = subject.title.get,
+                lecturerName = lecturer.name,
+                lecturerEmail = lecturer.email,
+                students = taskStudents.length
+              )
+            }
+            Ok(Json.obj(
+              "status" -> "success",
+              "totalStudents" -> myStudents.length,
+              "workload" -> workload
+            ))
+          }
+        }
+      }
+
     }
   }
 
