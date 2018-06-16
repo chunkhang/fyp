@@ -693,50 +693,64 @@ export function calendar() {
       var totalStudents = response.totalStudents;
       var allWorkload = response.workload;
       var dayNumbers = $(".fc-day-number");
+      var todayDate = moment.utc().add(8, "hours").format("YYYY-MM-DD");
+      var todayMoment = moment(todayDate);
       // Initialize poppers
       dayNumbers.each(function() {
+        // Only for dates today onwards
         var date = $($(this).parent()).attr("data-date");
-        var workload = allWorkload.filter(load =>
-          load.taskDate == date
-        );
-        var popoverContent = `
-          <p>No tasks from other lecturers to show</p>
-        `;
-        if (workload.length >= 1) {
-          popoverContent = "";
-          $.each(workload, function(index, item) {
-            var percentage = Math.round(
-              (item.students / totalStudents) * 100
-            );
-            popoverContent += `
-              <p class="workload-task text-center">
-                ${item.taskTitle} (${item.taskScore}%)
-              </p>
-              <p class="workload-subject text-center">
-                ${item.subjectTitle}
-              </p>
-              <p class="workload-lecturer text-center">
-                ${item.lecturerName}
-              </p>
-              <div class="progress workload-progress">
-                <div class="progress-bar bg-danger"
-                  style="width: ${percentage}%"></div>
-              </div>
-              <p class="workload-students text-center">
-                ${item.students} / ${totalStudents} students
-              </p>
-              ${index == workload.length - 1 ? "" : "<hr>"}
-            `;
+        var dayMoment = moment(date);
+        if (dayMoment.isSameOrAfter(todayMoment)) {
+          var workload = allWorkload.filter(load =>
+            load.taskDate == date
+          );
+          var popoverContent = `
+            <p>No tasks from other lecturers to show</p>
+          `;
+          if (workload.length >= 1) {
+            popoverContent = "";
+            $.each(workload, function(index, item) {
+              var percentage = Math.round(
+                (item.students / totalStudents) * 100
+              );
+              popoverContent += `
+                <p class="workload-task text-center">
+                  ${item.taskTitle} (${item.taskScore}%)
+                </p>
+                <p class="workload-subject text-center">
+                  ${item.subjectTitle}
+                </p>
+                <p class="workload-lecturer text-center">
+                  ${item.lecturerName}
+                </p>
+                <div class="progress workload-progress">
+                  <div class="progress-bar bg-danger"
+                    style="width: ${percentage}%"></div>
+                </div>
+                <p class="workload-students text-center">
+                  ${item.students} / ${totalStudents} students
+                </p>
+                ${index == workload.length - 1 ? "" : "<hr>"}
+              `;
+            });
+          }
+          $(this).attr("data-toggle", "popover");
+          $(this).popover({
+            trigger: "hover",
+            placement: "bottom",
+            html: true,
+            title: "Student Workload",
+            content: popoverContent
+          });
+          // Set pointer cursor
+          $(this).hover(function(event) {
+            if (event.type == "mouseenter") {
+              $(event.target).css("cursor", "pointer");
+            } else {
+              $(event.target).css("cursor", "default");
+            }
           });
         }
-        $(this).attr("data-toggle", "popover");
-        $(this).popover({
-          trigger: "hover",
-          placement: "bottom",
-          html: true,
-          title: "Student Workload",
-          content: popoverContent
-        });
       });
     },
     error: function() {
