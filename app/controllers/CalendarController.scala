@@ -259,7 +259,7 @@ class CalendarController @Inject()(
               taskStudents
             }
           }.map { taskStudentsList =>
-            val workload = (taskTuples zip taskStudentsList).map  { tuple =>
+            val allWorkload = (taskTuples zip taskStudentsList).map  { tuple =>
               val ((task, subject, lecturer), taskStudents) = tuple
               JsonWorkload(
                 taskTitle = task.title,
@@ -269,6 +269,10 @@ class CalendarController @Inject()(
                 lecturerName = lecturer.name,
                 students = taskStudents.length
               )
+            }
+            // Only need tasks with students involved
+            val workload = allWorkload.filter { load =>
+              load.students > 0
             }
             Ok(Json.obj(
               "status" -> "success",
