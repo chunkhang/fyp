@@ -200,6 +200,12 @@ class CalendarController @Inject()(
       }
   }
 
+  def workload = userAction.async { implicit request =>
+    Future {
+      Ok(Json.obj("status" -> "success"))
+    }
+  }
+
   // Get add data required to create calendar event for classes
   def getEventData(email: String):
     Future[Option[List[EventData]]] = {
