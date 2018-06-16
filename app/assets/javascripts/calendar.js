@@ -684,4 +684,63 @@ export function calendar() {
     $("html").removeClass("scroll-lock");
   });
 
+  $.ajax({
+    method: "GET",
+    url: `/calendar/workload`,
+    dataType: "json",
+    timeout: 3000,
+    success: function(response) {
+      var totalStudents = response.totalStudents;
+      var allWorkload = response.workload;
+      var dayNumbers = $(".fc-day-number");
+      // Initialize poppers
+      dayNumbers.each(function() {
+        var date = $($(this).parent()).attr("data-date");
+        var workload = allWorkload.filter(load =>
+          load.taskDate == date
+        );
+        var popoverContent = `
+          <p>No tasks from other lecturers to show</p>
+        `;
+        if (workload.length >= 1) {
+          popoverContent = "";
+          $.each(workload, function(index, item) {
+            var percentage = Math.round(
+              (item.students / totalStudents) * 100
+            );
+            popoverContent += `
+              <p class="workload-task text-center">
+                ${item.taskTitle} (${item.taskScore}%)
+              </p>
+              <p class="workload-subject text-center">
+                ${item.subjectTitle}
+              </p>
+              <p class="workload-lecturer text-center">
+                ${item.lecturerName}
+              </p>
+              <div class="progress workload-progress">
+                <div class="progress-bar bg-danger"
+                  style="width: ${percentage}%"></div>
+              </div>
+              <p class="workload-students text-center">
+                ${item.students} / ${totalStudents} students
+              </p>
+              ${index == workload.length - 1 ? "" : "<hr>"}
+            `;
+          });
+        }
+        $(this).attr("data-toggle", "popover");
+        $(this).popover({
+          trigger: "hover",
+          placement: "bottom",
+          html: true,
+          title: "Student Workload",
+          content: popoverContent
+        });
+      });
+    },
+    error: function() {
+      console.log("Failed to fetch calendar workload");
+    }
+  });
 }

@@ -48,6 +48,10 @@
   }
 }
 
+.fc-day-number {
+  cursor: pointer;
+}
+
 .fc-axis {
   padding: 0 8px !important;
   font-size: 0.8rem;
@@ -78,6 +82,7 @@
     h5 {
       line-height: 0.95;
       #event-modal-subject {
+        cursor: pointer;
         font-size: 1.2rem;
       }
       #event-modal-class {
@@ -148,4 +153,42 @@
 #add-task-body {
   height: initial;
   display: initial;
+}
+
+.popover-header {
+  font-weight: 600;
+  padding: 10px 15px;
+  font-size: 0.9rem;
+}
+
+.popover-body {
+  padding: 10px 15px;
+  font-size: 0.8rem;
+  min-width: 200px;
+  line-height: 1.2;
+  p {
+    margin-bottom: 0;
+  }
+  .workload-task {
+    font-weight: 600;
+    margin-bottom: 3px
+  }
+  .workload-subject, .workload-lecturer {
+    font-size: 0.75rem;
+  }
+  .workload-progress {
+    margin-top: 8px;
+    margin-bottom: 4px;
+    margin-left: auto;
+    margin-right: auto;
+    width: 80%;
+    height: 5px;
+  }
+  .workload-students {
+    font-size: 0.7rem;
+  }
+  hr {
+    margin-top: 10px;
+    margin-bottom: 10px;
+  }
 }
