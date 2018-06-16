@@ -66,10 +66,8 @@ class CalendarController @Inject()(
     taskTitle: String,
     taskScore: Int,
     taskDate: String,
-    subjectCode: String,
     subjectTitle: String,
     lecturerName: String,
-    lecturerEmail: String,
     students: Int
   )
   implicit val workloadWriter = Json.writes[JsonWorkload]
@@ -267,10 +265,8 @@ class CalendarController @Inject()(
                 taskTitle = task.title,
                 taskScore = task.score,
                 taskDate = task.dueDate,
-                subjectCode = subject.code,
                 subjectTitle = subject.title.get,
                 lecturerName = lecturer.name,
-                lecturerEmail = lecturer.email,
                 students = taskStudents.length
               )
             }
