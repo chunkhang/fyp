@@ -774,4 +774,10 @@ export function calendar() {
       }
     });
   }
+
+  var checkAvailabilityButton = $("#check-availability-button");
+  checkAvailabilityButton.click(function() {
+    console.log("!");
+  });
+
 }

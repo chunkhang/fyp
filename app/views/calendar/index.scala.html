@@ -7,8 +7,12 @@
   <div class="row mb-3">
     <div class="col" id="calendar-header">
         <h1>Calendar</h1>
-        <!-- Add task button -->
-        <button class="btn btn-primary btn-sm" id="add-task-button" data-toggle="modal" data-target="#add-task-modal" @if(subjects.isEmpty){disabled}>Add Task</button>
+        <div>
+          <!-- Check availability button -->
+          <button class="btn btn-sm" id="check-availability-button" @if(subjects.isEmpty){disabled}>Check Availability</button>
+          <!-- Add task button -->
+          <button class="btn btn-sm" id="add-task-button" data-toggle="modal" data-target="#add-task-modal" @if(subjects.isEmpty){disabled}>Add Task</button>
+        </div>
     </div>
   </div>
   <div class="row">

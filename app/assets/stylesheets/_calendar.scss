@@ -6,6 +6,16 @@
   }
 }
 
+#check-availability-button {
+  background-color: #3f9b68;
+  height: 35px;
+}
+
+#add-task-button {
+  background-color: #9b3f72;
+  height: 35px;
+}
+
 .fc-day-header {
   padding: 2px !important;
 }
@@ -145,10 +155,6 @@
     width: 30px;
     height: 30px;
   }
-}
-
-#add-task-button {
-  height: 35px;
 }
 
 #add-task-body {
