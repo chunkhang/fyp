@@ -775,9 +775,67 @@ export function calendar() {
     });
   }
 
-  var checkAvailabilityButton = $("#check-availability-button");
-  checkAvailabilityButton.click(function() {
-    console.log("!");
+  // var checkAvailabilityButton = $("#check-availability-button");
+  var checkAvailabilityModal = $("#check-availability-modal");
+  var checkAvailabilityCloseButton = $("#check-availability-close");
+  var checkAvailabilityCheckButton = $("#check-availability-check");
+  var checkAvailabilitySpinner = $("#check-availability-spinner");
+
+  // Close
+  checkAvailabilityCloseButton.click(function() {
+    checkAvailabilityModal.click();
+    clearTable();
+  });
+
+  // Check availability
+  checkAvailabilityCheckButton.click(function() {
+    checkAvailabilityCloseButton.addClass("gone");
+    checkAvailabilityCheckButton.addClass("gone");
+    checkAvailabilitySpinner.removeClass("gone");
+    // Send request
+    // setTimeout(function() {
+    //   $.ajax({
+    //     method: "POST",
+    //     url: `/classes/${classId}/cancel`,
+    //     contentType: "application/json",
+    //     dataType: "json",
+    //     data: JSON.stringify(payload),
+    //     timeout: 3000,
+    //     success: function(response) {
+    //       calendar.fullCalendar("refetchEvents");
+    //       eventModalSpinner.addClass("gone");
+    //       if (response.status == "success") {
+    //         toastr.success("Class cancelled");
+    //       }
+    //       setTimeout(function() {
+    //         eventModal.click();
+    //       }, 1000);
+    //     },
+    //     error: function() {
+    //       eventModalSpinner.addClass("gone");
+    //       toastr.error("Something went wrong");
+    //       setTimeout(function() {
+    //         eventModal.click();
+    //       }, 1000);
+    //     }
+    //   });
+    // }, 1000);
+  });
+
+  function clearTable() {
+    checkAvailabilityCloseButton.removeClass("gone");
+    checkAvailabilityCheckButton.removeClass("gone");
+    checkAvailabilitySpinner.addClass("gone");
+  }
+
+  checkAvailabilityModal.on("show.bs.modal", function() {
+    // Disable scrolling
+    $("html").addClass("scroll-lock");
+    clearTable();
+  });
+  checkAvailabilityModal.on("hide.bs.modal", function() {
+    // Enable scrolling
+    $("html").removeClass("scroll-lock");
   });
 
 }

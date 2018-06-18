@@ -1,5 +1,9 @@
+@import scala.collection.immutable.ListMap
+
 @(
-  subjects: Option[List[Subject]]
+  subjects: Option[List[Subject]],
+  subjectMap: Option[ListMap[Subject, List[(Class, Option[String])]]],
+  times: Option[List[String]]
 )(implicit flash: Flash, request: RequestHeader)
 
 @main("Calendar", Some(0)) {
@@ -9,7 +13,7 @@
         <h1>Calendar</h1>
         <div>
           <!-- Check availability button -->
-          <button class="btn btn-sm" id="check-availability-button" @if(subjects.isEmpty){disabled}>Check Availability</button>
+          <button class="btn btn-sm" id="check-availability-button" data-toggle="modal" data-target="#check-availability-modal" @if(subjects.isEmpty){disabled}>Check Availability</button>
           <!-- Add task button -->
           <button class="btn btn-sm" id="add-task-button" data-toggle="modal" data-target="#add-task-modal" @if(subjects.isEmpty){disabled}>Add Task</button>
         </div>
@@ -158,6 +162,116 @@
           <button class="btn btn-primary btn-sm gone" id="add-task-edit">Edit</button>
           <!-- Loading spinner -->
           <div class="preloader-wrapper small active gone" id="add-task-spinner">
+            <div class="spinner-layer spinner-blue-only">
+              <div class="circle-clipper left">
+                <div class="circle"></div>
+              </div>
+              <div class="gap-patch">
+                <div class="circle"></div>
+              </div>
+              <div class="circle-clipper right">
+                <div class="circle"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Check availability modal -->
+  <div class="modal fade" id="check-availability-modal" tabindex="-1">
+    <div class="modal-dialog modal-fluid modal-notify modal-primary modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <p class="heading lead">Check Availability</p>
+        </div>
+        <div class="modal-body">
+          <div id="check-availability-header">
+            <h4>Student Availability for Class </h4>
+            <div class="md-form form-sm">
+              <select class="mdb-select" id="check-availability-class">
+                @if(subjectMap.isDefined) {
+                  @for((subject, classTuples) <- subjectMap.get) {
+                    @for((class_, _) <- classTuples) {
+                      <option value="@class_._id.get.stringify">@subject.code | @subject.title.get | @class_.category Group @class_.group</option>
+                    }
+                  }
+                }
+              </select>
+            </div>
+          </div>
+          <!-- Table -->
+          <table class="table table-bordered">
+            <thead>
+              <tr>
+                <th></th>
+                @if(times.isDefined) {
+                  @for(time <- times.get) {
+                    <th>@time</th>
+                  }
+                }
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <th scope="row">Monday</th>
+                @if(times.isDefined) {
+                  @for(_ <- 1 to times.get.length) {
+                    <td></td>
+                  }
+                }
+              </tr>
+              <tr>
+                <th scope="row">Tuesday</th>
+                @if(times.isDefined) {
+                  @for(_ <- 1 to times.get.length) {
+                    <td></td>
+                  }
+                }
+              </tr>
+              <tr>
+                <th scope="row">Wednesday</th>
+                @if(times.isDefined) {
+                  @for(_ <- 1 to times.get.length) {
+                    <td></td>
+                  }
+                }
+              </tr>
+              <tr>
+                <th scope="row">Thursday</th>
+                @if(times.isDefined) {
+                  @for(_ <- 1 to times.get.length) {
+                    <td></td>
+                  }
+                }
+              </tr>
+              <tr>
+                <th scope="row">Friday</th>
+                @if(times.isDefined) {
+                  @for(_ <- 1 to times.get.length) {
+                    <td></td>
+                  }
+                }
+              </tr>
+              <tr>
+                <th scope="row">Saturday</th>
+                @if(times.isDefined) {
+                  @for(_ <- 1 to times.get.length) {
+                    <td></td>
+                  }
+                }
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="modal-footer justify-content-center">
+          <!-- Close button -->
+          <button class="btn btn-danger btn-sm" id="check-availability-close">Close</button>
+          <!-- Check button -->
+          <button class="btn btn-primary btn-sm" id="check-availability-check">Check</button>
+          <!-- Loading spinner -->
+          <div class="preloader-wrapper small active gone" id="check-availability-spinner">
             <div class="spinner-layer spinner-blue-only">
               <div class="circle-clipper left">
                 <div class="circle"></div>

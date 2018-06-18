@@ -73,19 +73,31 @@ class CalendarController @Inject()(
   implicit val workloadWriter = Json.writes[JsonWorkload]
 
   def index = userAction.async { implicit request =>
-    subjectRepo.findSubjectsByUserId(request.user._id.get).map { allSubjects =>
-      val subjects = allSubjects.filter { subject =>
-        // Only need subjects that have details
-        subject.title.isDefined
-      } sortWith (
-        // Sort ascendingly by subject code
-        _.code < _.code
-      )
-      if (!subjects.isEmpty) {
-        Ok(views.html.calendar.index(Some(subjects)))
-      } else {
-        Ok(views.html.calendar.index(None))
-      }
+    subjectRepo.findSubjectsByUserId(request.user._id.get).flatMap {
+      allSubjects =>
+        val subjects = allSubjects.filter { subject =>
+          // Only need subjects that have details
+          subject.title.isDefined
+        } sortWith (
+          // Sort ascendingly by subject code
+          _.code < _.code
+        )
+        if (!subjects.isEmpty) {
+          // Get all classes under lecturer
+          classController.getClasses(request.user.email).map { subjectMap =>
+            // Times for availability table
+            val times = utils.tableTimes()
+            Ok(views.html.calendar.index(
+              Some(subjects),
+              Some(subjectMap.get),
+              Some(times)
+            ))
+          }
+        } else {
+          Future {
+            Ok(views.html.calendar.index(None, None, None))
+          }
+        }
     }
   }
 

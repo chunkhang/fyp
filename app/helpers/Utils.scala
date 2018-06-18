@@ -414,4 +414,21 @@ class Utils @Inject()(config: Configuration) {
     students
   }
 
+  // Get list of times for availability table
+  def tableTimes(): List[String] = {
+    val inputFormatter = DateTimeFormat.forPattern("hh:mmaa")
+    val outputFormatter = DateTimeFormat.forPattern("HH:mm")
+    val start = inputFormatter.parseDateTime("08:00AM")
+    val end = inputFormatter.parseDateTime("06:00PM")
+    val interval = 30.minutes
+    val times = ListBuffer[DateTime]()
+    var time = start
+    while (time < end) {
+      times += time
+      time += interval
+    }
+    val timeStrings = times.map(_.toString(outputFormatter)).toList
+    timeStrings
+  }
+
 }

@@ -157,6 +157,39 @@
   }
 }
 
+#check-availability-modal {
+  .modal-body {
+    height: unset;
+    display: unset;
+    #check-availability-header {
+      display: flex;
+      margin-bottom: 15px;
+      h4 {
+        font-weight: bolder;
+      }
+      .md-form {
+        width: 500px;
+        margin-left: 15px;
+        margin-top: -8px;
+        input {
+          margin-bottom: 0;
+        }
+      }
+    }
+    table {
+      text-align: center;
+      margin-bottom: 0;
+      th {
+        font-size: 0.8rem;
+      }
+    }
+  }
+  #check-availability-spinner {
+    width: 30px;
+    height: 30px;
+  }
+}
+
 #add-task-body {
   height: initial;
   display: initial;
