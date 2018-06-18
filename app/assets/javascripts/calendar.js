@@ -698,7 +698,6 @@ export function calendar() {
         var allWorkload = response.workload;
         var todayDate = moment.utc().add(8, "hours").format("YYYY-MM-DD");
         var todayMoment = moment(todayDate);
-        // Initialize poppers
         var days;
         if (view == "month") {
           days = $(".fc-day-number");
@@ -747,7 +746,10 @@ export function calendar() {
                   ${index == workload.length - 1 ? "" : "<hr>"}
                 `;
               });
+              // Make bold
+              $(this).css("font-weight", "bold");
             }
+            // Initialize popper
             $(this).attr("data-toggle", "popover");
             $(this).popover({
               trigger: "hover",
