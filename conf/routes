@@ -19,6 +19,7 @@ POST    /classes/:id/cancel             controllers.ClassController.cancel(id: r
 POST    /classes/:id/find               controllers.ClassController.find(id: reactivemongo.bson.BSONObjectID)
 + nocsrf
 POST    /classes/:id/replace            controllers.ClassController.replace(id: reactivemongo.bson.BSONObjectID)
+GET     /classes/:id/availability       controllers.ClassController.availability(id: reactivemongo.bson.BSONObjectID)
 
 # Subject
 GET     /subjects/:id/edit              controllers.SubjectController.edit(id: reactivemongo.bson.BSONObjectID)

@@ -780,6 +780,7 @@ export function calendar() {
   var checkAvailabilityCloseButton = $("#check-availability-close");
   var checkAvailabilityCheckButton = $("#check-availability-check");
   var checkAvailabilitySpinner = $("#check-availability-spinner");
+  var checkAvailabilityClass = $("#check-availability-class");
 
   // Close
   checkAvailabilityCloseButton.click(function() {
@@ -789,37 +790,33 @@ export function calendar() {
 
   // Check availability
   checkAvailabilityCheckButton.click(function() {
+    var classId = checkAvailabilityClass.val();
     checkAvailabilityCloseButton.addClass("gone");
     checkAvailabilityCheckButton.addClass("gone");
     checkAvailabilitySpinner.removeClass("gone");
     // Send request
-    // setTimeout(function() {
-    //   $.ajax({
-    //     method: "POST",
-    //     url: `/classes/${classId}/cancel`,
-    //     contentType: "application/json",
-    //     dataType: "json",
-    //     data: JSON.stringify(payload),
-    //     timeout: 3000,
-    //     success: function(response) {
-    //       calendar.fullCalendar("refetchEvents");
-    //       eventModalSpinner.addClass("gone");
-    //       if (response.status == "success") {
-    //         toastr.success("Class cancelled");
-    //       }
-    //       setTimeout(function() {
-    //         eventModal.click();
-    //       }, 1000);
-    //     },
-    //     error: function() {
-    //       eventModalSpinner.addClass("gone");
-    //       toastr.error("Something went wrong");
-    //       setTimeout(function() {
-    //         eventModal.click();
-    //       }, 1000);
-    //     }
-    //   });
-    // }, 1000);
+    setTimeout(function() {
+      $.ajax({
+        method: "GET",
+        url: `/classes/${classId}/availability`,
+        dataType: "json",
+        timeout: 3000,
+        success: function(response) {
+          checkAvailabilityCloseButton.removeClass("gone");
+          checkAvailabilityCheckButton.removeClass("gone");
+          checkAvailabilitySpinner.addClass("gone");
+          if (response.status == "success") {
+            toastr.success("!");
+          }
+        },
+        error: function() {
+          checkAvailabilityCloseButton.removeClass("gone");
+          checkAvailabilityCheckButton.removeClass("gone");
+          checkAvailabilitySpinner.addClass("gone");
+          toastr.error("Something went wrong");
+        }
+      });
+    }, 1000);
   });
 
   function clearTable() {

@@ -607,6 +607,14 @@ class ClassController @Inject()(
         }
   }
 
+  def availability(id: BSONObjectID) =
+    (userAction andThen ClassAction(id) andThen PermittedAction).async {
+      implicit request =>
+        Future {
+          Ok(Json.obj("status" -> "success"))
+        }
+  }
+
   // Append exception date to class
   def addExceptionDate(id: BSONObjectID, date: String): Future[Unit] = {
     classRepo.read(id).flatMap { maybeClass =>
