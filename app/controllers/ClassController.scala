@@ -3,7 +3,7 @@ package controllers
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future, Await}
 import scala.concurrent.duration._
-import scala.collection.mutable.{Map, ListBuffer}
+import scala.collection.mutable.{Map, ListBuffer, ListMap => MutableListMap}
 import scala.collection.immutable.ListMap
 import play.api.mvc._
 import play.api.data._
@@ -610,8 +610,66 @@ class ClassController @Inject()(
   def availability(id: BSONObjectID) =
     (userAction andThen ClassAction(id) andThen PermittedAction).async {
       implicit request =>
-        Future {
-          Ok(Json.obj("status" -> "success"))
+        // Prepare initial payload
+        var payload = MutableListMap[String, List[Int]]()
+        val days = List(
+          "Monday",
+          "Tuesday",
+          "Wednesday",
+          "Thursday",
+          "Friday",
+          "Saturday"
+        )
+        val times = utils.tableTimes()
+        days.foreach { day =>
+          payload += (day -> List.fill(times.length)(0))
+        }
+        // Get all classes
+        classRepo.readAll().map { allClasses =>
+          request.classItem.students.foreach { student =>
+            // Find all classes attended by student
+            val classes = allClasses.filter { class_ =>
+              class_.students.contains(student)
+            } filter { class_ =>
+              class_.day.isDefined
+            }
+            // Check day and time of class
+            var slotAvailability = MutableListMap[String, List[Boolean]]()
+            days.foreach { day =>
+              slotAvailability += (day -> List.fill(times.length)(true))
+            }
+            classes.foreach { class_ =>
+              val day = class_.day.get
+              val startTime = class_.startTime.get
+              val endTime = class_.endTime.get
+              // Fill time slots with availability
+              val slots = utils.timeSlots(startTime, endTime, times)
+              for (i <- 0 to slots.length - 1) {
+                if (!slots(i)) {
+                  // Mark slot as occupied
+                  slotAvailability(day) =
+                    slotAvailability(day).updated(i, false)
+                }
+              }
+            }
+            for ((day, numberList) <- payload) {
+              var newNumberList = numberList
+              for (i <- 0 to slotAvailability(day).length - 1) {
+                // Increment count if student is free for that slot
+                val available = slotAvailability(day)(i)
+                if (available) {
+                  val newNumber = newNumberList(i) + 1
+                  newNumberList = newNumberList.updated(i, newNumber)
+                }
+              }
+              payload(day) = newNumberList
+            }
+          }
+          Ok(Json.obj(
+            "status" -> "success",
+            "students" -> request.classItem.students.length,
+            "availability" -> payload
+          ))
         }
   }
 

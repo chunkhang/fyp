@@ -4,8 +4,10 @@ import javax.inject.Inject
 import java.util.Date
 import java.text.SimpleDateFormat
 import scala.collection.mutable.ListBuffer
+import scala.util.control.Breaks._
 import play.api.Configuration
 import com.github.nscala_time.time.Imports._
+import com.github.nscala_time.time.Imports.{Period => JodaPeriod}
 import biweekly._
 import biweekly.component._
 import biweekly.property._
@@ -429,6 +431,43 @@ class Utils @Inject()(config: Configuration) {
     }
     val timeStrings = times.map(_.toString(outputFormatter)).toList
     timeStrings
+  }
+
+  // Fill in time slots for availability based on give time range
+  def timeSlots(
+    startTime: String,
+    endTime: String,
+    slots: List[String]
+  ): List[Boolean] = {
+    val formatter = DateTimeFormat.forPattern("hh:mmaa")
+    // Give time range
+    val jodaRange = new Interval(
+      formatter.parseDateTime(startTime),
+      formatter.parseDateTime(endTime)
+    )
+    // Time slots
+    val jodaSlots: List[DateTime] = slots.map { slot =>
+      DateTimeFormat.forPattern("HH:mm").parseDateTime(slot)
+    }
+    // Interval between time slots
+    val slotInterval = new JodaPeriod(jodaSlots(0), jodaSlots(1))
+    // List of boolean indicating availability
+    var slotBooleans = List.fill(jodaSlots.length)(true)
+    for (i <- 0 to jodaSlots.length - 1) {
+      val slotStart = jodaSlots(i)
+      var slotIsOccupied = false
+      breakable {
+        // Check if each minute of slot is within time range
+        for (j <- 0 to slotInterval.getMinutes() - 1) {
+          val slotTime = slotStart + j.minutes
+          if (jodaRange.contains(slotTime)) {
+            slotBooleans = slotBooleans.updated(i, false)
+            break
+          }
+        }
+      }
+    }
+    slotBooleans
   }
 
 }
