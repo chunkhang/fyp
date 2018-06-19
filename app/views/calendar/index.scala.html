@@ -188,21 +188,27 @@
         </div>
         <div class="modal-body">
           <div id="check-availability-header">
-            <h4>Student Availability for Class </h4>
-            <div class="md-form form-sm">
-              <select class="mdb-select" id="check-availability-class">
-                @if(subjectMap.isDefined) {
-                  @for((subject, classTuples) <- subjectMap.get) {
-                    @for((class_, _) <- classTuples) {
-                      <option value="@class_._id.get.stringify">@subject.code | @subject.title.get | @class_.category Group @class_.group</option>
+            <div>
+              <h4>Student Availability for Class </h4>
+              <div class="md-form form-sm">
+                <select class="mdb-select" id="check-availability-class">
+                  @if(subjectMap.isDefined) {
+                    @for((subject, classTuples) <- subjectMap.get) {
+                      @for((class_, _) <- classTuples) {
+                        <option value="@class_._id.get.stringify">@subject.code | @subject.title.get | @class_.category Group @class_.group</option>
+                      }
                     }
                   }
-                }
-              </select>
+                </select>
+              </div>
             </div>
+            <p class="gone" id="check-availability-side">
+              <span id="check-availability-students"></span>
+              <span class="text-muted">students in total</span>
+            </p>
           </div>
           <!-- Table -->
-          <table class="table table-bordered">
+          <table class="table table-bordered" id="check-availability-table">
             <thead>
               <tr>
                 <th></th>

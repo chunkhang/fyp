@@ -164,22 +164,39 @@
     #check-availability-header {
       display: flex;
       margin-bottom: 15px;
-      h4 {
-        font-weight: bolder;
+      justify-content: space-between;
+      align-items: center;
+      div {
+        display: flex;
+        h4 {
+          font-weight: bolder;
+          display: inline-block;
+        }
+        .md-form {
+          width: 500px;
+          margin-left: 15px;
+          margin-top: -8px;
+          display: inline-block;
+          input {
+            margin-bottom: 0;
+          }
+        }
       }
-      .md-form {
-        width: 500px;
-        margin-left: 15px;
-        margin-top: -8px;
-        input {
-          margin-bottom: 0;
+      p {
+        margin-bottom: 0;
+        #check-availability-students {
+          margin-right: 3px;
+          font-weight: bolder;
+        }
+        .text-muted {
+          font-size: 0.9rem;
         }
       }
     }
     table {
       text-align: center;
       margin-bottom: 0;
-      th {
+      th, td {
         font-size: 0.8rem;
       }
     }
