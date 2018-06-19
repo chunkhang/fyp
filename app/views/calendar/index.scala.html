@@ -194,8 +194,12 @@
                 <select class="mdb-select" id="check-availability-class">
                   @if(subjectMap.isDefined) {
                     @for((subject, classTuples) <- subjectMap.get) {
-                      @for((class_, _) <- classTuples) {
-                        <option value="@class_._id.get.stringify">@subject.code | @subject.title.get | @class_.category Group @class_.group</option>
+                      @if(subject.title.isDefined) {
+                        @for((class_, _) <- classTuples) {
+                          @if(class_.day.isDefined) {
+                            <option value="@class_._id.get.stringify">@subject.code | @subject.title.get | @class_.category Group @class_.group</option>
+                          }
+                        }
                       }
                     }
                   }
