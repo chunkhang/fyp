@@ -807,7 +807,7 @@ export function calendar() {
           checkAvailabilityCloseButton.removeClass("gone");
           checkAvailabilityCheckButton.removeClass("gone");
           checkAvailabilitySpinner.addClass("gone");
-          populateTable(response.availability);
+          populateTable(response.availability, response.students);
           checkAvailabilitySide.removeClass("gone");
           checkAvailabilityStudents.text(response.students);
         },
@@ -829,14 +829,30 @@ export function calendar() {
     clearTable();
   }
 
-  function populateTable(availability) {
+  function populateTable(availability, students) {
+    clearTable();
     $.each(availability, function(day, counts) {
       var tableRow = $("#check-availability-table tr").filter(function() {
         return $(this).children("th").text() == day;
       });
       var tableRowCells = tableRow.children("td");
       $.each(counts, function(index, count) {
-        $(tableRowCells[index]).text(count);
+        // Count
+        var cell = $(tableRowCells[index]);
+        cell.text(count);
+        // Color
+        var percentage = Math.round(
+          (count / students) * 100
+        );
+        var colorClass;
+        if (percentage >= 75) {
+          colorClass = "table-success";
+        } else if (percentage >= 25) {
+          colorClass = "table-warning";
+        } else {
+          colorClass = "table-danger";
+        }
+        cell.addClass(colorClass);
       });
     });
   }
@@ -844,6 +860,7 @@ export function calendar() {
   function clearTable() {
     var tableCells = $("#check-availability-table td");
     tableCells.empty();
+    tableCells.removeClass();
   }
 
   checkAvailabilityModal.on("show.bs.modal", function() {
